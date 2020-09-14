@@ -12,3 +12,22 @@ Game-like restaurant review service.
   common use.
   + `git merge` → `git rebase`
   + `git pull` → `git fetch && git rebase`
+
+# How to run
+
+## Server
+
+- Install [`Docker Compose`](https://docs.docker.com/compose/install/)
+- ```sh
+  # Build services
+  docker-compose build
+
+  # Runs all services
+  docker-compose up
+
+  # Run services background
+  docker-compose up -d
+
+  # Stop background services
+  docker-compose down
+  ```
