@@ -9,9 +9,9 @@ import (
 func main() {
 	server := api.NewServer()
 
-	// start listening on port
+	// start service on port
 	log.Println("start listen...")
-	if err := server.ListenAndServe(); err != nil {
+	if err := server.ListenAndServe(":7777"); err != nil {
 		log.Fatalf("on listen: %v", err)
 	}
 }

@@ -9,17 +9,11 @@ import (
 // NewServer creates Server struct safely.
 func NewServer() *Server {
 	var server = &Server{
-		hs: &http.Server{
-			Addr: ":7777",
-		},
 		mux: http.NewServeMux(),
 	}
 
 	// Register handlers.
 	server.mux.HandleFunc("/devel", server.handlerDevel)
-
-	// Assign ServeMux to Server.
-	server.hs.Handler = server.mux
 
 	return server
 }
@@ -27,13 +21,23 @@ func NewServer() *Server {
 // Server runs as API server for MukGo service. Server should be created with
 // NewServer function.
 type Server struct {
-	hs  *http.Server
 	mux *http.ServeMux
 }
 
-// ListenAndServe starts Server.
-func (s *Server) ListenAndServe() error {
-	return s.hs.ListenAndServe()
+// ListenAndServe starts Server. If addr is blank, ":http" is used, which
+// uses 80 port.
+func (s *Server) ListenAndServe(addr string) error {
+	if addr == "" {
+		addr = ":http"
+	}
+
+	// Assign ServeMux to Server.
+	httpserver := &http.Server{
+		Addr:    addr,
+		Handler: s.mux,
+	}
+
+	return httpserver.ListenAndServe()
 }
 
 func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
