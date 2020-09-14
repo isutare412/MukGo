@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"github.com/isutare412/MukGo/server/api"
+	"github.com/isutare412/MukGo/server/log"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 	server := api.NewServer()
 
 	// Start service on port
-	log.Printf("start listen on %q...", *addr)
+	log.Info("start listen on %q...", *addr)
 	if err := server.ListenAndServe(*addr); err != nil {
-		log.Fatalf("on listen: %v", err)
+		log.Fatal("failed listen: %v", err)
 	}
 }

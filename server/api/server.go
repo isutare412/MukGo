@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/isutare412/MukGo/server/log"
 )
 
 // NewServer creates Server struct safely.
@@ -12,8 +13,7 @@ func NewServer() *Server {
 		mux: http.NewServeMux(),
 	}
 
-	// Register handlers.
-	server.mux.HandleFunc("/devel", server.handlerDevel)
+	server.registerHandlers()
 
 	return server
 }
@@ -40,21 +40,25 @@ func (s *Server) ListenAndServe(addr string) error {
 	return httpserver.ListenAndServe()
 }
 
+func (s *Server) registerHandlers() {
+	s.mux.HandleFunc("/devel", s.handlerDevel)
+}
+
 func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 	// Parse request into RestRequest.
 	var req RestRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Printf("on decode: %v", err)
+		log.Warning("failed to decode request: %v", err)
 		return
 	}
 
-	log.Printf("message from %q: %q", req.User, req.Message)
+	log.Info("message from %q: %q", req.User, req.Message)
 
 	// marshal response into byte slice
 	res := RestResponse{"Hello, Client!"}
 	resBytes, err := json.Marshal(res)
 	if err != nil {
-		log.Printf("on marshal response: %v", err)
+		log.Warning("failed to encode response: %v", err)
 		return
 	}
 
