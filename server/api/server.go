@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/isutare412/MukGo/server"
@@ -43,7 +44,7 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 
 	// connection the session
 	if err := mqSession.Connect(); err != nil {
-		console.Fatal("on NewServer: %v", err)
+		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
 	server.mqss = mqSession
 

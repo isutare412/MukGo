@@ -5,6 +5,8 @@ services:
     build:
       context: ./
       dockerfile: rabbitmq.Dockerfile
+    networks:
+      - server_network
     env_file: ./build_config/rabbitmq.env
     container_name: rabbitmq
     ports:
@@ -15,6 +17,15 @@ services:
     build:
       context: ./
       dockerfile: api_server.Dockerfile
+    networks:
+      - server_network
+    depends_on:
+      - rabbitmq
+    restart: on-failure
     container_name: api-server
     ports:
       - '7777:7777'
+
+networks:
+  server_network:
+    driver: bridge
