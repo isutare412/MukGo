@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/isutare412/MukGo/server/log"
+	"github.com/isutare412/MukGo/server/console"
 )
 
 // NewServer creates Server struct safely.
@@ -48,17 +48,17 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 	// Parse request into RestRequest.
 	var req RestRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Warning("failed to decode request: %v", err)
+		console.Warning("failed to decode request: %v", err)
 		return
 	}
 
-	log.Info("message from %q: %q", req.User, req.Message)
+	console.Info("message from %q: %q", req.User, req.Message)
 
 	// marshal response into byte slice
 	res := RestResponse{"Hello, Client!"}
 	resBytes, err := json.Marshal(res)
 	if err != nil {
-		log.Warning("failed to encode response: %v", err)
+		console.Warning("failed to encode response: %v", err)
 		return
 	}
 

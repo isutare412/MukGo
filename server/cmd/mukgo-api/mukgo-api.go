@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	"github.com/isutare412/MukGo/server/api"
-	"github.com/isutare412/MukGo/server/log"
+	"github.com/isutare412/MukGo/server/console"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 	server := api.NewServer()
 
 	// Start service on port
-	log.Info("start listen on %q...", *addr)
+	console.Info("start listen on %q...", *addr)
 	if err := server.ListenAndServe(*addr); err != nil {
-		log.Fatal("failed listen: %v", err)
+		console.Fatal("failed listen: %v", err)
 	}
 }
