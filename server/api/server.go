@@ -2,26 +2,45 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/isutare412/MukGo/server/console"
+	"github.com/isutare412/MukGo/server/mq"
 )
 
 // NewServer creates Server struct safely.
-func NewServer() *Server {
+func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 	var server = &Server{
 		mux: http.NewServeMux(),
 	}
 
+	// register api handlers
 	server.registerHandlers()
+	console.Info("registered handlers")
 
-	return server
+	// establish rabbitmq session
+	session, err := mq.NewSession(mqid, mqpw, mqaddr)
+	if err != nil {
+		return nil, fmt.Errorf("on NewServer: %v", err)
+	}
+	server.mqss = session
+	console.Info("session(%q) established between RabbitMQ", mqaddr)
+
+	// initialize message queues
+	err = server.initQueue()
+	if err != nil {
+		return nil, fmt.Errorf("on Newserver: %v", err)
+	}
+
+	return server, nil
 }
 
 // Server runs as API server for MukGo service. Server should be created with
 // NewServer function.
 type Server struct {
-	mux *http.ServeMux
+	mux  *http.ServeMux
+	mqss *mq.Session
 }
 
 // ListenAndServe starts Server. If addr is blank, ":http" is used, which

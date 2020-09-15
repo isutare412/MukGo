@@ -13,7 +13,10 @@ func main() {
 	flag.Parse()
 
 	// Create new api server
-	server := api.NewServer()
+	server, err := api.NewServer("server", "server", "localhost:5672")
+	if err != nil {
+		console.Fatal("failed to create server: %v", err)
+	}
 
 	// Start service on port
 	console.Info("start listen on %q...", *addr)
