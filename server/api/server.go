@@ -2,12 +2,28 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
 )
+
+// Server runs as API server for MukGo service. Server should be created with
+// NewServer function.
+type Server struct {
+	mux  *http.ServeMux
+	mqss *mq.Session
+}
+
+var baseConfig = &mq.SessionConfig{
+	Exchanges: map[string]mq.ExchangeConfig{
+		server.MGLogs: {
+			Name: server.MGLogs,
+			Type: "direct",
+		},
+	},
+}
 
 // NewServer creates Server struct safely.
 func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
@@ -20,27 +36,20 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 	console.Info("registered handlers")
 
 	// establish rabbitmq session
-	session, err := mq.NewSession(mqid, mqpw, mqaddr)
-	if err != nil {
-		return nil, fmt.Errorf("on NewServer: %v", err)
+	baseConfig.User = mqid
+	baseConfig.Password = mqpw
+	baseConfig.Addr = mqaddr
+	mqSession := mq.NewSession("api", baseConfig)
+
+	// connection the session
+	if err := mqSession.Connect(); err != nil {
+		console.Fatal("on NewServer: %v", err)
 	}
-	server.mqss = session
+	server.mqss = mqSession
+
 	console.Info("session(%q) established between RabbitMQ", mqaddr)
 
-	// initialize message queues
-	err = server.initQueue()
-	if err != nil {
-		return nil, fmt.Errorf("on Newserver: %v", err)
-	}
-
 	return server, nil
-}
-
-// Server runs as API server for MukGo service. Server should be created with
-// NewServer function.
-type Server struct {
-	mux  *http.ServeMux
-	mqss *mq.Session
 }
 
 // ListenAndServe starts Server. If addr is blank, ":http" is used, which
