@@ -161,20 +161,21 @@ func (s *Session) reconnect() error {
 	return fmt.Errorf("failed to reconnect(%q)", s.config.Addr)
 }
 
-// Consume consumes messages from queues of the exchange and pass them as map
-// from queue name to chan amqp.Delivery.
+// Consume registers handler for the queue with the exchange. The handler must
+// return bool if the handling success, as either Ack or Nack will be sent to
+// RabbitMQ depending on the bool result.
 func (s *Session) Consume(
 	exchange, queue string,
-	handler func(*amqp.Delivery),
-) (<-chan amqp.Delivery, error) {
+	handler func([]byte) bool,
+) error {
 	// find target exchange and queue
 	exCfg, ok := s.config.Exchanges[exchange]
 	if !ok {
-		return nil, fmt.Errorf("undefined exchange(%q)", exchange)
+		return fmt.Errorf("undefined exchange(%q)", exchange)
 	}
 	qCfg, ok := exCfg.Queues[queue]
 	if !ok {
-		return nil, fmt.Errorf("undefined queue(%q)", queue)
+		return fmt.Errorf("undefined queue(%q)", queue)
 	}
 
 	// open delivery channel from queue
@@ -190,7 +191,7 @@ func (s *Session) Consume(
 	)
 	if err != nil {
 		s.mu.Unlock()
-		return nil, fmt.Errorf("on Consume: %v", err)
+		return fmt.Errorf("on Consume: %v", err)
 	}
 	s.mu.Unlock()
 
@@ -201,13 +202,26 @@ func (s *Session) Consume(
 		for {
 			select {
 			case <-reconn:
+				// restart Consume after reconnect
 				s.connNotifier.RemoveSubscriber(reconn)
-				s.Consume(exchange, queue, handler)
+				if err := s.Consume(exchange, queue, handler); err != nil {
+					console.Fatal("failed in Consume: %v", err)
+				}
+
 			case d := <-delivery:
-				handler(&d)
+				// handle message from RabbitMQ
+				if handler(d.Body) {
+					if err := d.Ack(false); err != nil {
+						console.Error("failed Ack: %v", err)
+					}
+				} else {
+					if err := d.Nack(false, true); err != nil {
+						console.Error("failed Nack: %v", err)
+					}
+				}
 			}
 		}
 	}()
 
-	return delivery, nil
+	return nil
 }
