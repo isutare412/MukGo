@@ -1,3 +1,4 @@
+![build status](http://redshore.asuscomm.com:8081/buildStatus/icon?job=MukGo)
 # MukGo
 
 Game-like restaurant review service.
