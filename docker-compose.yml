@@ -25,6 +25,7 @@ services:
     container_name: api-server
     ports:
       - '7777:7777'
+    command: ["-mqaddr", "rabbitmq:5672"]
 
 networks:
   server_network:

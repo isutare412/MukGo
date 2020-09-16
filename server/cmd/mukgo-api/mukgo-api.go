@@ -10,10 +10,12 @@ import (
 func main() {
 	// Handle flags
 	addr := flag.String("addr", ":7777", "<ip:port> to run service")
+	mqaddr := flag.String(
+		"mqaddr", "localhost:5672", "<ip:port> of RabbitMQ to connect")
 	flag.Parse()
 
 	// Create new api server
-	server, err := api.NewServer("server", "server", "localhost:5672")
+	server, err := api.NewServer("server", "server", *mqaddr)
 	if err != nil {
 		console.Fatal("failed to create server: %v", err)
 	}

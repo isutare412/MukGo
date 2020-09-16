@@ -225,3 +225,25 @@ func (s *Session) Consume(
 
 	return nil
 }
+
+// Publish publishes message to exchange with routing key.
+func (s *Session) Publish(exchange, key string, msg []byte) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if err := s.ch.Publish(
+		exchange, // exchange
+		key,      // routing key
+		false,    // mandatory
+		false,    // immediate
+		amqp.Publishing{
+			ContentType:  "application/json",
+			Body:         msg,
+			DeliveryMode: amqp.Transient,
+		},
+	); err != nil {
+		return fmt.Errorf("on Session.Publish: %v", err)
+	}
+
+	return nil
+}

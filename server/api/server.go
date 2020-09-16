@@ -22,6 +22,12 @@ var baseConfig = &mq.SessionConfig{
 		server.MGLogs: {
 			Name: server.MGLogs,
 			Type: "direct",
+			Queues: map[string]mq.QueueConfig{
+				server.API2log: {
+					Name:     server.API2log,
+					RouteKey: server.API2log,
+				},
+			},
 		},
 	},
 }
@@ -81,7 +87,7 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	console.Info("message from %q: %q", req.User, req.Message)
+	s.sendLog("message from %q: %q", req.User, req.Message)
 
 	// marshal response into byte slice
 	res := RestResponse{"Hello, Client!"}
@@ -94,4 +100,23 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 	// send response
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resBytes)
+}
+
+// sendLog sends structured log to RabbitMQ.
+func (s *Server) sendLog(format string, v ...interface{}) {
+	type logJSON struct {
+		Msg string `json:"message"`
+	}
+
+	log := logJSON{fmt.Sprintf(format, v...)}
+	ser, err := json.Marshal(log)
+	if err != nil {
+		console.Error("failed to Marshal: %v", err)
+		return
+	}
+
+	if err := s.mqss.Publish(server.MGLogs, server.API2log, ser); err != nil {
+		console.Error("failed to Publish: %v", err)
+		return
+	}
 }
