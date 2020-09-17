@@ -14,7 +14,7 @@ pipeline {
       }
 
       steps {
-          sh 'make api'
+          sh 'make server'
       }
     }
 

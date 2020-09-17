@@ -162,11 +162,11 @@ func (s *Session) reconnect() error {
 }
 
 // Consume registers handler for the queue with the exchange. The handler must
-// return bool if the handling success, as either Ack or Nack will be sent to
-// RabbitMQ depending on the bool result.
+// return true if the handling is successful. If it was unsuccessful, return
+// false with error.
 func (s *Session) Consume(
 	exchange, queue string,
-	handler func([]byte) bool,
+	handler func(*amqp.Delivery) (bool, error),
 ) error {
 	// find target exchange and queue
 	exCfg, ok := s.config.Exchanges[exchange]
@@ -210,15 +210,10 @@ func (s *Session) Consume(
 
 			case d := <-delivery:
 				// handle message from RabbitMQ
-				if handler(d.Body) {
-					if err := d.Ack(false); err != nil {
-						console.Error("failed Ack: %v", err)
-					}
-				} else {
-					if err := d.Nack(false, true); err != nil {
-						console.Error("failed Nack: %v", err)
-					}
+				if ok, err := handler(&d); !ok {
+					console.Warning("failed to handle delivery: %v", err)
 				}
+				d.Ack(false)
 			}
 		}
 	}()
@@ -227,7 +222,14 @@ func (s *Session) Consume(
 }
 
 // Publish publishes message to exchange with routing key.
-func (s *Session) Publish(exchange, key string, msg []byte) error {
+func (s *Session) Publish(exchange, key, sender string, msg []byte) error {
+	var header amqp.Table
+	if sender != "" {
+		header = amqp.Table{
+			server.Sender: sender,
+		}
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -237,6 +239,7 @@ func (s *Session) Publish(exchange, key string, msg []byte) error {
 		false,    // mandatory
 		false,    // immediate
 		amqp.Publishing{
+			Headers:      header,
 			ContentType:  "application/json",
 			Body:         msg,
 			DeliveryMode: amqp.Transient,

@@ -6,8 +6,8 @@ COPY go.mod go.mod
 COPY server server
 
 # Build api server binary
-RUN go build -o api_server server/cmd/mukgo-api/mukgo-api.go
+RUN go build -o log_server server/cmd/mukgo-log/mukgo-log.go
 
 EXPOSE 7777
 
-ENTRYPOINT [ "./api_server" ]
+ENTRYPOINT [ "./log_server" ]

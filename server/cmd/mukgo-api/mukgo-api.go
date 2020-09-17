@@ -8,21 +8,21 @@ import (
 )
 
 func main() {
-	// Handle flags
+	// handle flags
 	addr := flag.String("addr", ":7777", "<ip:port> to run service")
 	mqaddr := flag.String(
 		"mqaddr", "localhost:5672", "<ip:port> of RabbitMQ to connect")
 	flag.Parse()
 
-	// Create new api server
+	// create new api server
 	server, err := api.NewServer("server", "server", *mqaddr)
 	if err != nil {
-		console.Fatal("failed to create server: %v", err)
+		console.Fatal("failed to create api server: %v", err)
 	}
 
-	// Start service on port
+	// start service on port
 	console.Info("start listen on %q...", *addr)
 	if err := server.ListenAndServe(*addr); err != nil {
-		console.Fatal("failed listen: %v", err)
+		console.Fatal("failed to run api server: %v", err)
 	}
 }

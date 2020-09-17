@@ -23,9 +23,9 @@ var baseConfig = &mq.SessionConfig{
 			Name: server.MGLogs,
 			Type: "direct",
 			Queues: map[string]mq.QueueConfig{
-				server.API2log: {
-					Name:     server.API2log,
-					RouteKey: server.API2log,
+				server.Log: {
+					Name:     server.Log,
+					RouteKey: server.Log,
 				},
 			},
 		},
@@ -104,18 +104,22 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 
 // sendLog sends structured log to RabbitMQ.
 func (s *Server) sendLog(format string, v ...interface{}) {
-	type logJSON struct {
-		Msg string `json:"message"`
+	packet := server.PacketLog{
+		Msg: fmt.Sprintf(format, v...),
 	}
 
-	log := logJSON{fmt.Sprintf(format, v...)}
-	ser, err := json.Marshal(log)
+	ser, err := json.Marshal(packet)
 	if err != nil {
 		console.Error("failed to Marshal: %v", err)
 		return
 	}
 
-	if err := s.mqss.Publish(server.MGLogs, server.API2log, ser); err != nil {
+	if err := s.mqss.Publish(
+		server.MGLogs,
+		server.Log,
+		server.API,
+		ser,
+	); err != nil {
 		console.Error("failed to Publish: %v", err)
 		return
 	}

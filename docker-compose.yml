@@ -6,27 +6,40 @@ services:
       context: ./
       dockerfile: rabbitmq.Dockerfile
     networks:
-      - server_network
+      - mukgo_internal
     env_file: ./build_config/rabbitmq.env
     container_name: rabbitmq
     ports:
       - '5672:5672'
       - '15672:15672'
 
-  api-server:
+  api_server:
     build:
       context: ./
       dockerfile: api_server.Dockerfile
     networks:
-      - server_network
+      - mukgo_internal
     depends_on:
       - rabbitmq
+      - log_server
     restart: on-failure
-    container_name: api-server
+    container_name: api_server
     ports:
       - '7777:7777'
     command: ["-mqaddr", "rabbitmq:5672"]
 
+  log_server:
+    build:
+      context: ./
+      dockerfile: log_server.Dockerfile
+    networks:
+      - mukgo_internal
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    container_name: log_server
+    command: ["-mqaddr", "rabbitmq:5672"]
+
 networks:
-  server_network:
+  mukgo_internal:
     driver: bridge
