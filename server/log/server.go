@@ -3,6 +3,7 @@ package log
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/console"
@@ -42,7 +43,7 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 	mqSession := mq.NewSession("api", baseConfig)
 
 	// connection the session
-	if err := mqSession.Connect(); err != nil {
+	if err := mqSession.TryConnect(40, 3000*time.Millisecond); err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
 	server.mqss = mqSession

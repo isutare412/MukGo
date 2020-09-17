@@ -60,8 +60,28 @@ func GetSession(name string) *Session {
 	return sessionPool[name]
 }
 
-// Connect establishes connection, channel, exchange, queue of RabbitMQ.
-func (s *Session) Connect() error {
+// TryConnect tries Connect try times with given interval. Returns error if
+// still not connected even after trials.
+func (s *Session) TryConnect(try int, interval time.Duration) error {
+	for trial := 0; trial < try; trial++ {
+		if trial > 0 {
+			console.Error("try reconnect %d times...", trial)
+		}
+
+		err := s.connect()
+		if err == nil {
+			return nil
+		}
+		console.Error("failed to TryConnect: %v", err)
+
+		time.Sleep(interval)
+	}
+
+	return fmt.Errorf("failed to connect(%q)", s.config.Addr)
+}
+
+// connect establishes connection, channel, exchange, queue of RabbitMQ.
+func (s *Session) connect() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -131,34 +151,17 @@ func (s *Session) Connect() error {
 		}
 
 		// try reconnect
-		err := s.reconnect()
+		err := s.TryConnect(40, 3000*time.Millisecond)
 		if err != nil {
-			console.Fatal("%v", err)
+			console.Fatal("on reconver connection: %v", err)
 		}
+		console.Info("connection(%q) recovered", s.config.Addr)
 
 		// notify that the connection is reconstructed
 		s.connNotifier.Source <- struct{}{}
 	}()
 
 	return nil
-}
-
-func (s *Session) reconnect() error {
-	// try reconnect 30 times
-	for trial := 1; trial <= 30; trial++ {
-		console.Error("try reconnect %d times...", trial)
-
-		err := s.Connect()
-		if err == nil {
-			console.Info("connection(%q) recovered", s.config.Addr)
-			return nil
-		}
-
-		console.Error("failed to reconnect: %v", err)
-		time.Sleep(2 * time.Second)
-	}
-
-	return fmt.Errorf("failed to reconnect(%q)", s.config.Addr)
 }
 
 // Consume registers handler for the queue with the exchange. The handler must
