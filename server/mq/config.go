@@ -39,6 +39,9 @@ type QueueConfig struct {
 
 	// RouteKey defines rountingKey of queue.
 	RouteKey string
+
+	Durable    bool
+	AutoDelete bool
 }
 
 var (
@@ -47,13 +50,15 @@ var (
 		Password: "guest",
 		Addr:     "localhost:5672",
 		Exchanges: map[string]ExchangeConfig{
-			"": {
-				Name: "", // "amq.direct"
-				Type: "", // "direct"
+			"myexchange": {
+				Name: "myexchange",
+				Type: "direct",
 				Queues: map[string]QueueConfig{
 					"hello": {
-						Name:     "hello",
-						RouteKey: "hello",
+						Name:       "hello",
+						RouteKey:   "hello",
+						Durable:    true,
+						AutoDelete: false,
 					},
 				},
 			},

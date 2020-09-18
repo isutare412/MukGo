@@ -115,15 +115,15 @@ func (s *Session) connect() error {
 		}
 
 		// create queues if not exists
-		for _, queue := range exchange.Queues {
+		for _, qcfg := range exchange.Queues {
 			// declare queue
-			declared, err := s.ch.QueueDeclare(
-				queue.Name, // name
-				true,       // durable
-				false,      // autoDelete
-				false,      // exclusive
-				false,      // noWait
-				nil,        // arguments
+			queue, err := s.ch.QueueDeclare(
+				qcfg.Name,       // name
+				qcfg.Durable,    // durable
+				qcfg.AutoDelete, // autoDelete
+				false,           // exclusive
+				false,           // noWait
+				nil,             // arguments
 			)
 			if err != nil {
 				return fmt.Errorf("on Session.Connect: %v", err)
@@ -131,17 +131,17 @@ func (s *Session) connect() error {
 
 			// bind the queue to the exchange
 			if err := s.ch.QueueBind(
-				declared.Name,  // name
-				queue.RouteKey, // key
-				exchange.Name,  // exchange
-				false,          // noWait
-				nil,            // arguments
+				queue.Name,    // name
+				qcfg.RouteKey, // key
+				exchange.Name, // exchange
+				false,         // noWait
+				nil,           // arguments
 			); err != nil {
 				return fmt.Errorf("on Session.Connect: %v", err)
 			}
 
 			// save queue name created by RabbitMQ
-			queue.realName = declared.Name
+			qcfg.realName = queue.Name
 		}
 	}
 
@@ -176,11 +176,11 @@ func (s *Session) Consume(
 	handler func(*amqp.Delivery) (bool, error),
 ) error {
 	// find target exchange and queue
-	exCfg, ok := s.config.Exchanges[exchange]
+	excfg, ok := s.config.Exchanges[exchange]
 	if !ok {
 		return fmt.Errorf("undefined exchange(%q)", exchange)
 	}
-	qCfg, ok := exCfg.Queues[queue]
+	qcfg, ok := excfg.Queues[queue]
 	if !ok {
 		return fmt.Errorf("undefined queue(%q)", queue)
 	}
@@ -188,7 +188,7 @@ func (s *Session) Consume(
 	// open delivery channel from queue
 	s.mu.Lock()
 	delivery, err := s.ch.Consume(
-		qCfg.realName, // queue
+		qcfg.realName, // queue
 		"",            // consumer
 		false,         // autoAck
 		false,         // exclusive

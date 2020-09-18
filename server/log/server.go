@@ -27,7 +27,9 @@ var baseConfig = &mq.SessionConfig{
 			Type: "fanout",
 			Queues: map[string]mq.QueueConfig{
 				server.Log: {
-					Name: "", // will use generated name
+					Name:       "", // will use generated name
+					Durable:    false,
+					AutoDelete: true,
 				},
 			},
 		},
