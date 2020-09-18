@@ -12,8 +12,8 @@ Game-like restaurant review service.
 - Follow git commit [convention](https://djkeh.github.io/articles/How-to-write-a-git-commit-message-kor/).
 - `git merge` is allowed only for branch merging. Use `git rebase` for
   common use.
-  + `git merge` → `git rebase`
-  + `git pull` → `git fetch && git rebase`
+  - `git merge` → `git rebase`
+  - `git pull` → `git fetch && git rebase`
 
 # How to run
 
@@ -33,3 +33,7 @@ Game-like restaurant review service.
   # Stop background services
   docker-compose down
   ```
+
+## client
+
+- Follow [Flutter VScode guide](https://flutter.dev/docs/get-started/test-drive?tab=vscode)
