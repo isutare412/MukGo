@@ -22,13 +22,7 @@ var baseConfig = &mq.SessionConfig{
 	Exchanges: map[string]mq.ExchangeConfig{
 		server.MGLogs: {
 			Name: server.MGLogs,
-			Type: "direct",
-			Queues: map[string]mq.QueueConfig{
-				server.Log: {
-					Name:     server.Log,
-					RouteKey: server.Log,
-				},
-			},
+			Type: "fanout",
 		},
 	},
 }
@@ -118,7 +112,7 @@ func (s *Server) sendLog(format string, v ...interface{}) {
 
 	if err := s.mqss.Publish(
 		server.MGLogs,
-		server.Log,
+		"",
 		server.API,
 		ser,
 	); err != nil {

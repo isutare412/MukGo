@@ -24,11 +24,10 @@ var baseConfig = &mq.SessionConfig{
 	Exchanges: map[string]mq.ExchangeConfig{
 		server.MGLogs: {
 			Name: server.MGLogs,
-			Type: "direct",
+			Type: "fanout",
 			Queues: map[string]mq.QueueConfig{
 				server.Log: {
-					Name:     server.Log,
-					RouteKey: server.Log,
+					Name: "", // will use generated name
 				},
 			},
 		},

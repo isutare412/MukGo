@@ -117,20 +117,21 @@ func (s *Session) connect() error {
 		// create queues if not exists
 		for _, queue := range exchange.Queues {
 			// declare queue
-			if _, err := s.ch.QueueDeclare(
+			declared, err := s.ch.QueueDeclare(
 				queue.Name, // name
 				true,       // durable
 				false,      // autoDelete
 				false,      // exclusive
 				false,      // noWait
 				nil,        // arguments
-			); err != nil {
+			)
+			if err != nil {
 				return fmt.Errorf("on Session.Connect: %v", err)
 			}
 
 			// bind the queue to the exchange
 			if err := s.ch.QueueBind(
-				queue.Name,     // name
+				declared.Name,  // name
 				queue.RouteKey, // key
 				exchange.Name,  // exchange
 				false,          // noWait
@@ -138,6 +139,9 @@ func (s *Session) connect() error {
 			); err != nil {
 				return fmt.Errorf("on Session.Connect: %v", err)
 			}
+
+			// save queue name created by RabbitMQ
+			queue.realName = declared.Name
 		}
 	}
 
@@ -184,13 +188,13 @@ func (s *Session) Consume(
 	// open delivery channel from queue
 	s.mu.Lock()
 	delivery, err := s.ch.Consume(
-		qCfg.Name, // queue
-		"",        // consumer
-		false,     // autoAck
-		false,     // exclusive
-		false,     // noLocal
-		false,     // noWait
-		nil,       // arguments
+		qCfg.realName, // queue
+		"",            // consumer
+		false,         // autoAck
+		false,         // exclusive
+		false,         // noLocal
+		false,         // noWait
+		nil,           // arguments
 	)
 	if err != nil {
 		s.mu.Unlock()
