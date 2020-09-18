@@ -34,6 +34,6 @@ Game-like restaurant review service.
   docker-compose down
   ```
 
-## client
+## Client
 
 - Follow [Flutter VScode guide](https://flutter.dev/docs/get-started/test-drive?tab=vscode)
