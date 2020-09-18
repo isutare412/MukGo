@@ -13,6 +13,11 @@ func Info(format string, v ...interface{}) {
 	gLogger.Printf(fmt.Sprintf("[INFO] %s", format), v...)
 }
 
+// InfoTag leaves log by log level with custom tag.
+func InfoTag(tag string, format string, v ...interface{}) {
+	gLogger.Printf(fmt.Sprintf("[%s] %s", tag, format), v...)
+}
+
 // Warning leaves log by log level.
 func Warning(format string, v ...interface{}) {
 	gLogger.Printf(fmt.Sprintf("[WARNING] %s", format), v...)

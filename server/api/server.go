@@ -106,7 +106,8 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 // sendLog sends structured log to RabbitMQ.
 func (s *Server) sendLog(format string, v ...interface{}) {
 	packet := server.PacketLog{
-		Msg: fmt.Sprintf(format, v...),
+		Timestamp: time.Now(),
+		Msg:       fmt.Sprintf(format, v...),
 	}
 
 	ser, err := json.Marshal(packet)

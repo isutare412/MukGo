@@ -12,6 +12,8 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+    environment:
+      - TZ=Asia/Seoul
 
   api_server:
     build:
@@ -21,11 +23,12 @@ services:
       - mukgo_internal
     depends_on:
       - rabbitmq
-      - log_server
-    restart: on-failure
     container_name: api_server
+    restart: on-failure
     ports:
       - '7777:7777'
+    environment:
+      - TZ=Asia/Seoul
     command: ["-mqaddr", "rabbitmq:5672"]
 
   log_server:
@@ -36,8 +39,10 @@ services:
       - mukgo_internal
     depends_on:
       - rabbitmq
-    restart: on-failure
     container_name: log_server
+    restart: on-failure
+    environment:
+      - TZ=Asia/Seoul
     command: ["-mqaddr", "rabbitmq:5672"]
 
 networks:

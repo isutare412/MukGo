@@ -1,5 +1,13 @@
 package server
 
+import "time"
+
+// PacketLog defines struct for log message among servers.
+type PacketLog struct {
+	Timestamp time.Time `json:"timestamp"`
+	Msg       string    `json:"message"`
+}
+
 // RabbitMQ exchange names.
 const (
 	// MGLogs defines exchange name to log server.
@@ -20,8 +28,3 @@ const (
 const (
 	API string = "api"
 )
-
-// PacketLog defines struct for log message among servers.
-type PacketLog struct {
-	Msg string `json:"message"`
-}
