@@ -3,6 +3,7 @@ FROM golang:1.15.2
 WORKDIR /workspace
 
 COPY go.mod go.mod
+COPY go.sum go.sum
 COPY server server
 
 # Build api server binary

@@ -1,20 +1,25 @@
 BIN := bin
 API_SERVER_NAME ?= mukgo_api
+DB_SERVER_NAME ?= mukgo_db
 LOG_SERVER_NAME ?= mukgo_log
 
 .DEFAULT_GOAL := help
-.PHONY: help api log clean
+.PHONY: help api db log clean
 
-server: api log ## Build all server
+server: api db log ## Build all server
 
 api: ## Build api server
 	go build -o $(BIN)/$(API_SERVER_NAME) ./server/cmd/mukgo-api
+
+db: ## Build db server
+	go build -o $(BIN)/$(DB_SERVER_NAME) ./server/cmd/mukgo-db
 
 log: ## Build log server
 	go build -o $(BIN)/$(LOG_SERVER_NAME) ./server/cmd/mukgo-log
 
 clean: ## Clean binaries
 	rm -f $(BIN)/$(API_SERVER_NAME)
+	rm -f $(BIN)/$(DB_SERVER_NAME)
 	rm -f $(BIN)/$(LOG_SERVER_NAME)
 
 help:

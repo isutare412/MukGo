@@ -1,0 +1,11 @@
+RabbitMQ:
+  user: server
+  password: server
+  ip: localhost
+  port: 5672
+
+MongoDB:
+  user: mukgo
+  password: mukgo
+  ip: localhost
+  port: 27017

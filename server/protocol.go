@@ -12,11 +12,16 @@ type PacketLog struct {
 const (
 	// MGLogs defines exchange name to log server.
 	MGLogs string = "mglogs"
+
+	// MGDB defines exchange between api server and db server.
+	MGDB string = "mgdb"
 )
 
 // RabbitMQ queue names.
 const (
-	Log string = "log"
+	Log     string = "log"
+	APIToDB string = "api2db"
+	DBToAPI string = "db2api"
 )
 
 // Keys used in amqp.Table.
