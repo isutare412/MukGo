@@ -3,9 +3,3 @@ RabbitMQ:
   password: server
   ip: rabbitmq
   port: 5672
-
-MongoDB:
-  user: mukgo
-  password: mukgo
-  ip: localhost
-  port: 27017

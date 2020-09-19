@@ -1,20 +1,34 @@
 package main
 
 import (
-	"flag"
+	"io/ioutil"
+	"os"
 
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/log"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
-	// handle flags
-	mqaddr := flag.String(
-		"mqaddr", "localhost:5672", "<ip:port> of RabbitMQ to connect")
-	flag.Parse()
+	if len(os.Args) < 2 {
+		console.Fatal("need yaml file for configuration")
+	}
 
-	// create new api server
-	server, err := log.NewServer("server", "server", *mqaddr)
+	// read settings from yaml file
+	fileName := os.Args[1]
+	fileBody, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		console.Fatal("cannot open file: %q", fileName)
+	}
+
+	// parse yaml file
+	var cfg log.ServerConfig
+	if err := yaml.Unmarshal(fileBody, &cfg); err != nil {
+		console.Fatal("failed to parse file: %q", fileName)
+	}
+
+	// create new log server
+	server, err := log.NewServer(&cfg)
 	if err != nil {
 		console.Fatal("failed to create log server: %v", err)
 	}

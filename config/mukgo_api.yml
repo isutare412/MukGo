@@ -4,8 +4,6 @@ RabbitMQ:
   ip: rabbitmq
   port: 5672
 
-MongoDB:
-  user: mukgo
-  password: mukgo
-  ip: localhost
-  port: 27017
+RestAPI:
+  ip: '' # empty value
+  port: 7777

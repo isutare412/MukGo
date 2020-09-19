@@ -37,7 +37,7 @@ var baseConfig = &mq.SessionConfig{
 }
 
 // NewServer creates log server struct safely.
-func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
+func NewServer(cfg *ServerConfig) (*Server, error) {
 	var server = &Server{
 		loggers: map[string]*logger{
 			server.API: {
@@ -49,8 +49,9 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 	}
 
 	// establish rabbitmq session
-	baseConfig.User = mqid
-	baseConfig.Password = mqpw
+	mqaddr := fmt.Sprintf("%s:%d", cfg.RabbitMQ.IP, cfg.RabbitMQ.Port)
+	baseConfig.User = cfg.RabbitMQ.User
+	baseConfig.Password = cfg.RabbitMQ.Password
 	baseConfig.Addr = mqaddr
 	mqSession := mq.NewSession("api", baseConfig)
 

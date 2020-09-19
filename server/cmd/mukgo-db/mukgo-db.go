@@ -15,15 +15,16 @@ func main() {
 	}
 
 	// read settings from yaml file
-	fileBody, err := ioutil.ReadFile(os.Args[1])
+	fileName := os.Args[1]
+	fileBody, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		console.Fatal("cannot open file: %q", os.Args[1])
+		console.Fatal("cannot open file: %q", fileName)
 	}
 
 	// parse yaml file
 	var cfg db.ServerConfig
 	if err := yaml.Unmarshal(fileBody, &cfg); err != nil {
-		console.Fatal("failed to parse file: %q", os.Args[1])
+		console.Fatal("failed to parse file: %q", fileName)
 	}
 
 	// create new database server

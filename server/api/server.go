@@ -28,7 +28,7 @@ var baseConfig = &mq.SessionConfig{
 }
 
 // NewServer creates Server struct safely.
-func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
+func NewServer(cfg *ServerConfig) (*Server, error) {
 	var server = &Server{
 		mux: http.NewServeMux(),
 	}
@@ -38,8 +38,9 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 	console.Info("registered handlers")
 
 	// establish rabbitmq session
-	baseConfig.User = mqid
-	baseConfig.Password = mqpw
+	mqaddr := fmt.Sprintf("%s:%d", cfg.RabbitMQ.IP, cfg.RabbitMQ.Port)
+	baseConfig.User = cfg.RabbitMQ.User
+	baseConfig.Password = cfg.RabbitMQ.Password
 	baseConfig.Addr = mqaddr
 	mqSession := mq.NewSession("api", baseConfig)
 
@@ -48,7 +49,6 @@ func NewServer(mqid, mqpw, mqaddr string) (*Server, error) {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
 	server.mqss = mqSession
-
 	console.Info("session(%q) established between RabbitMQ", mqaddr)
 
 	return server, nil
