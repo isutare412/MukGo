@@ -30,6 +30,8 @@ services:
       - '7777:7777'
     environment:
       - TZ=Asia/Seoul
+    volumes:
+      - ./config/default/mukgo_api.yml:/config/mukgo_api.yml:ro
 
   log_server:
     container_name: log_server
@@ -43,6 +45,8 @@ services:
     restart: on-failure
     environment:
       - TZ=Asia/Seoul
+    volumes:
+      - ./config/default/mukgo_log.yml:/config/mukgo_log.yml:ro
 
 
 networks:

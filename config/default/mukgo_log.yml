@@ -1,5 +1,5 @@
 RabbitMQ:
   user: server
   password: server
-  ip: localhost
+  ip: rabbitmq
   port: 5672

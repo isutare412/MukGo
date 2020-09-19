@@ -1,11 +1,11 @@
 RabbitMQ:
   user: server
   password: server
-  ip: localhost
+  ip: rabbitmq
   port: 5672
 
 MongoDB:
   user: mukgo
   password: mukgo
-  ip: localhost
+  ip: mongo
   port: 27017
