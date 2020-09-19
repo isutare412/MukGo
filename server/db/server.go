@@ -67,10 +67,10 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	// build option for MongoDB
 	uri := fmt.Sprintf(
 		"mongodb://%s:%s@%s:%d",
-		cfg.RabbitMQ.User,
-		cfg.RabbitMQ.Password,
-		cfg.RabbitMQ.IP,
-		cfg.RabbitMQ.Port,
+		cfg.MongoDB.User,
+		cfg.MongoDB.Password,
+		cfg.MongoDB.IP,
+		cfg.MongoDB.Port,
 	)
 	option := options.Client().ApplyURI(uri)
 
