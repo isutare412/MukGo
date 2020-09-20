@@ -103,14 +103,9 @@ func (s *Server) Run() error {
 }
 
 func (s *Server) handleLog(d *amqp.Delivery) (bool, error) {
-	header := d.Headers
-	if header == nil {
-		return false, fmt.Errorf("header does not exists in delievery")
-	}
-
-	sender, ok := header[server.Sender].(string)
-	if !ok {
-		return false, fmt.Errorf("invalid sender")
+	sender, _, err := mq.ParseHeader(d.Headers)
+	if err != nil {
+		return false, fmt.Errorf("on handleLog: %v", err)
 	}
 
 	var packet server.PacketLog

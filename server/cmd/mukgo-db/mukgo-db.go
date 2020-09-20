@@ -30,10 +30,12 @@ func main() {
 	// create new database server
 	server, err := db.NewServer(&cfg)
 	if err != nil {
-		console.Fatal("failed to create log server: %v", err)
+		console.Fatal("failed to create database server: %v", err)
 	}
 
 	// start database service
-	console.Info("start service...")
-	server.TestQuery()
+	console.Info("start database service...")
+	if err := server.Run(); err != nil {
+		console.Fatal("failed to run database server: %v", err)
+	}
 }

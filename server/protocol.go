@@ -25,4 +25,5 @@ const (
 // Possible senders of amqp.Table.
 const (
 	API string = "api"
+	DB  string = "db"
 )

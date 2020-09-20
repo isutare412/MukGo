@@ -186,16 +186,22 @@ func (s *Session) Consume(
 		return fmt.Errorf("undefined queue(%q)", queue)
 	}
 
+	// use generated name for anonymous queue
+	qname := qcfg.Name
+	if qname == "" {
+		qname = qcfg.realName
+	}
+
 	// open delivery channel from queue
 	s.mu.Lock()
 	delivery, err := s.ch.Consume(
-		qcfg.realName, // queue
-		"",            // consumer
-		false,         // autoAck
-		false,         // exclusive
-		false,         // noLocal
-		false,         // noWait
-		nil,           // arguments
+		qname, // queue
+		"",    // consumer
+		false, // autoAck
+		false, // exclusive
+		false, // noLocal
+		false, // noWait
+		nil,   // arguments
 	)
 	if err != nil {
 		s.mu.Unlock()
@@ -231,10 +237,20 @@ func (s *Session) Consume(
 
 // Publish sends message to exchange with routing key.
 func (s *Session) Publish(
-	exchange, key, sender string,
-	packet server.Packet,
+	exchange, key, sender string, packet server.Packet,
 ) error {
 	pub, err := newPublishing(packet, sender, "", "")
+	if err != nil {
+		return fmt.Errorf("on Session.Publish: %v", err)
+	}
+	return s.publish(exchange, key, pub)
+}
+
+// Reply sends reply message RPC request.
+func (s *Session) Reply(
+	exchange, key, sender, correlationID string, packet server.Packet,
+) error {
+	pub, err := newPublishing(packet, sender, "", correlationID)
 	if err != nil {
 		return fmt.Errorf("on Session.Publish: %v", err)
 	}
@@ -244,8 +260,7 @@ func (s *Session) Publish(
 // RPC publishes message with reply request. It is used for Remote Procedure
 // Call.
 func (s *Session) RPC(
-	exchange, key, sender string,
-	replyQueue, correlationID string,
+	exchange, key, sender, replyQueue, correlationID string,
 	packet server.Packet,
 ) error {
 	pub, err := newPublishing(packet, sender, replyQueue, correlationID)
@@ -263,7 +278,7 @@ func newPublishing(
 ) (*amqp.Publishing, error) {
 	// build header
 	var header = amqp.Table{
-		server.MsgType: int(packet.Type()),
+		server.MsgType: int32(packet.Type()),
 	}
 	if sender != "" {
 		header[server.Sender] = sender
@@ -277,16 +292,12 @@ func newPublishing(
 
 	// build publishing
 	pub := &amqp.Publishing{
-		Headers:      header,
-		ContentType:  "application/json",
-		Body:         msg,
-		DeliveryMode: amqp.Transient,
-	}
-
-	// RPC settings
-	if replyQueue != "" {
-		pub.ReplyTo = replyQueue
-		pub.CorrelationId = corrID
+		Headers:       header,
+		ContentType:   "application/json",
+		Body:          msg,
+		DeliveryMode:  amqp.Transient,
+		ReplyTo:       replyQueue,
+		CorrelationId: corrID,
 	}
 
 	return pub, nil

@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// start log service
-	console.Info("start service...")
+	console.Info("start log service...")
 	if err := server.Run(); err != nil {
 		console.Fatal("failed to run log server: %v", err)
 	}

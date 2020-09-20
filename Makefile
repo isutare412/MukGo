@@ -1,4 +1,5 @@
 BIN := bin
+LOGDIR := logs
 API_SERVER_NAME ?= mukgo_api
 DB_SERVER_NAME ?= mukgo_db
 LOG_SERVER_NAME ?= mukgo_log
@@ -21,6 +22,7 @@ clean: ## Clean binaries
 	rm -f $(BIN)/$(API_SERVER_NAME)
 	rm -f $(BIN)/$(DB_SERVER_NAME)
 	rm -f $(BIN)/$(LOG_SERVER_NAME)
+	rm -rf $(LOGDIR)
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
