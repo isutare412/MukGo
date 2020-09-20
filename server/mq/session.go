@@ -214,21 +214,22 @@ func (s *Session) Consume(
 
 	go func() {
 		for {
-			select {
-			case <-reconn:
+			d, ok := <-delivery
+			if !ok { // delievery channel closed
 				// restart Consume after reconnect
+				<-reconn
 				s.connNotifier.RemoveSubscriber(reconn)
 				if err := s.Consume(exchange, queue, handler); err != nil {
 					console.Fatal("failed in Consume: %v", err)
 				}
-
-			case d := <-delivery:
-				// handle message from RabbitMQ
-				if ok, err := handler(&d); !ok {
-					console.Warning("failed to handle delivery: %v", err)
-				}
-				d.Ack(false)
+				return
 			}
+
+			// handle message from RabbitMQ
+			if ok, err := handler(&d); !ok {
+				console.Warning("failed to handle delivery: %v", err)
+			}
+			d.Ack(false)
 		}
 	}()
 
