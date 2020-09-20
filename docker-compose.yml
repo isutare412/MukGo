@@ -48,7 +48,36 @@ services:
     volumes:
       - ./config/default/mukgo_log.yml:/config/mukgo_log.yml:ro
 
+  mongo:
+    container_name: mongo
+    image: mongo:4.4.1-bionic
+    networks:
+      - mukgo_internal
+    restart: on-failure
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mukgo
+      - MONGO_INITDB_ROOT_PASSWORD=mukgo
+    volumes:
+      - mongo_data:/data/db
+
+  mongo_express:
+   container_name: mongo_express
+   image: mongo-express:0.54
+   networks:
+    - mukgo_internal
+   restart: on-failure
+   ports:
+    - 8081:8081
+   environment:
+    - ME_CONFIG_MONGODB_ADMINUSERNAME=mukgo
+    - ME_CONFIG_MONGODB_ADMINPASSWORD=mukgo
 
 networks:
   mukgo_internal:
     driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
