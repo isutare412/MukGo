@@ -33,6 +33,22 @@ services:
     volumes:
       - ./config/default/mukgo_api.yml:/config/mukgo_api.yml:ro
 
+  db_server:
+    container_name: db_server
+    build:
+      context: ./
+      dockerfile: db_server.Dockerfile
+    networks:
+      - mukgo_internal
+    depends_on:
+      - rabbitmq
+      - mongo
+    restart: on-failure
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./config/default/mukgo_db.yml:/config/mukgo_db.yml:ro
+
   log_server:
     container_name: log_server
     build:
