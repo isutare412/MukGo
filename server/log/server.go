@@ -110,7 +110,7 @@ func (s *Server) handleLog(d *amqp.Delivery) (bool, error) {
 
 	sender, ok := header[server.Sender].(string)
 	if !ok {
-		return false, fmt.Errorf("sender does not exists in header")
+		return false, fmt.Errorf("invalid sender")
 	}
 
 	var packet server.PacketLog

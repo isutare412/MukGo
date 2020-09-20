@@ -17,6 +17,7 @@ import (
 type Server struct {
 	mqss *mq.Session
 
+	db     *mongo.Database
 	dbconn *mongo.Client
 	dbctx  context.Context
 }
@@ -27,15 +28,15 @@ var baseConfig = &mq.SessionConfig{
 			Name: server.MGDB,
 			Type: "direct",
 			Queues: map[string]mq.QueueConfig{
-				server.APIToDB: {
-					Name:       server.APIToDB,
-					RouteKey:   server.APIToDB,
+				server.API2DB: {
+					Name:       server.API2DB,
+					RouteKey:   server.API2DB,
 					Durable:    true,
 					AutoDelete: false,
 				},
-				server.DBToAPI: {
-					Name:       server.DBToAPI,
-					RouteKey:   server.DBToAPI,
+				server.DB2API: {
+					Name:       server.DB2API,
+					RouteKey:   server.DB2API,
 					Durable:    true,
 					AutoDelete: false,
 				},
@@ -88,5 +89,16 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	server.dbconn = client
 	console.Info("MongoDB connection established")
 
+	// select database to use
+	server.db = client.Database("mukgo")
+
 	return server, nil
+}
+
+func (s *Server) TestQuery() {
+	collection := s.db.Collection("trainers")
+	collection.InsertOne(s.dbctx, struct {
+		Name string
+		Age  int
+	}{"Redshore", 18})
 }

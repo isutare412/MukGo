@@ -28,11 +28,12 @@ func main() {
 	}
 
 	// create new database server
-	_, err = db.NewServer(&cfg)
+	server, err := db.NewServer(&cfg)
 	if err != nil {
 		console.Fatal("failed to create log server: %v", err)
 	}
 
 	// start database service
 	console.Info("start service...")
+	server.TestQuery()
 }

@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -228,15 +229,70 @@ func (s *Session) Consume(
 	return nil
 }
 
-// Publish publishes message to exchange with routing key.
-func (s *Session) Publish(exchange, key, sender string, msg []byte) error {
-	var header amqp.Table
+// Publish sends message to exchange with routing key.
+func (s *Session) Publish(
+	exchange, key, sender string,
+	packet server.Packet,
+) error {
+	pub, err := newPublishing(packet, sender, "", "")
+	if err != nil {
+		return fmt.Errorf("on Session.Publish: %v", err)
+	}
+	return s.publish(exchange, key, pub)
+}
+
+// RPC publishes message with reply request. It is used for Remote Procedure
+// Call.
+func (s *Session) RPC(
+	exchange, key, sender string,
+	replyQueue, correlationID string,
+	packet server.Packet,
+) error {
+	pub, err := newPublishing(packet, sender, replyQueue, correlationID)
+	if err != nil {
+		return fmt.Errorf("on Session.RPC: %v", err)
+	}
+	return s.publish(exchange, key, pub)
+}
+
+func newPublishing(
+	packet server.Packet,
+	sender string,
+	replyQueue string,
+	corrID string,
+) (*amqp.Publishing, error) {
+	// build header
+	var header = amqp.Table{
+		server.MsgType: int(packet.Type()),
+	}
 	if sender != "" {
-		header = amqp.Table{
-			server.Sender: sender,
-		}
+		header[server.Sender] = sender
 	}
 
+	// serialize packet
+	msg, err := json.Marshal(packet)
+	if err != nil {
+		return nil, fmt.Errorf("on newPublishing: %v", err)
+	}
+
+	// build publishing
+	pub := &amqp.Publishing{
+		Headers:      header,
+		ContentType:  "application/json",
+		Body:         msg,
+		DeliveryMode: amqp.Transient,
+	}
+
+	// RPC settings
+	if replyQueue != "" {
+		pub.ReplyTo = replyQueue
+		pub.CorrelationId = corrID
+	}
+
+	return pub, nil
+}
+
+func (s *Session) publish(exchange, key string, p *amqp.Publishing) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -245,14 +301,9 @@ func (s *Session) Publish(exchange, key, sender string, msg []byte) error {
 		key,      // routing key
 		false,    // mandatory
 		false,    // immediate
-		amqp.Publishing{
-			Headers:      header,
-			ContentType:  "application/json",
-			Body:         msg,
-			DeliveryMode: amqp.Transient,
-		},
+		*p,       // publishing
 	); err != nil {
-		return fmt.Errorf("on Session.Publish: %v", err)
+		return fmt.Errorf("on Session.publish: %v", err)
 	}
 
 	return nil

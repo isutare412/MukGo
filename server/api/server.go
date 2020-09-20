@@ -9,6 +9,7 @@ import (
 	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
+	"github.com/streadway/amqp"
 )
 
 // Server runs as API server for MukGo service. Server should be created with
@@ -16,6 +17,8 @@ import (
 type Server struct {
 	mux  *http.ServeMux
 	mqss *mq.Session
+
+	handles *server.HandleMap
 }
 
 var baseConfig = &mq.SessionConfig{
@@ -24,17 +27,35 @@ var baseConfig = &mq.SessionConfig{
 			Name: server.MGLogs,
 			Type: "fanout",
 		},
+		server.MGDB: {
+			Name: server.MGDB,
+			Type: "direct",
+			Queues: map[string]mq.QueueConfig{
+				server.API2DB: {
+					Name:       server.API2DB,
+					RouteKey:   server.API2DB,
+					Durable:    true,
+					AutoDelete: false,
+				},
+				server.DB2API: {
+					Name:       server.DB2API,
+					RouteKey:   server.DB2API,
+					Durable:    true,
+					AutoDelete: false,
+				},
+			},
+		},
 	},
 }
 
 // NewServer creates Server struct safely.
 func NewServer(cfg *ServerConfig) (*Server, error) {
-	var server = &Server{
+	var s = &Server{
 		mux: http.NewServeMux(),
 	}
 
 	// register api handlers
-	server.registerHandlers()
+	s.registerHandlers()
 	console.Info("registered handlers")
 
 	// establish rabbitmq session
@@ -44,14 +65,63 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	baseConfig.Addr = mqaddr
 	mqSession := mq.NewSession("api", baseConfig)
 
-	// connection the session
+	// connecte the session
 	if err := mqSession.TryConnect(40, 3000*time.Millisecond); err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
-	server.mqss = mqSession
+	s.mqss = mqSession
 	console.Info("session(%q) established between RabbitMQ", mqaddr)
 
-	return server, nil
+	// create ResponseMux
+	s.handles = server.NewHandleMap()
+
+	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse)
+	if err != nil {
+		return nil, fmt.Errorf("on NewServer: %v", err)
+	}
+
+	return s, nil
+}
+
+func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
+	header := d.Headers
+	if header == nil {
+		return false, fmt.Errorf("header does not exists in delievery")
+	}
+	msgType, ok := header[server.MsgType].(int)
+	if !ok {
+		return false, fmt.Errorf("invalid message type")
+	}
+
+	// retrieve handler
+	handler := s.handles.Pop(d.CorrelationId)
+	if handler == nil {
+		return true, nil // handler dropped by timeout
+	}
+
+	var packet server.Packet
+	var parseErr error
+
+	// parse packet
+	switch server.PacketType(msgType) {
+	case server.PTAck:
+		var p server.PacketAck
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+	default:
+		parseErr = fmt.Errorf("no parser for %d", msgType)
+	}
+
+	// on packet parsing failed
+	if parseErr != nil {
+		go handler(false, nil)
+		return false, fmt.Errorf("onDBResponse: %v", parseErr)
+	}
+
+	// call handler
+	go handler(true, packet)
+
+	return true, nil
 }
 
 // ListenAndServe starts Server. If addr is blank, ":http" is used, which
@@ -72,6 +142,34 @@ func (s *Server) ListenAndServe(addr string) error {
 
 func (s *Server) registerHandlers() {
 	s.mux.HandleFunc("/devel", s.handlerDevel)
+	s.mux.HandleFunc("/review", s.handlerReview)
+}
+
+func (s *Server) handlerReview(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		packet := server.PacketReview{}
+		wait := make(chan struct{})
+
+		s.send2DB(
+			&packet,
+			func(success bool, p server.Packet) {
+				defer func() {
+					wait <- struct{}{}
+				}()
+
+				if !success {
+					console.Info("timeout!")
+					http.Error(w, "", http.StatusInternalServerError)
+					return
+				}
+
+				console.Info("received ACK!")
+			},
+		)
+
+		<-wait
+	}
 }
 
 func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
@@ -97,26 +195,56 @@ func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
 	w.Write(resBytes)
 }
 
-// sendLog sends structured log to RabbitMQ.
 func (s *Server) sendLog(format string, v ...interface{}) {
 	packet := server.PacketLog{
 		Timestamp: time.Now(),
 		Msg:       fmt.Sprintf(format, v...),
 	}
 
-	ser, err := json.Marshal(packet)
-	if err != nil {
-		console.Error("failed to Marshal: %v", err)
-		return
-	}
-
 	if err := s.mqss.Publish(
 		server.MGLogs,
 		"",
 		server.API,
-		ser,
+		&packet,
 	); err != nil {
-		console.Error("failed to Publish: %v", err)
+		console.Error("failed to publish log: %v", err)
 		return
 	}
+}
+
+func (s *Server) send2DB(
+	p server.Packet,
+	response func(bool, server.Packet),
+) error {
+	// register response handler
+	correlationID := <-s.handles.IDGet
+	if err := s.handles.Register(correlationID, response); err != nil {
+		return fmt.Errorf("on send2DB: %v", err)
+	}
+
+	// request RPC
+	if err := s.mqss.RPC(
+		server.MGDB,
+		server.API2DB,
+		server.API,
+		server.DB2API,
+		correlationID,
+		p,
+	); err != nil {
+		s.handles.Pop(correlationID)
+		return fmt.Errorf("on send2DB: %v", err)
+	}
+
+	// set response handler timeout
+	go func(corrID string) {
+		<-time.After(3 * time.Second)
+
+		handler := s.handles.Pop(corrID)
+		if handler == nil {
+			return
+		}
+		handler(false, nil)
+	}(correlationID)
+
+	return nil
 }
