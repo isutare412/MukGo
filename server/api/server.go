@@ -104,6 +104,12 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		var p server.PacketAck
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
+
+	case server.PTError:
+		var p server.PacketError
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
 	default:
 		parseErr = fmt.Errorf("no parser for %d", int(packetType))
 	}
@@ -137,46 +143,50 @@ func (s *Server) ListenAndServe(addr string) error {
 }
 
 func (s *Server) registerHandlers() {
-	s.mux.HandleFunc("/devel", s.handlerDevel)
-	s.mux.HandleFunc("/review", s.handlerReview)
+	s.mux.HandleFunc("/user", s.handleUser)
+	s.mux.HandleFunc("/review", s.handleReview)
 }
 
-func (s *Server) handlerReview(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
+		wait := make(chan struct{})
+
 		// parse request from client
-		var review JSONReview
-		if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
-			console.Warning("on handlerReview: failed to decode request")
-			w.WriteHeader(http.StatusBadRequest)
+		var userReq JSONUserAdd
+		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+			console.Warning("on handlerUser: failed to decode request")
+			httpError(w, http.StatusBadRequest)
 			return
 		}
 
 		// create packet for database server
-		var dbReq = server.PacketReview{
-			UserID:  review.UserID,
-			Score:   review.Score,
-			Comment: review.Comment,
+		var dbReq = server.PacketUserAdd{
+			UserID: userReq.UserID,
+			Name:   userReq.Name,
 		}
 
 		response := func(success bool, p server.Packet) {
+			defer func() {
+				wait <- struct{}{}
+			}()
+
 			// failed to receive packet from database server
 			if !success {
-				console.Warning("on handlerReview: no packet received")
-				http.Error(w, "", http.StatusInternalServerError)
-				w.WriteHeader(http.StatusInternalServerError)
+				console.Warning("on handlerUser: no packet received")
+				httpError(w, http.StatusInternalServerError)
 				return
 			}
 
 			// check packet by type casting from interface
 			_, ok := p.(*server.PacketAck)
 			if !ok {
-				console.Warning("on handlerReview: failed to write to database")
-				w.WriteHeader(http.StatusInternalServerError)
+				console.Warning("on handlerUser: failed to write to database")
+				httpError(w, http.StatusConflict)
 				return
 			}
 
-			s.sendLog("new review from user(%d)", review.UserID)
+			s.sendLog("new user created(%s)", userReq.Name)
 		}
 
 		// send packet to database server and register response handler
@@ -185,33 +195,77 @@ func (s *Server) handlerReview(w http.ResponseWriter, r *http.Request) {
 			response,
 		); err != nil {
 			console.Warning("send2DB failed: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
+
+		// wait for response
+		<-wait
+
+	default:
+		httpError(w, http.StatusMethodNotAllowed)
 	}
 }
 
-func (s *Server) handlerDevel(w http.ResponseWriter, r *http.Request) {
-	// Parse request into RestRequest.
-	var req JSONRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		console.Warning("failed to decode request: %v", err)
-		return
+func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		wait := make(chan struct{})
+
+		// parse request from client
+		var userReq JSONReview
+		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+			console.Warning("on handlerReview: failed to decode request")
+			httpError(w, http.StatusBadRequest)
+			return
+		}
+
+		// create packet for database server
+		var dbReq = server.PacketReview{
+			UserID:  userReq.UserID,
+			Score:   userReq.Score,
+			Comment: userReq.Comment,
+		}
+
+		response := func(success bool, p server.Packet) {
+			defer func() {
+				wait <- struct{}{}
+			}()
+
+			// failed to receive packet from database server
+			if !success {
+				console.Warning("on handlerReview: no packet received")
+				httpError(w, http.StatusInternalServerError)
+				return
+			}
+
+			// check packet by type casting from interface
+			_, ok := p.(*server.PacketAck)
+			if !ok {
+				console.Warning("on handlerReview: failed to write to database")
+				httpError(w, http.StatusInternalServerError)
+				return
+			}
+
+			s.sendLog("new review from user(%d)", userReq.UserID)
+		}
+
+		// send packet to database server and register response handler
+		if err := s.send2DB(
+			&dbReq,
+			response,
+		); err != nil {
+			console.Warning("send2DB failed: %v", err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		// wait for response
+		<-wait
+
+	default:
+		httpError(w, http.StatusMethodNotAllowed)
 	}
-
-	s.sendLog("message from %q: %q", req.User, req.Message)
-
-	// marshal response into byte slice
-	res := JSONResponse{"Hello, Client!"}
-	resBytes, err := json.Marshal(res)
-	if err != nil {
-		console.Warning("failed to encode response: %v", err)
-		return
-	}
-
-	// send response
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(resBytes)
 }
 
 func (s *Server) sendLog(format string, v ...interface{}) {
@@ -266,4 +320,9 @@ func (s *Server) send2DB(
 	}(correlationID)
 
 	return nil
+}
+
+// httpError responses to client with proper http error message.
+func httpError(w http.ResponseWriter, errno int) {
+	http.Error(w, http.StatusText(errno), errno)
 }

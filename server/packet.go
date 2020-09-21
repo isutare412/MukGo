@@ -10,6 +10,7 @@ type PacketType int32
 // All PacketTypes.
 const (
 	PTInvalid PacketType = iota
+	PTUserAdd
 	PTReview
 	PTLog
 	PTAck
@@ -25,11 +26,17 @@ type Packet interface {
 * Database packets
 ******************************************************************************/
 
+// PacketUserAdd inserts new user data.
+type PacketUserAdd struct {
+	UserID int
+	Name   string
+}
+
 // PacketReview containes review data.
 type PacketReview struct {
-	UserID  int    `json:"userid"`
-	Score   int    `json:"score"`
-	Comment string `json:"comment"`
+	UserID  int
+	Score   int
+	Comment string
 }
 
 // PacketAck contains ack response.
@@ -54,6 +61,11 @@ type PacketLog struct {
 /******************************************************************************
 * Packet interface methods
 ******************************************************************************/
+
+// Type implements Packet interface.
+func (p *PacketUserAdd) Type() PacketType {
+	return PTUserAdd
+}
 
 // Type implements Packet interface.
 func (p *PacketReview) Type() PacketType {

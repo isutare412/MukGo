@@ -33,6 +33,11 @@ func main() {
 		console.Fatal("failed to create database server: %v", err)
 	}
 
+	// initialize database
+	if err := server.InitDB(); err != nil {
+		console.Fatal("failed to initiate database server: %v", err)
+	}
+
 	// start database service
 	console.Info("start database service...")
 	if err := server.Run(); err != nil {

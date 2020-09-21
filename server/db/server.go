@@ -10,6 +10,7 @@ import (
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
 	"github.com/streadway/amqp"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -64,6 +65,7 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	option := options.Client().ApplyURI(uri)
 
 	// connect to MongoDB
+	console.Info("connect to MongoDB...")
 	client, err := mongo.Connect(s.dbctx, option)
 	if err != nil {
 		return nil, fmt.Errorf("on newDBConn: %v", err)
@@ -97,6 +99,24 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	return s, nil
 }
 
+// InitDB creates database, collections, indexex.
+func (s *Server) InitDB() error {
+	coll := s.db.Collection(CNUser)
+	_, err := coll.Indexes().CreateOne(
+		s.dbctx,
+		mongo.IndexModel{
+			Keys: bson.M{
+				"UserID": 1, // index in ascending order
+			},
+			Options: options.Index().SetUnique(true),
+		})
+	if err != nil {
+		return fmt.Errorf("on InitDB: %v", err)
+	}
+
+	return nil
+}
+
 // Run start handling database requests.
 func (s *Server) Run() error {
 	err := s.mqss.Consume(server.MGDB, server.API2DB, s.handleDBRequest)
@@ -113,6 +133,7 @@ func (s *Server) Run() error {
 func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
 	var response server.Packet = &server.PacketError{}
 	defer func() {
+		// reply RPC with response packet
 		if pubErr := s.mqss.Reply(
 			server.MGDB,
 			d.ReplyTo,
@@ -131,20 +152,7 @@ func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
 	}
 
 	// parse packet
-	switch packetType {
-	case server.PTReview:
-		var p server.PacketReview
-		err = json.Unmarshal(d.Body, &p)
-		if err != nil {
-			break
-		}
-		response = s.handleReview(&p)
-
-	default:
-		err = fmt.Errorf("no parser for %v", packetType)
-	}
-
-	// packet handling failed
+	response, err = s.handlePacket(packetType, d.Body)
 	if err != nil {
 		return false, fmt.Errorf("on handleDBRequest: %v", err)
 	}
@@ -152,19 +160,64 @@ func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
 	return true, nil
 }
 
+func (s *Server) handlePacket(
+	pt server.PacketType, ser []byte,
+) (response server.Packet, err error) {
+	// parse packet
+	switch pt {
+	case server.PTUserAdd:
+		var p server.PacketUserAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleUserAdd(&p)
+
+	case server.PTReview:
+		var p server.PacketReview
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleReview(&p)
+
+	default:
+		err = fmt.Errorf("on handlePacket: no parser for %v", pt)
+	}
+
+	return
+}
+
+// handleUserAdd insert new user.
+func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
+	coll := s.db.Collection(CNUser)
+
+	_, err := coll.InsertOne(
+		s.dbctx,
+		User{
+			UserID: p.UserID,
+			Name:   p.Name,
+		})
+	if err != nil {
+		return &server.PacketError{Message: "failed to insert user"}
+	}
+
+	return &server.PacketAck{}
+}
+
 // handleReview insert new review.
 func (s *Server) handleReview(p *server.PacketReview) server.Packet {
-	collection := s.db.Collection("reviews")
+	coll := s.db.Collection(CNReview)
 
-	_, err := collection.InsertOne(s.dbctx, struct {
-		UserID  int
-		Score   int
-		Comment string
-	}{
-		p.UserID,
-		p.Score,
-		p.Comment,
-	})
+	_, err := coll.InsertOne(
+		s.dbctx,
+		Review{
+			UserID:  p.UserID,
+			Score:   p.Score,
+			Comment: p.Comment,
+		})
 	if err != nil {
 		return &server.PacketError{Message: "failed to insert review"}
 	}
