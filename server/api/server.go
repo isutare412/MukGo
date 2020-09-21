@@ -66,6 +66,7 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	mqSession := mq.NewSession("api", baseConfig)
 
 	// connecte the session
+	console.Info("connect to RabbitMQ...")
 	if err := mqSession.TryConnect(40, 3000*time.Millisecond); err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
