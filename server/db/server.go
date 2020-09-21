@@ -130,6 +130,23 @@ func (s *Server) Run() error {
 	return nil
 }
 
+func (s *Server) sendLog(format string, v ...interface{}) {
+	packet := server.PacketLog{
+		Timestamp: time.Now(),
+		Msg:       fmt.Sprintf(format, v...),
+	}
+
+	if err := s.mqss.Publish(
+		server.MGLogs,
+		"",
+		server.DB,
+		&packet,
+	); err != nil {
+		console.Error("failed to publish log: %v", err)
+		return
+	}
+}
+
 func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
 	var response server.Packet = &server.PacketError{}
 	defer func() {
@@ -204,6 +221,7 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 		return &server.PacketError{Message: "failed to insert user"}
 	}
 
+	s.sendLog("insert user; UserID(%d), Name(%s)", p.UserID, p.Name)
 	return &server.PacketAck{}
 }
 
@@ -222,5 +240,6 @@ func (s *Server) handleReview(p *server.PacketReview) server.Packet {
 		return &server.PacketError{Message: "failed to insert review"}
 	}
 
+	s.sendLog("insert review; UserID(%d), Name(%d)", p.UserID, p.Score)
 	return &server.PacketAck{}
 }

@@ -45,6 +45,11 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 				tag:    "API",
 				dir:    "logs/api",
 			},
+			server.DB: {
+				sender: server.DB,
+				tag:    "DB",
+				dir:    "logs/db",
+			},
 		},
 	}
 
