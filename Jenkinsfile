@@ -29,9 +29,12 @@ pipeline {
       steps {
         script {
           docker.withRegistry("", registryCredential) {
-            imageAPI.push()
-            imageDB.push()
-            imageLog.push()
+            imageAPI.push("${BUILD_NUMBER}")
+            imageDB.push("${BUILD_NUMBER}")
+            imageLog.push("${BUILD_NUMBER}")
+            imageAPI.push("latest")
+            imageDB.push("latest")
+            imageLog.push("latest")
           }
         }
       }
