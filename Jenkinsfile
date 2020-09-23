@@ -42,9 +42,9 @@ pipeline {
 
     stage('Clean Up') {
       steps {
-        sh "docker rmi $registryAPI:$BUILD_NUMBER"
-        sh "docker rmi $registryDB:$BUILD_NUMBER"
-        sh "docker rmi $registryLog:$BUILD_NUMBER"
+        sh "docker images | grep chainz | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi $registryAPI:{}"
+        sh "docker images | grep chainz | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi $registryDB:{}"
+        sh "docker images | grep chainz | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi $registryLog:{}"
       }
     }
   }
