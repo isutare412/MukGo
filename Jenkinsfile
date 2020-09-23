@@ -18,9 +18,9 @@ pipeline {
     stage('Build Image') {
       steps {
         script {
-          imageAPI = docker.build registryAPI + ":$BUILD_NUMBER" 
-          imageDB = docker.build registryDB + ":$BUILD_NUMBER" 
-          imageLog = docker.build registryLog + ":$BUILD_NUMBER" 
+          imageAPI = docker.build(registryAPI + ":$BUILD_NUMBER", "-f ${WORKSPACE}/api_server.Dockefile")
+          imageDB = docker.build(registryDB + ":$BUILD_NUMBER", "-f ${WORKSPACE}/db_server.Dockefile")
+          imageLog = docker.build(registryLog + ":$BUILD_NUMBER", "-f ${WORKSPACE}/log_server.Dockefile")
         }
       }
     }
