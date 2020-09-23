@@ -42,9 +42,9 @@ pipeline {
 
     stage('Clean Up') {
       steps {
-        sh "docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '$registryAPI')"
-        sh "docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '$registryDB')"
-        sh "docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '$registryLog')"
+        sh "docker rmi \$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${registryAPI}')"
+        sh "docker rmi \$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${registryDB}')"
+        sh "docker rmi \$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${registryLog}')"
       }
     }
   }
