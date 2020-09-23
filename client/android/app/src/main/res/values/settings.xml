@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- For Issue https://github.com/flutter/flutter/issues/12140 -->
+<resources>
+    <string name="default_web_client_id">1044498231213-jcqem5eft5eavaf6ik211lqath5j1b2t.apps.googleusercontent.com</string>
+</resources>
