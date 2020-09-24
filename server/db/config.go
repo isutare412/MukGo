@@ -4,17 +4,17 @@ package db
 type ServerConfig struct {
 	// RabbitMQ connection settings
 	RabbitMQ struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		IP       string `yaml:"ip"`
-		Port     int    `yaml:"port"`
-	} `yaml:"RabbitMQ"`
+		User     string
+		Password string
+		IP       string
+		Port     int
+	}
 
 	// MongoDB connection settings
 	MongoDB struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		IP       string `yaml:"ip"`
-		Port     int    `yaml:"port"`
-	} `yaml:"MongoDB"`
+		User     string
+		Password string
+		IP       string
+		Port     int
+	}
 }

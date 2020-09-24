@@ -1,5 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: <String>['openid', 'profile', 'email'],
+);
 
 void main() => runApp(MyApp());
 
@@ -7,121 +13,105 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
-      home: RandomWords(),
-      theme: ThemeData(
-        primaryColor: Colors.amber,
-      ),
+      title: 'Google Sign In',
+      home: SignInDemo(),
     );
   }
 }
 
-class RandomWords extends StatefulWidget {
+class SignInDemo extends StatefulWidget {
   @override
-  _RandomWordsState createState() => _RandomWordsState();
+  State createState() => SignInDemoState();
 }
 
-class _RandomWordsState extends State<RandomWords> {
-  final List<WordPair> _suggestions = <WordPair>[];
-  final _saved = Set<WordPair>();
-  final TextStyle _biggerFont = const TextStyle(fontSize: 18);
+class SignInDemoState extends State<SignInDemo> {
+  GoogleSignInAccount _currentUser;
 
-  Widget _buildSuggestions() {
-    return ListView.builder(
-        padding: const EdgeInsets.all(16),
-        // The itemBuilder callback is called once per suggested
-        // word pairing, and places each suggestion into a ListTile
-        // row. For even rows, the function adds a ListTile row for
-        // the word pairing. For odd rows, the function adds a
-        // Divider widget to visually separate the entries. Note that
-        // the divider may be difficult to see on smaller devices.
-        itemBuilder: (BuildContext _context, int i) {
-          // Add a one-pixel-high divider widget before each row
-          // in the ListView.
-          if (i.isOdd) {
-            return Divider();
-          }
-
-          // The syntax "i ~/ 2" divides i by 2 and returns an
-          // integer result.
-          // For example: 1, 2, 3, 4, 5 becomes 0, 1, 1, 2, 2.
-          // This calculates the actual number of word pairings
-          // in the ListView,minus the divider widgets.
-          final int index = i ~/ 2;
-          // If you've reached the end of the available word
-          // pairings...
-          if (index >= _suggestions.length) {
-            // ...then generate 10 more and add them to the
-            // suggestions list.
-            _suggestions.addAll(generateWordPairs().take(10));
-          }
-          return _buildRow(_suggestions[index]);
-        });
+  @override
+  void initState() {
+    super.initState();
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account) {
+      // Log for test
+      account.authentication.then((value) => print(value.toTokenString()));
+      setState(() {
+        _currentUser = account;
+      });
+    });
+    _googleSignIn.signInSilently();
   }
 
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
-      onTap: () {
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
-        });
-      },
-    );
+  Future<void> _handleSignIn() async {
+    try {
+      await _googleSignIn.signIn();
+    } catch (error) {
+      print(error);
+    }
   }
 
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final tiles = _saved.map(
-            (WordPair pair) {
-              return ListTile(
-                title: Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = ListTile.divideTiles(
-            context: context,
-            tiles: tiles,
-          ).toList();
+  Future<void> _handleSignOut() async {
+    try {
+      final account = await _googleSignIn.signOut();
+      setState(() {
+        _currentUser = account;
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
 
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Saved Suggestions'),
+  Widget _buildBody() {
+    if (_currentUser != null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          ListTile(
+            leading: GoogleUserCircleAvatar(
+              identity: _currentUser,
             ),
-            body: ListView(children: divided),
-          );
-        },
-      ),
-    );
+            title: Text(_currentUser.displayName ?? ''),
+            subtitle: Text(_currentUser.email ?? ''),
+          ),
+          const Text("Signed in successfully."),
+          Text(_currentUser.toString()),
+          RaisedButton(
+            child: const Text('SIGN OUT'),
+            onPressed: _handleSignOut,
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          const Text("You are not currently signed in."),
+          RaisedButton(
+            child: const Text('SIGN IN'),
+            onPressed: _handleSignIn,
+          ),
+        ],
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-        actions: [
-          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
-        ],
-      ),
-      body: _buildSuggestions(),
-    );
+        appBar: AppBar(
+          title: const Text('Google Sign In'),
+        ),
+        body: ConstrainedBox(
+          constraints: const BoxConstraints.expand(),
+          child: _buildBody(),
+        ));
+  }
+}
+
+extension TokenToString on GoogleSignInAuthentication {
+  String toTokenString() {
+    if (this != null) {
+      return 'accessToken: ${this.accessToken}\nidToken: ${this.idToken}\nserverAuthCode: ${this.serverAuthCode}';
+    } else {
+      return '';
+    }
   }
 }

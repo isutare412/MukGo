@@ -4,15 +4,15 @@ package api
 type ServerConfig struct {
 	// RabbitMQ connection settings.
 	RabbitMQ struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		IP       string `yaml:"ip"`
-		Port     int    `yaml:"port"`
-	} `yaml:"RabbitMQ"`
+		User     string
+		Password string
+		IP       string
+		Port     int
+	}
 
 	// RestAPI defines URL to serve.
 	RestAPI struct {
-		IP   string `yaml:"ip"`
-		Port int    `yaml:"port"`
-	} `yaml:"RestAPI"`
+		IP   string
+		Port int
+	}
 }
