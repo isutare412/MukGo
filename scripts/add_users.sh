@@ -20,6 +20,15 @@ rabbitmqctl set_user_tags $SERVER_USER administrator ; \
 rabbitmqctl set_permissions -p / $SERVER_USER  ".*" ".*" ".*" ; \
 echo "*** User '$SERVER_USER' with password '$SERVER_PASSWORD' completed. ***") &
 
+# Create Rabbitmq client user
+CLIENT_USER=${CLIENT_USER:-client}
+CLIENT_PASSWORD=${CLIENT_PASSWORD:-client}
+
+( rabbitmqctl wait --timeout 60 $RABBITMQ_PID_FILE ; \
+rabbitmqctl add_user $CLIENT_USER $CLIENT_PASSWORD 2>/dev/null ; \
+rabbitmqctl set_permissions -p / $CLIENT_USER  "" "" ".*" ; \
+echo "*** User '$CLIENT_USER' with password '$CLIENT_PASSWORD' completed. ***") &
+
 # $@ is used to pass arguments to the rabbitmq-server command.
 # For example if you use it like this: docker run -d rabbitmq arg1 arg2,
 # it will be as you run in the container rabbitmq-server arg1 arg2

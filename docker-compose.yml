@@ -9,7 +9,7 @@ services:
     networks:
       - mukgo_internal
     restart: on-failure
-    env_file: ./build_config/rabbitmq.env
+    env_file: ./config/default/mukgo_rabbitmq.env
     ports:
       - '5672:5672'
       - '15672:15672'
