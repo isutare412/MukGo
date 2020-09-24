@@ -1,34 +1,31 @@
 package main
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/log"
-	"gopkg.in/yaml.v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		console.Fatal("need yaml file for configuration")
+	// load environment variables if env file is given
+	if len(os.Args) >= 2 {
+		if err := godotenv.Load(os.Args[1]); err != nil {
+			console.Fatal("failed to load env file: %v", err)
+		}
 	}
 
-	// read settings from yaml file
-	fileName := os.Args[1]
-	fileBody, err := ioutil.ReadFile(fileName)
+	// build config from environment variables
+	cfg, err := buildConfig()
 	if err != nil {
-		console.Fatal("cannot open file: %q", fileName)
-	}
-
-	// parse yaml file
-	var cfg log.ServerConfig
-	if err := yaml.Unmarshal(fileBody, &cfg); err != nil {
-		console.Fatal("failed to parse file: %q", fileName)
+		console.Fatal("failed to build config: %v", err)
 	}
 
 	// create new log server
-	server, err := log.NewServer(&cfg)
+	server, err := log.NewServer(cfg)
 	if err != nil {
 		console.Fatal("failed to create log server: %v", err)
 	}
@@ -38,4 +35,27 @@ func main() {
 	if err := server.Run(); err != nil {
 		console.Fatal("failed to run log server: %v", err)
 	}
+}
+
+func buildConfig() (*log.ServerConfig, error) {
+	rabbitPort, err := strconv.Atoi(os.Getenv("RABBITMQ_PORT"))
+	if err != nil {
+		return nil, fmt.Errorf("on buildConfig: %v", err)
+	}
+
+	cfg := &log.ServerConfig{
+		RabbitMQ: struct {
+			User     string
+			Password string
+			IP       string
+			Port     int
+		}{
+			os.Getenv("RABBITMQ_USER"),
+			os.Getenv("RABBITMQ_PASSWORD"),
+			os.Getenv("RABBITMQ_IP"),
+			rabbitPort,
+		},
+	}
+
+	return cfg, nil
 }

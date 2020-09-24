@@ -26,12 +26,11 @@ services:
     depends_on:
       - rabbitmq
     restart: on-failure
+    env_file: ./config/default/mukgo_api.env
     ports:
       - '7777:7777'
     environment:
       - TZ=Asia/Seoul
-    volumes:
-      - ./config/default/mukgo_api.yml:/config/mukgo_api.yml:ro
 
   db_server:
     container_name: db_server
@@ -44,10 +43,9 @@ services:
       - rabbitmq
       - mongo
     restart: on-failure
+    env_file: ./config/default/mukgo_db.env
     environment:
       - TZ=Asia/Seoul
-    volumes:
-      - ./config/default/mukgo_db.yml:/config/mukgo_db.yml:ro
 
   log_server:
     container_name: log_server
@@ -59,10 +57,9 @@ services:
     depends_on:
       - rabbitmq
     restart: on-failure
+    env_file: ./config/default/mukgo_log.env
     environment:
       - TZ=Asia/Seoul
-    volumes:
-      - ./config/default/mukgo_log.yml:/config/mukgo_log.yml:ro
 
   mongo:
     container_name: mongo

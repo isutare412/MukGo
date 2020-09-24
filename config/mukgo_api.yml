@@ -1,9 +1,0 @@
-RabbitMQ:
-  user: server
-  password: server
-  ip: localhost
-  port: 5672
-
-RestAPI:
-  ip: '' # empty value
-  port: 7777
