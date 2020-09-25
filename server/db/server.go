@@ -107,7 +107,7 @@ func (s *Server) InitDB() error {
 		s.dbctx,
 		mongo.IndexModel{
 			Keys: bson.M{
-				"UserID": 1, // index in ascending order
+				"userid": 1, // index in ascending order
 			},
 			Options: options.Index().SetUnique(true),
 		})
@@ -219,6 +219,7 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 			Name:   p.Name,
 		})
 	if err != nil {
+		console.Warning("failed to insert packet(%v): %v", *p, err)
 		return &server.PacketError{Message: "failed to insert user"}
 	}
 
