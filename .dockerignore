@@ -3,3 +3,6 @@ client
 
 # Makefile binaries
 bin
+
+# Project data
+data

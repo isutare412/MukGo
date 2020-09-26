@@ -2,6 +2,8 @@
 
 ![Build Status](http://redshore.asuscomm.com:8081/buildStatus/icon?job=MukGo%2Frelease)
 
+![Mukgo service diagram](./data/Mukgo%20service%20diagram.png)
+
 Game-like restaurant review service.
 
 # House Rules
