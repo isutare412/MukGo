@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:contra/blog/blog_home_page.dart';
 import 'package:contra/blog/blog_list_page_four.dart';
 import 'package:contra/blog/blog_list_page_one.dart';
@@ -34,43 +33,40 @@ import 'package:contra/shopping/shopping_list_page_type_two.dart';
 import 'package:contra/shopping/shopping_main_page.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:contra/utils/empty_screen.dart';
-import 'package:contra/alarm/add_alarm_page.dart';
-import 'package:contra/alarm/alarm_list_page.dart';
-import 'package:contra/alarm/alarm_main_page.dart';
-import 'package:contra/alarm/clock_list_page.dart';
-import 'package:contra/alarm/weather_detail_page.dart';
-import 'package:contra/alarm/weather_list_page.dart';
-import 'package:contra/blog/blog_detail_page.dart';
-import 'package:contra/blog/blog_list_page_three.dart';
-import 'package:contra/blog/blog_list_page_two.dart';
-import 'package:contra/chart/charts_main_page.dart';
-import 'package:contra/chart/charts_page.dart';
-import 'package:contra/content/blog_home.dart';
-import 'package:contra/content/detail_screen_grid.dart';
-import 'package:contra/content/detail_screen_page_four.dart';
-import 'package:contra/content/detail_screen_page_one.dart';
-import 'package:contra/content/detail_screen_page_three.dart';
-import 'package:contra/content/detail_screen_page_two.dart';
-import 'package:contra/content/invite_list_page.dart';
-import 'package:contra/content/popular_courses_home_page.dart';
-import 'package:contra/content/user_list_page.dart';
-import 'package:contra/login/contact_us_form.dart';
-import 'package:contra/login/login_form_type_four.dart';
-import 'package:contra/login/login_form_type_three.dart';
-import 'package:contra/login/verification_type.dart';
-import 'package:contra/maps/map_main_page.dart';
-import 'package:contra/menu/menu_page_one.dart';
-import 'package:contra/menu/menu_page_two.dart';
-import 'package:contra/menu/settings_page_one.dart';
-import 'package:contra/menu/settings_page_two.dart';
-import 'package:contra/onboarding/type1/pager.dart';
-import 'package:contra/onboarding/type2/pager.dart';
-import 'package:contra/onboarding/type4/onboard_page_four.dart';
-import 'package:mukgo/restaurant/restaurant_detail.dart';
+import 'package:flutter/material.dart';
 
-import 'project/project_main.dart';
-import 'map/map_detail.dart';
-import 'review/review_form.dart';
+import 'alarm/add_alarm_page.dart';
+import 'alarm/alarm_list_page.dart';
+import 'alarm/alarm_main_page.dart';
+import 'alarm/clock_list_page.dart';
+import 'alarm/weather_detail_page.dart';
+import 'alarm/weather_list_page.dart';
+import 'blog/blog_detail_page.dart';
+import 'blog/blog_list_page_three.dart';
+import 'blog/blog_list_page_two.dart';
+import 'chart/charts_main_page.dart';
+import 'chart/charts_page.dart';
+import 'content/blog_home.dart';
+import 'content/detail_screen_grid.dart';
+import 'content/detail_screen_page_four.dart';
+import 'content/detail_screen_page_one.dart';
+import 'content/detail_screen_page_three.dart';
+import 'content/detail_screen_page_two.dart';
+import 'content/invite_list_page.dart';
+import 'content/popular_courses_home_page.dart';
+import 'content/user_list_page.dart';
+import 'login/contact_us_form.dart';
+import 'login/login_form_type_four.dart';
+import 'login/login_form_type_three.dart';
+import 'login/verification_type.dart';
+import 'maps/map_main_page.dart';
+import 'menu/menu_page_one.dart';
+import 'menu/menu_page_two.dart';
+import 'menu/settings_page_one.dart';
+import 'menu/settings_page_two.dart';
+import 'onboarding/type1/pager.dart';
+import 'onboarding/type2/pager.dart';
+import 'onboarding/type4/onboard_page_four.dart';
 
 void main() => runApp(MyApp());
 
@@ -87,13 +83,6 @@ class MyApp extends StatelessWidget {
           primaryColor: persian_blue),
       home: MyHomePage(title: 'Contra Flutter Kit Demo'),
       routes: {
-        '/project_all': (context) => ProjectPageMain(),
-        '/project_map': (context) => MapDetailPage(),
-        '/project_restaurant': (context) => RestaurantDetailPage(),
-        '/project_review': (context) => ReviewForm(),
-        '/project_user': (context) => ChartsPage(
-              isBarChart: false,
-            ),
         '/onboard_all': (context) => OnboardPageMain(),
         '/onboard_type_one': (context) => OnboardingPagerTypeOne(),
         '/onboard_type_two': (context) => OnboardingPagerTypeTwo(),
@@ -192,14 +181,6 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.all(10),
           child: Column(
             children: <Widget>[
-              ListTile(
-                contentPadding: EdgeInsets.all(20),
-                trailing: Icon(Icons.navigate_next),
-                title: Text("Mukgo Project Pages"),
-                onTap: () {
-                  Navigator.pushNamed(context, "/project_all");
-                },
-              ),
               ListTile(
                 contentPadding: EdgeInsets.all(20),
                 trailing: Icon(Icons.navigate_next),
