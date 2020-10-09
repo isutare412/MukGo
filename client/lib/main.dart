@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contra/blog/blog_home_page.dart';
 import 'package:contra/blog/blog_list_page_four.dart';
@@ -66,11 +67,16 @@ import 'package:contra/menu/settings_page_two.dart';
 import 'package:contra/onboarding/type1/pager.dart';
 import 'package:contra/onboarding/type2/pager.dart';
 import 'package:contra/onboarding/type4/onboard_page_four.dart';
-import 'package:mukgo/restaurant/restaurant_detail.dart';
+import 'package:contra/custom_widgets/button_round_with_shadow.dart';
 
-import 'project/project_main.dart';
-import 'map/map_detail.dart';
-import 'review/review_form.dart';
+import 'package:provider/provider.dart';
+import 'package:mukgo/auth/auth.dart';
+import 'package:mukgo/auth/auth_api.dart';
+import 'package:mukgo/auth/login_page.dart';
+import 'package:mukgo/project/project_main.dart';
+import 'package:mukgo/map/map_detail.dart';
+import 'package:mukgo/review/review_form.dart';
+import 'package:mukgo/restaurant/restaurant_detail.dart';
 
 void main() => runApp(MyApp());
 
@@ -78,7 +84,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    var child = MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Contra Flutter Kit',
       theme: ThemeData(
@@ -94,6 +100,7 @@ class MyApp extends StatelessWidget {
         '/project_user': (context) => ChartsPage(
               isBarChart: false,
             ),
+        '/project_login': (context) => LoginForm(),
         '/onboard_all': (context) => OnboardPageMain(),
         '/onboard_type_one': (context) => OnboardingPagerTypeOne(),
         '/onboard_type_two': (context) => OnboardingPagerTypeTwo(),
@@ -168,6 +175,9 @@ class MyApp extends StatelessWidget {
         '/settings_type_three': (context) => SettingsPageThree(),
       },
     );
+
+    return ChangeNotifierProvider(
+        create: (context) => AuthModel(), child: child);
   }
 }
 
@@ -183,6 +193,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    checkAuth(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -340,6 +352,21 @@ class _MyHomePageState extends State<MyHomePage> {
               )*/
             ],
           ),
+        ),
+      ),
+      floatingActionButton: Align(
+        alignment: Alignment.bottomRight,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: ButtonRoundWithShadow(
+              size: 60,
+              borderColor: wood_smoke,
+              color: white,
+              callback: () {
+                googleSignOut(context);
+              },
+              shadowColor: wood_smoke,
+              iconPath: "assets/icons/ic_add.svg"),
         ),
       ),
     );

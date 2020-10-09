@@ -55,6 +55,16 @@ class _ProjectPageMainState extends State<ProjectPageMain> {
                 },
               ),
             ),
+            Container(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(20),
+                trailing: Icon(Icons.navigate_next),
+                title: Text("Login"),
+                onTap: () {
+                  Navigator.pushNamed(context, "/project_login");
+                },
+              ),
+            ),
           ],
         ),
       ),

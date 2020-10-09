@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const persian_blue = Color(0xFF1947E6);
+const google_red = Color(0xFFDD4B39);
 const white = Color(0xFFFFFFFF);
 const athens_gray = Color(0xFFF4F5F7);
 const lightening_yellow = Color(0xFFFFBD12);
