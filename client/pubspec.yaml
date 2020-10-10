@@ -35,6 +35,7 @@ dependencies:
   json_serializable: ^3.3.0
   contra:
     path: ./contra
+  geolocator: ^6.0.0
 
 dev_dependencies:
   flutter_test:

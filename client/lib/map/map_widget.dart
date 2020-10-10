@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../src/locations.dart' as locations;
+import 'package:geolocator/geolocator.dart';
 
 class MapWidget extends StatefulWidget {
   String distance;
@@ -20,9 +21,14 @@ class MapWidget extends StatefulWidget {
 class _MapWidgetState extends State<MapWidget> {
   GoogleMapController mapController;
 
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  CameraPosition cp =
+      CameraPosition(target: const LatLng(45.521563, -122.677433), zoom: 11.0);
   final Map<String, Marker> _markers = {};
   Future<void> _onMapCreated(GoogleMapController controller) async {
+    // Get GPS Location
+    var currentLocation =
+        await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+
     final googleOffices = await locations.getGoogleOffices();
     setState(() {
       _markers.clear();
@@ -37,6 +43,15 @@ class _MapWidgetState extends State<MapWidget> {
         );
         _markers[office.name] = marker;
       }
+      final marker = Marker(
+        markerId: MarkerId("curr_loc"),
+        position: LatLng(currentLocation.latitude, currentLocation.longitude),
+        infoWindow: InfoWindow(title: 'Your Location'),
+      );
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+          target: LatLng(currentLocation.latitude, currentLocation.longitude),
+          zoom: 11.0)));
+      _markers["Current Location"] = marker;
     });
   }
 
@@ -51,9 +66,7 @@ class _MapWidgetState extends State<MapWidget> {
         body: GoogleMap(
           onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
-            target: _center,
-            zoom: 11.0,
-          ),
+              target: const LatLng(45.521563, -122.677433), zoom: 11.0),
           markers: _markers.values.toSet(),
         ),
       ),
