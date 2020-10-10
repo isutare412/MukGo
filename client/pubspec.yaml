@@ -30,12 +30,17 @@ dependencies:
   google_sign_in: ^4.5.4
   english_words: ^3.1.5
   provider: ^4.3.2+2
+  google_maps_flutter: ^0.5.27+3
+  http: ^0.12.0+1
+  json_serializable: ^3.3.0
   contra:
     path: ./contra
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  pedantic: ^1.9.0
+  build_runner: ^1.10.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

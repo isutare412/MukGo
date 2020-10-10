@@ -3,5 +3,5 @@ class AlarmLabel {
   String selectedText;
   bool selected;
 
-  AlarmLabel({this.title,this.selectedText, this.selected});
+  AlarmLabel({this.title, this.selectedText, this.selected});
 }

@@ -101,8 +101,7 @@ class MyApp extends StatelessWidget {
               isBarChart: false,
             ),
         '/project_login': (context) => LoginForm(),
-
-        '/sample_page': (context) => SamplePage(title:'Sample pages'),
+        '/sample_page': (context) => SamplePage(title: 'Sample pages'),
         '/onboard_all': (context) => OnboardPageMain(),
         '/onboard_type_one': (context) => OnboardingPagerTypeOne(),
         '/onboard_type_two': (context) => OnboardingPagerTypeTwo(),
@@ -217,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
               iconPath: "assets/icons/ic_add.svg"),
         ),
       ),
-      drawer:Drawer(
+      drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -296,6 +295,7 @@ class SamplePage extends StatefulWidget {
   @override
   _SamplePageState createState() => _SamplePageState();
 }
+
 class _SamplePageState extends State<SamplePage> {
   @override
   Widget build(BuildContext context) {
@@ -467,7 +467,6 @@ class _SamplePageState extends State<SamplePage> {
               iconPath: "assets/icons/ic_add.svg"),
         ),
       ),
- 
     );
   }
 }

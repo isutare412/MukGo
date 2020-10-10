@@ -17,5 +17,10 @@ class User {
   final Color bgColor;
   final Color textColor;
 
-  const User({this.name, this.designation, this.profile, this.textColor,this.bgColor});
+  const User(
+      {this.name,
+      this.designation,
+      this.profile,
+      this.textColor,
+      this.bgColor});
 }
