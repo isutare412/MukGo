@@ -60,9 +60,8 @@ func (s *Server) handleRestaurantAdd(p *server.PacketRestaurantAdd) server.Packe
 		ctx,
 		Restaurant{
 			Name:      p.Name,
-			Latitude:  p.Latitude,
-			Longitude: p.Longitude,
-			Altitude:  p.Altitude,
+			Latitude:  p.Coord.Latitude,
+			Longitude: p.Coord.Longitude,
 		})
 	if err != nil {
 		console.Warning("failed to insert restaurant(%v): %v", *p, err)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/console"
+	"github.com/isutare412/MukGo/server/loc"
 )
 
 func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
@@ -137,17 +138,18 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 		// parse request from client
 		var userReq JSONRestaurantPost
 		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-			console.Warning("on handlerReview: failed to decode request")
+			console.Warning("on handlerRestaurant: failed to decode request")
 			httpError(w, http.StatusBadRequest)
 			return
 		}
 
 		// create packet for database server
 		var dbReq = server.PacketRestaurantAdd{
-			Name:      userReq.Name,
-			Latitude:  userReq.Latitude,
-			Longitude: userReq.Longitude,
-			Altitude:  userReq.Altitude,
+			Name: userReq.Name,
+			Coord: loc.Coordinate{
+				Latitude:  userReq.Latitude,
+				Longitude: userReq.Longitude,
+			},
 		}
 
 		response := func(success bool, p server.Packet) {

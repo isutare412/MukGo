@@ -21,7 +21,6 @@ type Restaurant struct {
 	Name      string             `bson:"name"`
 	Latitude  float64            `bson:"latitude"`
 	Longitude float64            `bson:"longitude"`
-	Altitude  float64            `bson:"altitude,omitempty"`
 }
 
 // Collection names of MongoDB.
