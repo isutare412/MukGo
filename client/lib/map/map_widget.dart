@@ -21,9 +21,7 @@ class MapWidget extends StatefulWidget {
 class _MapWidgetState extends State<MapWidget> {
   GoogleMapController mapController;
 
-  CameraPosition cp =
-      CameraPosition(target: const LatLng(45.521563, -122.677433), zoom: 11.0);
-  final Map<String, Marker> _markers = {};
+  final Set<Marker> _markers = Set<Marker>();
   Future<void> _onMapCreated(GoogleMapController controller) async {
     // Get GPS Location
     var currentLocation =
@@ -32,26 +30,50 @@ class _MapWidgetState extends State<MapWidget> {
     final googleOffices = await locations.getGoogleOffices();
     setState(() {
       _markers.clear();
+      _markers.add(Marker(
+        markerId: MarkerId('currLoc'),
+        position: LatLng(currentLocation.latitude, currentLocation.longitude),
+        infoWindow: InfoWindow(title: 'Your Location'),
+      ));
+      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+          target: LatLng(currentLocation.latitude, currentLocation.longitude),
+          zoom: 17.0)));
       for (final office in googleOffices.offices) {
-        final marker = Marker(
+        _markers.add(Marker(
           markerId: MarkerId(office.name),
           position: LatLng(office.lat, office.lng),
           infoWindow: InfoWindow(
             title: office.name,
             snippet: office.address,
           ),
-        );
-        _markers[office.name] = marker;
+        ));
+        getPositionStream().listen((Position position) {
+          print(position == null
+              ? 'Unknown'
+              : position.latitude.toString() +
+                  ', ' +
+                  position.longitude.toString());
+          updatePinOnMap(position);
+          /*
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(
+                  target: LatLng(position.latitude, position.longitude),
+                  zoom: 17.0)));
+          **/
+          print(_markers.where((m) => m.markerId.value == 'currLoc'));
+        });
       }
-      final marker = Marker(
-        markerId: MarkerId("curr_loc"),
-        position: LatLng(currentLocation.latitude, currentLocation.longitude),
+    });
+  }
+
+  void updatePinOnMap(Position position) async {
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value == 'currLoc');
+      _markers.add(Marker(
+        markerId: MarkerId('currLoc'),
+        position: LatLng(position.latitude, position.longitude),
         infoWindow: InfoWindow(title: 'Your Location'),
-      );
-      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(currentLocation.latitude, currentLocation.longitude),
-          zoom: 11.0)));
-      _markers["Current Location"] = marker;
+      ));
     });
   }
 
@@ -59,15 +81,14 @@ class _MapWidgetState extends State<MapWidget> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-        ),
         body: GoogleMap(
+          myLocationEnabled: true,
+          compassEnabled: true,
+          tiltGesturesEnabled: false,
           onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
-              target: const LatLng(45.521563, -122.677433), zoom: 11.0),
-          markers: _markers.values.toSet(),
+              target: const LatLng(37.4654628, 126.9572302), zoom: 11.0),
+          markers: _markers,
         ),
       ),
     );
