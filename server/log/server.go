@@ -97,7 +97,7 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 
 // Run start handling logs.
 func (s *Server) Run() error {
-	err := s.mqss.Consume(server.MGLogs, server.Log, s.handleLog)
+	err := s.mqss.Consume(server.MGLogs, server.Log, s.handleLog, 1)
 	if err != nil {
 		return fmt.Errorf("on HandleLogs: %v", err)
 	}

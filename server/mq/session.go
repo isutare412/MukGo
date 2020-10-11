@@ -176,6 +176,7 @@ func (s *Session) connect() error {
 func (s *Session) Consume(
 	exchange, queue string,
 	handler func(*amqp.Delivery) (bool, error),
+	handleNum int,
 ) error {
 	// find target exchange and queue
 	excfg, ok := s.config.Exchanges[exchange]
@@ -210,29 +211,32 @@ func (s *Session) Consume(
 	}
 	s.mu.Unlock()
 
-	// notifier from reconnection event
-	reconn := s.connNotifier.AddSubscriber()
+	// create multiple goroutines
+	for i := 0; i < handleNum; i++ {
+		// notifier from reconnection event
+		reconn := s.connNotifier.AddSubscriber()
 
-	go func() {
-		for {
-			d, ok := <-delivery
-			if !ok { // delievery channel closed
-				// restart Consume after reconnect
-				<-reconn
-				s.connNotifier.RemoveSubscriber(reconn)
-				if err := s.Consume(exchange, queue, handler); err != nil {
-					log(console.LLFatal, "failed in Consume: %v", err)
+		go func() {
+			for {
+				d, ok := <-delivery
+				if !ok { // delievery channel closed
+					// restart Consume after reconnect
+					<-reconn
+					s.connNotifier.RemoveSubscriber(reconn)
+					if err := s.Consume(exchange, queue, handler, 1); err != nil {
+						log(console.LLFatal, "failed in Consume: %v", err)
+					}
+					return
 				}
-				return
-			}
 
-			// handle message from RabbitMQ
-			if ok, err := handler(&d); !ok {
-				log(console.LLWarning, "failed to handle delivery: %v", err)
+				// handle message from RabbitMQ
+				if ok, err := handler(&d); !ok {
+					log(console.LLWarning, "failed to handle delivery: %v", err)
+				}
+				d.Ack(false)
 			}
-			d.Ack(false)
-		}
-	}()
+		}()
+	}
 
 	return nil
 }

@@ -79,7 +79,7 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	s.handles = server.NewHandleMap()
 
 	// start to listen from RabbitMQ
-	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse)
+	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse, 2)
 	if err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}

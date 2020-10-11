@@ -141,7 +141,7 @@ func (s *Server) InitDB() error {
 
 // Run start handling database requests.
 func (s *Server) Run() error {
-	err := s.mqss.Consume(server.MGDB, server.API2DB, s.handleDBRequest)
+	err := s.mqss.Consume(server.MGDB, server.API2DB, s.handleDBRequest, 4)
 	if err != nil {
 		return fmt.Errorf("on run: %v", err)
 	}
