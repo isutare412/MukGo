@@ -97,6 +97,27 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	s.mqss = session
 	console.Info("session(%s) established between RabbitMQ", mqaddr)
 
+	// addlitionaly send logs to RabbitMQ.
+	console.AddLogHandler(
+		func(l console.Level, format string, v ...interface{}) bool {
+			packet := server.PacketLog{
+				Timestamp: time.Now(),
+				LogLevel:  l,
+				Msg:       fmt.Sprintf(format, v...),
+			}
+
+			if err := s.mqss.Publish(
+				server.MGLogs,
+				"",
+				server.DB,
+				&packet,
+			); err != nil {
+				return false
+			}
+			return true
+		},
+	)
+
 	return s, nil
 }
 
@@ -219,11 +240,11 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 			Name:   p.Name,
 		})
 	if err != nil {
-		console.Warning("failed to insert packet(%v): %v", *p, err)
+		console.Warning("failed to insert user(%v): %v", *p, err)
 		return &server.PacketError{Message: "failed to insert user"}
 	}
 
-	s.sendLog("insert user; UserID(%d), Name(%s)", p.UserID, p.Name)
+	console.Info("insert user; UserID(%d), Name(%s)", p.UserID, p.Name)
 	return &server.PacketAck{}
 }
 
@@ -239,9 +260,10 @@ func (s *Server) handleReview(p *server.PacketReview) server.Packet {
 			Comment: p.Comment,
 		})
 	if err != nil {
+		console.Warning("failed to insert review(%v): %v", *p, err)
 		return &server.PacketError{Message: "failed to insert review"}
 	}
 
-	s.sendLog("insert review; UserID(%d), Name(%d)", p.UserID, p.Score)
+	console.Info("insert review; UserID(%d), Name(%d)", p.UserID, p.Score)
 	return &server.PacketAck{}
 }
