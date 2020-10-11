@@ -21,6 +21,8 @@ type Server struct {
 	handles *server.HandleMap
 }
 
+const responseTimeout = 6 * time.Second
+
 var baseConfig = &mq.SessionConfig{
 	Exchanges: map[string]mq.ExchangeConfig{
 		server.MGLogs: {
@@ -196,7 +198,7 @@ func (s *Server) send2DB(
 
 	// set response handler timeout
 	go func(corrID string) {
-		<-time.After(3 * time.Second)
+		<-time.After(responseTimeout)
 
 		handler := s.handles.Pop(corrID)
 		if handler == nil {

@@ -1,15 +1,22 @@
 package db
 
 import (
+	"context"
+	"time"
+
 	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/console"
 )
 
-func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
-	coll := s.db.Collection(CNUser)
+const queryTimeout = 5 * time.Second
 
+func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	coll := s.db.Collection(CNUser)
 	_, err := coll.InsertOne(
-		s.dbctx,
+		ctx,
 		User{
 			UserID: p.UserID,
 			Name:   p.Name,
@@ -24,10 +31,12 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 }
 
 func (s *Server) handleReviewAdd(p *server.PacketReviewAdd) server.Packet {
-	coll := s.db.Collection(CNReview)
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
 
+	coll := s.db.Collection(CNReview)
 	_, err := coll.InsertOne(
-		s.dbctx,
+		ctx,
 		Review{
 			UserID:  p.UserID,
 			Score:   p.Score,
@@ -43,10 +52,12 @@ func (s *Server) handleReviewAdd(p *server.PacketReviewAdd) server.Packet {
 }
 
 func (s *Server) handleRestaurantAdd(p *server.PacketRestaurantAdd) server.Packet {
-	coll := s.db.Collection(CNRestaurant)
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
 
+	coll := s.db.Collection(CNRestaurant)
 	_, err := coll.InsertOne(
-		s.dbctx,
+		ctx,
 		Restaurant{
 			Name:      p.Name,
 			Latitude:  p.Latitude,
