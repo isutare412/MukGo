@@ -213,14 +213,23 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleUserAdd(&p)
 
-	case server.PTReview:
-		var p server.PacketReview
+	case server.PTReviewAdd:
+		var p server.PacketReviewAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)
 			break
 		}
-		response = s.handleReview(&p)
+		response = s.handleReviewAdd(&p)
+
+	case server.PTRestaurantAdd:
+		var p server.PacketRestaurantAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantAdd(&p)
 
 	default:
 		err = fmt.Errorf("on handlePacket: no parser for %v", pt)
@@ -229,7 +238,6 @@ func (s *Server) handlePacket(
 	return
 }
 
-// handleUserAdd insert new user.
 func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 	coll := s.db.Collection(CNUser)
 
@@ -248,8 +256,7 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 	return &server.PacketAck{}
 }
 
-// handleReview insert new review.
-func (s *Server) handleReview(p *server.PacketReview) server.Packet {
+func (s *Server) handleReviewAdd(p *server.PacketReviewAdd) server.Packet {
 	coll := s.db.Collection(CNReview)
 
 	_, err := coll.InsertOne(
@@ -264,6 +271,26 @@ func (s *Server) handleReview(p *server.PacketReview) server.Packet {
 		return &server.PacketError{Message: "failed to insert review"}
 	}
 
-	console.Info("insert review; UserID(%d), Name(%d)", p.UserID, p.Score)
+	console.Info("insert review; UserID(%d), Score(%d)", p.UserID, p.Score)
+	return &server.PacketAck{}
+}
+
+func (s *Server) handleRestaurantAdd(p *server.PacketRestaurantAdd) server.Packet {
+	coll := s.db.Collection(CNRestaurant)
+
+	_, err := coll.InsertOne(
+		s.dbctx,
+		Restaurant{
+			Name:      p.Name,
+			Latitude:  p.Latitude,
+			Longitude: p.Longitude,
+			Altitude:  p.Altitude,
+		})
+	if err != nil {
+		console.Warning("failed to insert restaurant(%v): %v", *p, err)
+		return &server.PacketError{Message: "failed to insert restaurant"}
+	}
+
+	console.Info("insert restaurant; Name(%s)", p.Name)
 	return &server.PacketAck{}
 }

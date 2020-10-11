@@ -13,7 +13,8 @@ type PacketType int32
 const (
 	PTInvalid PacketType = iota
 	PTUserAdd
-	PTReview
+	PTReviewAdd
+	PTRestaurantAdd
 	PTLog
 	PTAck
 	PTError
@@ -34,11 +35,19 @@ type PacketUserAdd struct {
 	Name   string
 }
 
-// PacketReview containes review data.
-type PacketReview struct {
+// PacketReviewAdd containes review data.
+type PacketReviewAdd struct {
 	UserID  int
 	Score   int
 	Comment string
+}
+
+// PacketRestaurantAdd contains data for new restaurant.
+type PacketRestaurantAdd struct {
+	Name      string
+	Latitude  float64
+	Longitude float64
+	Altitude  float64
 }
 
 // PacketAck contains ack response.
@@ -71,8 +80,13 @@ func (p *PacketUserAdd) Type() PacketType {
 }
 
 // Type implements Packet interface.
-func (p *PacketReview) Type() PacketType {
-	return PTReview
+func (p *PacketReviewAdd) Type() PacketType {
+	return PTReviewAdd
+}
+
+// Type implements Packet interface.
+func (p *PacketRestaurantAdd) Type() PacketType {
+	return PTRestaurantAdd
 }
 
 // Type implements Packet interface.
