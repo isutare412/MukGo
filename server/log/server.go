@@ -126,7 +126,9 @@ func (s *Server) handleLog(d *amqp.Delivery) (bool, error) {
 	}
 
 	// now leave log
-	if err := logger.log(packet.Timestamp, packet.Msg); err != nil {
+	if err := logger.log(
+		packet.Timestamp, packet.LogLevel, packet.Msg,
+	); err != nil {
 		return false, fmt.Errorf("on handleLog: %v", err)
 	}
 

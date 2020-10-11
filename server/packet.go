@@ -2,6 +2,8 @@ package server
 
 import (
 	"time"
+
+	"github.com/isutare412/MukGo/server/console"
 )
 
 // PacketType matches int with packet structure.
@@ -55,6 +57,7 @@ type PacketError struct {
 // PacketLog defines struct for log message among servers.
 type PacketLog struct {
 	Timestamp time.Time
+	LogLevel  console.Level
 	Msg       string
 }
 

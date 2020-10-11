@@ -76,10 +76,32 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	// create ResponseMux
 	s.handles = server.NewHandleMap()
 
+	// start to listen from RabbitMQ
 	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse)
 	if err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
+
+	// addlitionaly send logs to RabbitMQ.
+	console.AddLogHandler(
+		func(l console.Level, format string, v ...interface{}) bool {
+			packet := server.PacketLog{
+				Timestamp: time.Now(),
+				LogLevel:  l,
+				Msg:       fmt.Sprintf(format, v...),
+			}
+
+			if err := s.mqss.Publish(
+				server.MGLogs,
+				"",
+				server.API,
+				&packet,
+			); err != nil {
+				return false
+			}
+			return true
+		},
+	)
 
 	return s, nil
 }
@@ -187,7 +209,7 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			s.sendLog("new user created(%s)", userReq.Name)
+			console.Info("new user created(%s)", userReq.Name)
 		}
 
 		// send packet to database server and register response handler
@@ -248,7 +270,7 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			s.sendLog("new review from user(%d)", userReq.UserID)
+			console.Info("new review from user(%d)", userReq.UserID)
 		}
 
 		// send packet to database server and register response handler
@@ -266,23 +288,6 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		httpError(w, http.StatusMethodNotAllowed)
-	}
-}
-
-func (s *Server) sendLog(format string, v ...interface{}) {
-	packet := server.PacketLog{
-		Timestamp: time.Now(),
-		Msg:       fmt.Sprintf(format, v...),
-	}
-
-	if err := s.mqss.Publish(
-		server.MGLogs,
-		"",
-		server.API,
-		&packet,
-	); err != nil {
-		console.Error("failed to publish log: %v", err)
-		return
 	}
 }
 

@@ -29,12 +29,13 @@ func (l *logger) toFile(time time.Time, msg string) error {
 	return err
 }
 
-func (l *logger) toConsole(time time.Time, msg string) {
-	console.InfoTag(l.tag, "%s", msg)
+func (l *logger) toConsole(level console.Level, msg string) {
+	logBody := console.SLogf(level, msg)
+	console.Printf(fmt.Sprintf("[%s]%s", l.tag, logBody))
 }
 
-func (l *logger) log(time time.Time, msg string) error {
-	l.toConsole(time, msg)
+func (l *logger) log(time time.Time, level console.Level, msg string) error {
+	l.toConsole(level, msg)
 	err := l.toFile(time, msg)
 	return err
 }
