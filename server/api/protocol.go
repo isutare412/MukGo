@@ -1,16 +1,5 @@
 package api
 
-// JSONRequest describes json request from the client.
-type JSONRequest struct {
-	User    string `json:"user"`
-	Message string `json:"message"`
-}
-
-// JSONResponse describes json response to the client.
-type JSONResponse struct {
-	Message string `json:"message"`
-}
-
 // JSONUserAdd defines protocol of information to add new user.
 type JSONUserAdd struct {
 	UserID int    `json:"userid"`
