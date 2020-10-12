@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/isutare412/MukGo/server"
+	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
-	"github.com/isutare412/MukGo/server/loc"
 )
 
 func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +146,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 		// create packet for database server
 		var dbReq = server.PacketRestaurantAdd{
 			Name: userReq.Name,
-			Coord: loc.Coordinate{
+			Coord: common.Coordinate{
 				Latitude:  userReq.Latitude,
 				Longitude: userReq.Longitude,
 			},

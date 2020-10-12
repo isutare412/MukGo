@@ -3,8 +3,8 @@ package server
 import (
 	"time"
 
+	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
-	"github.com/isutare412/MukGo/server/loc"
 )
 
 // PacketType matches int with packet structure.
@@ -46,7 +46,7 @@ type PacketReviewAdd struct {
 // PacketRestaurantAdd contains data for new restaurant.
 type PacketRestaurantAdd struct {
 	Name  string
-	Coord loc.Coordinate
+	Coord common.Coordinate
 }
 
 // PacketAck contains ack response.

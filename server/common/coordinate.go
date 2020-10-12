@@ -1,4 +1,4 @@
-package loc
+package common
 
 // Coordinate defines GPS coordinate in degree unit.
 type Coordinate struct {
