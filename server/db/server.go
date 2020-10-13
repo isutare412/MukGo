@@ -187,7 +187,7 @@ func (s *Server) handlePacket(
 ) (response server.Packet, err error) {
 	// parse packet
 	switch pt {
-	case server.PTUserAdd:
+	case server.PTADUserAdd:
 		var p server.ADPacketUserAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
@@ -196,7 +196,7 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleUserAdd(&p)
 
-	case server.PTReviewAdd:
+	case server.PTADReviewAdd:
 		var p server.ADPacketReviewAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
@@ -205,7 +205,7 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleReviewAdd(&p)
 
-	case server.PTRestaurantAdd:
+	case server.PTADRestaurantAdd:
 		var p server.ADPacketRestaurantAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {

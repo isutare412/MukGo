@@ -13,12 +13,12 @@ type PacketType int32
 // All PacketTypes.
 const (
 	PTInvalid PacketType = iota
-	PTUserAdd
-	PTReviewAdd
-	PTRestaurantAdd
+	PTADUserAdd
+	PTADReviewAdd
+	PTADRestaurantAdd
+	PTDAAck
+	PTDAError
 	PTLog
-	PTAck
-	PTError
 )
 
 // Packet interface can generate unique PacketType.
@@ -27,7 +27,7 @@ type Packet interface {
 }
 
 /******************************************************************************
-* Database packets
+* API to Database packets
 ******************************************************************************/
 
 // ADPacketUserAdd inserts new user data.
@@ -48,6 +48,10 @@ type ADPacketRestaurantAdd struct {
 	Name  string
 	Coord common.Coordinate
 }
+
+/******************************************************************************
+* Database to API packets
+******************************************************************************/
 
 // DAPacketAck contains ack response.
 type DAPacketAck struct {
@@ -75,27 +79,27 @@ type PacketLog struct {
 
 // Type implements Packet interface.
 func (p *ADPacketUserAdd) Type() PacketType {
-	return PTUserAdd
+	return PTADUserAdd
 }
 
 // Type implements Packet interface.
 func (p *ADPacketReviewAdd) Type() PacketType {
-	return PTReviewAdd
+	return PTADReviewAdd
 }
 
 // Type implements Packet interface.
 func (p *ADPacketRestaurantAdd) Type() PacketType {
-	return PTRestaurantAdd
+	return PTADRestaurantAdd
 }
 
 // Type implements Packet interface.
 func (p *DAPacketAck) Type() PacketType {
-	return PTAck
+	return PTDAAck
 }
 
 // Type implements Packet interface.
 func (p *DAPacketError) Type() PacketType {
-	return PTError
+	return PTDAError
 }
 
 // Type implements Packet interface.
