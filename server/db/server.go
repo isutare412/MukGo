@@ -196,6 +196,15 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleUserAdd(&p)
 
+	case server.PTADUserGet:
+		var p server.ADPacketUserGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleUserGet(&p)
+
 	case server.PTADReviewAdd:
 		var p server.ADPacketReviewAdd
 		err = json.Unmarshal(ser, &p)

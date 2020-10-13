@@ -14,10 +14,14 @@ type PacketType int32
 const (
 	PTInvalid PacketType = iota
 	PTADUserAdd
+	PTADUserGet
 	PTADReviewAdd
 	PTADRestaurantAdd
 	PTDAAck
 	PTDAError
+	PTDAUserExist
+	PTDANoSuchUser
+	PTDAUser
 	PTLog
 )
 
@@ -32,13 +36,18 @@ type Packet interface {
 
 // ADPacketUserAdd inserts new user data.
 type ADPacketUserAdd struct {
-	UserID int
+	UserID string
 	Name   string
+}
+
+// ADPacketUserGet request user data.
+type ADPacketUserGet struct {
+	UserID string
 }
 
 // ADPacketReviewAdd containes review data.
 type ADPacketReviewAdd struct {
-	UserID  int
+	UserID  string
 	Score   int
 	Comment string
 }
@@ -62,6 +71,22 @@ type DAPacketError struct {
 	Message string
 }
 
+type DAPacketUserExist struct {
+	UserID string
+}
+
+// DAPacketNoSuchUser contains error messge.
+type DAPacketNoSuchUser struct {
+	UserID string
+}
+
+// DAPacketUser contains error messge.
+type DAPacketUser struct {
+	UserID string
+	Name   string
+	Exp    int64
+}
+
 /******************************************************************************
 * Log packets
 ******************************************************************************/
@@ -83,6 +108,11 @@ func (p *ADPacketUserAdd) Type() PacketType {
 }
 
 // Type implements Packet interface.
+func (p *ADPacketUserGet) Type() PacketType {
+	return PTADUserGet
+}
+
+// Type implements Packet interface.
 func (p *ADPacketReviewAdd) Type() PacketType {
 	return PTADReviewAdd
 }
@@ -100,6 +130,21 @@ func (p *DAPacketAck) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketError) Type() PacketType {
 	return PTDAError
+}
+
+// Type implements Packet interface.
+func (p *DAPacketUserExist) Type() PacketType {
+	return PTDAUserExist
+}
+
+// Type implements Packet interface.
+func (p *DAPacketNoSuchUser) Type() PacketType {
+	return PTDANoSuchUser
+}
+
+// Type implements Packet interface.
+func (p *DAPacketUser) Type() PacketType {
+	return PTDAUser
 }
 
 // Type implements Packet interface.
