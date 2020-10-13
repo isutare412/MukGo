@@ -15,7 +15,7 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 		wait := make(chan struct{})
 
 		// parse request from client
-		var userReq JSONUserPost
+		var userReq CAUserPost
 		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
 			console.Warning("on handlerUser: failed to decode request")
 			httpError(w, http.StatusBadRequest)
@@ -23,7 +23,7 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// create packet for database server
-		var dbReq = server.PacketUserAdd{
+		var dbReq = server.ADPacketUserAdd{
 			UserID: userReq.UserID,
 			Name:   userReq.Name,
 		}
@@ -41,7 +41,7 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// check packet by type casting from interface
-			_, ok := p.(*server.PacketAck)
+			_, ok := p.(*server.DAPacketAck)
 			if !ok {
 				console.Warning("on handlerUser: failed to write to database")
 				httpError(w, http.StatusConflict)
@@ -75,7 +75,7 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 		wait := make(chan struct{})
 
 		// parse request from client
-		var userReq JSONReviewPost
+		var userReq CAReviewPost
 		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
 			console.Warning("on handlerReview: failed to decode request")
 			httpError(w, http.StatusBadRequest)
@@ -83,7 +83,7 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// create packet for database server
-		var dbReq = server.PacketReviewAdd{
+		var dbReq = server.ADPacketReviewAdd{
 			UserID:  userReq.UserID,
 			Score:   userReq.Score,
 			Comment: userReq.Comment,
@@ -102,7 +102,7 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// check packet by type casting from interface
-			_, ok := p.(*server.PacketAck)
+			_, ok := p.(*server.DAPacketAck)
 			if !ok {
 				console.Warning("on handlerReview: failed to write to database")
 				httpError(w, http.StatusInternalServerError)
@@ -136,7 +136,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 		wait := make(chan struct{})
 
 		// parse request from client
-		var userReq JSONRestaurantPost
+		var userReq CARestaurantPost
 		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
 			console.Warning("on handlerRestaurant: failed to decode request")
 			httpError(w, http.StatusBadRequest)
@@ -144,7 +144,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// create packet for database server
-		var dbReq = server.PacketRestaurantAdd{
+		var dbReq = server.ADPacketRestaurantAdd{
 			Name: userReq.Name,
 			Coord: common.Coordinate{
 				Latitude:  userReq.Latitude,
@@ -165,7 +165,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// check packet by type casting from interface
-			_, ok := p.(*server.PacketAck)
+			_, ok := p.(*server.DAPacketAck)
 			if !ok {
 				console.Warning("on handleRestaurant: failed to write to database")
 				httpError(w, http.StatusInternalServerError)

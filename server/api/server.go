@@ -126,12 +126,12 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 	// parse packet
 	switch packetType {
 	case server.PTAck:
-		var p server.PacketAck
+		var p server.DAPacketAck
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
 	case server.PTError:
-		var p server.PacketError
+		var p server.DAPacketError
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 

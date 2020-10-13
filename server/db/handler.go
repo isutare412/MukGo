@@ -10,7 +10,7 @@ import (
 
 const queryTimeout = 5 * time.Second
 
-func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
+func (s *Server) handleUserAdd(p *server.ADPacketUserAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
@@ -24,14 +24,14 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 		})
 	if err != nil {
 		console.Warning("failed to insert user(%v): %v", *p, err)
-		return &server.PacketError{Message: "failed to insert user"}
+		return &server.DAPacketError{Message: "failed to insert user"}
 	}
 
 	console.Info("insert user; UserID(%d), Name(%s)", p.UserID, p.Name)
-	return &server.PacketAck{}
+	return &server.DAPacketAck{}
 }
 
-func (s *Server) handleReviewAdd(p *server.PacketReviewAdd) server.Packet {
+func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
@@ -45,14 +45,14 @@ func (s *Server) handleReviewAdd(p *server.PacketReviewAdd) server.Packet {
 		})
 	if err != nil {
 		console.Warning("failed to insert review(%v): %v", *p, err)
-		return &server.PacketError{Message: "failed to insert review"}
+		return &server.DAPacketError{Message: "failed to insert review"}
 	}
 
 	console.Info("insert review; UserID(%d), Score(%d)", p.UserID, p.Score)
-	return &server.PacketAck{}
+	return &server.DAPacketAck{}
 }
 
-func (s *Server) handleRestaurantAdd(p *server.PacketRestaurantAdd) server.Packet {
+func (s *Server) handleRestaurantAdd(p *server.ADPacketRestaurantAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
@@ -66,9 +66,9 @@ func (s *Server) handleRestaurantAdd(p *server.PacketRestaurantAdd) server.Packe
 		})
 	if err != nil {
 		console.Warning("failed to insert restaurant(%v): %v", *p, err)
-		return &server.PacketError{Message: "failed to insert restaurant"}
+		return &server.DAPacketError{Message: "failed to insert restaurant"}
 	}
 
 	console.Info("insert restaurant; Name(%s)", p.Name)
-	return &server.PacketAck{}
+	return &server.DAPacketAck{}
 }

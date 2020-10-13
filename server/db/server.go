@@ -152,25 +152,8 @@ func (s *Server) Run() error {
 	return nil
 }
 
-func (s *Server) sendLog(format string, v ...interface{}) {
-	packet := server.PacketLog{
-		Timestamp: time.Now(),
-		Msg:       fmt.Sprintf(format, v...),
-	}
-
-	if err := s.mqss.Publish(
-		server.MGLogs,
-		"",
-		server.DB,
-		&packet,
-	); err != nil {
-		console.Error("failed to publish log: %v", err)
-		return
-	}
-}
-
 func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
-	var response server.Packet = &server.PacketError{}
+	var response server.Packet = &server.DAPacketError{}
 	defer func() {
 		// reply RPC with response packet
 		if pubErr := s.mqss.Reply(
@@ -205,7 +188,7 @@ func (s *Server) handlePacket(
 	// parse packet
 	switch pt {
 	case server.PTUserAdd:
-		var p server.PacketUserAdd
+		var p server.ADPacketUserAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)
@@ -214,7 +197,7 @@ func (s *Server) handlePacket(
 		response = s.handleUserAdd(&p)
 
 	case server.PTReviewAdd:
-		var p server.PacketReviewAdd
+		var p server.ADPacketReviewAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)
@@ -223,7 +206,7 @@ func (s *Server) handlePacket(
 		response = s.handleReviewAdd(&p)
 
 	case server.PTRestaurantAdd:
-		var p server.PacketRestaurantAdd
+		var p server.ADPacketRestaurantAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)

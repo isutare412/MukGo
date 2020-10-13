@@ -30,31 +30,31 @@ type Packet interface {
 * Database packets
 ******************************************************************************/
 
-// PacketUserAdd inserts new user data.
-type PacketUserAdd struct {
+// ADPacketUserAdd inserts new user data.
+type ADPacketUserAdd struct {
 	UserID int
 	Name   string
 }
 
-// PacketReviewAdd containes review data.
-type PacketReviewAdd struct {
+// ADPacketReviewAdd containes review data.
+type ADPacketReviewAdd struct {
 	UserID  int
 	Score   int
 	Comment string
 }
 
-// PacketRestaurantAdd contains data for new restaurant.
-type PacketRestaurantAdd struct {
+// ADPacketRestaurantAdd contains data for new restaurant.
+type ADPacketRestaurantAdd struct {
 	Name  string
 	Coord common.Coordinate
 }
 
-// PacketAck contains ack response.
-type PacketAck struct {
+// DAPacketAck contains ack response.
+type DAPacketAck struct {
 }
 
-// PacketError contains error messge.
-type PacketError struct {
+// DAPacketError contains error messge.
+type DAPacketError struct {
 	Message string
 }
 
@@ -74,27 +74,27 @@ type PacketLog struct {
 ******************************************************************************/
 
 // Type implements Packet interface.
-func (p *PacketUserAdd) Type() PacketType {
+func (p *ADPacketUserAdd) Type() PacketType {
 	return PTUserAdd
 }
 
 // Type implements Packet interface.
-func (p *PacketReviewAdd) Type() PacketType {
+func (p *ADPacketReviewAdd) Type() PacketType {
 	return PTReviewAdd
 }
 
 // Type implements Packet interface.
-func (p *PacketRestaurantAdd) Type() PacketType {
+func (p *ADPacketRestaurantAdd) Type() PacketType {
 	return PTRestaurantAdd
 }
 
 // Type implements Packet interface.
-func (p *PacketAck) Type() PacketType {
+func (p *DAPacketAck) Type() PacketType {
 	return PTAck
 }
 
 // Type implements Packet interface.
-func (p *PacketError) Type() PacketType {
+func (p *DAPacketError) Type() PacketType {
 	return PTError
 }
 
