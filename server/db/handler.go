@@ -20,6 +20,7 @@ func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
 		User{
 			UserID: p.UserID,
 			Name:   p.Name,
+			Exp:    0,
 		})
 	if err != nil {
 		console.Warning("failed to insert user(%v): %v", *p, err)
