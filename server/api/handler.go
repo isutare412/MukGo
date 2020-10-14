@@ -106,7 +106,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq CAUserPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-		console.Warning("on handlerUserPost: failed to decode request")
+		console.Warning("on handleUserPost: failed to decode request")
 		httpError(w, http.StatusBadRequest)
 		return
 	}
@@ -124,7 +124,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 
 		// failed to receive packet from database server
 		if !success {
-			console.Warning("on handlerUserPost: no packet received")
+			console.Warning("on handleUserPost: no packet received")
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
@@ -151,7 +151,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 		&dbReq,
 		response,
 	); err != nil {
-		console.Warning("on handlerUserPost: send2DB failed: %v", err)
+		console.Warning("on handleUserPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
@@ -175,7 +175,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq CAReviewPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-		console.Warning("on handlerReviewPost: failed to decode request")
+		console.Warning("on handleReviewPost: failed to decode request")
 		httpError(w, http.StatusBadRequest)
 		return
 	}
@@ -194,7 +194,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 
 		// failed to receive packet from database server
 		if !success {
-			console.Warning("on handlerReviewPost: no packet received")
+			console.Warning("on handleReviewPost: no packet received")
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
@@ -221,7 +221,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		&dbReq,
 		response,
 	); err != nil {
-		console.Warning("on handlerReviewPost: send2DB failed: %v", err)
+		console.Warning("on handleReviewPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
