@@ -24,3 +24,16 @@ func Exp2Level(exp int64) (level int, residual int64, ratio float64) {
 	}
 	return
 }
+
+// Level2Sight returns a radius of user's sight derived from user's level.
+// Returned radius is METER.
+func Level2Sight(level int) float64 {
+	return 10.0 + float64(level)*10.0
+}
+
+// Exp2Sight returns a radius of user's sight derived from user's exp point.
+// Returned radius is METER.
+func Exp2Sight(exp int64) float64 {
+	level, _, _ := Exp2Level(exp)
+	return Level2Sight(level)
+}

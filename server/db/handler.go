@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/isutare412/MukGo/server"
+	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,14 +16,7 @@ func (s *Server) handleUserAdd(p *server.ADPacketUserAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	coll := s.db.Collection(CNUser)
-	_, err := coll.InsertOne(
-		ctx,
-		User{
-			UserID: p.UserID,
-			Name:   p.Name,
-			Exp:    0,
-		})
+	err := queryUserAdd(ctx, s.db, p.UserID, p.Name, 0)
 	if err != nil {
 		console.Warning("failed to insert user(%v): %v", *p, err)
 		return &server.DAPacketUserExist{UserID: p.UserID}
@@ -37,35 +30,23 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	coll := s.db.Collection(CNUser)
-	cursor := coll.FindOne(
-		ctx,
-		bson.M{
-			"userid": p.UserID,
-		})
-
-	switch cursor.Err() {
-	case nil:
-		break // success
-	case mongo.ErrNoDocuments:
-		console.Warning("cannot find user; packet(%v)", *p)
-		return &server.DAPacketNoSuchUser{UserID: p.UserID}
-	default:
-		console.Warning("failed to find user; packet(%v)", *p)
-		return &server.DAPacketError{Message: "cannot find user"}
+	user, err := queryUserGet(ctx, s.db, p.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning("cannot find user; packet(%v)", *p)
+			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+		default:
+			console.Warning("failed to get user; packet(%v)", *p)
+			return &server.DAPacketError{Message: "failed to get user"}
+		}
 	}
 
-	var found User
-	if err := cursor.Decode(&found); err != nil {
-		console.Warning("failed to decode user; packet(%v): %v", *p, err)
-		return &server.DAPacketError{Message: "failed to decode user"}
-	}
-
-	console.Info("send user data; User(%v)", found)
+	console.Info("send user data; User(%v)", *user)
 	return &server.DAPacketUser{
-		UserID: found.UserID,
-		Name:   found.Name,
-		Exp:    found.Exp,
+		UserID: user.UserID,
+		Name:   user.Name,
+		Exp:    user.Exp,
 	}
 }
 
@@ -73,14 +54,7 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	coll := s.db.Collection(CNReview)
-	_, err := coll.InsertOne(
-		ctx,
-		Review{
-			UserID:  p.UserID,
-			Score:   p.Score,
-			Comment: p.Comment,
-		})
+	err := queryReviewAdd(ctx, s.db, p.UserID, p.Score, p.Comment)
 	if err != nil {
 		console.Warning("failed to insert review(%v): %v", *p, err)
 		return &server.DAPacketError{Message: "failed to insert review"}
@@ -90,18 +64,14 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	return &server.DAPacketAck{}
 }
 
-func (s *Server) handleRestaurantAdd(p *server.ADPacketRestaurantAdd) server.Packet {
+func (s *Server) handleRestaurantAdd(
+	p *server.ADPacketRestaurantAdd,
+) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	coll := s.db.Collection(CNRestaurant)
-	_, err := coll.InsertOne(
-		ctx,
-		Restaurant{
-			Name:      p.Name,
-			Latitude:  p.Coord.Latitude,
-			Longitude: p.Coord.Longitude,
-		})
+	err := queryRestaurantAdd(
+		ctx, s.db, p.Name, p.Coord.Latitude, p.Coord.Longitude)
 	if err != nil {
 		console.Warning("failed to insert restaurant(%v): %v", *p, err)
 		return &server.DAPacketError{Message: "failed to insert restaurant"}
@@ -109,4 +79,51 @@ func (s *Server) handleRestaurantAdd(p *server.ADPacketRestaurantAdd) server.Pac
 
 	console.Info("insert restaurant; Name(%v)", p.Name)
 	return &server.DAPacketAck{}
+}
+
+func (s *Server) handleRestaurantsGet(
+	p *server.ADPacketRestaurantsGet,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	user, err := queryUserGet(ctx, s.db, p.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning("cannot find user; packet(%v)", *p)
+			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+		default:
+			console.Warning("failed to get user; packet(%v)", *p)
+			return &server.DAPacketError{Message: "failed to get user"}
+		}
+	}
+
+	// get restaurants within sight range
+	sight := common.Exp2Sight(user.Exp)
+	northWest, southEast := p.Coord.RangeSquare(sight)
+	restaurants, err := queryRestaurantsGet(
+		ctx, s.db,
+		southEast.Latitude, northWest.Latitude,
+		northWest.Longitude, southEast.Longitude,
+	)
+	if err != nil {
+		console.Warning("failed to find restaurants; Coord(%v): %v", p.Coord, err)
+		return &server.DAPacketError{Message: "failed to find restaurants"}
+	}
+
+	// copy restaurants data
+	resPacket := server.DAPacketRestaurants{
+		Restaurants: make([]common.Restaurant, 0, len(restaurants)),
+	}
+	for _, r := range restaurants {
+		resPacket.Restaurants = append(resPacket.Restaurants, common.Restaurant{
+			Name:      r.Name,
+			Latitude:  r.Latitude,
+			Longitude: r.Longitude,
+		})
+	}
+
+	console.Info("found restaurants; count(%v)", len(resPacket.Restaurants))
+	return &resPacket
 }

@@ -66,14 +66,16 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 
 		// calculate level
 		level, residual, ratio := common.Exp2Level(packet.Exp)
+		sightRadius := common.Level2Sight(level)
 
 		// serialize user data
 		ser, err := json.Marshal(&ACUserInfo{
-			Name:     packet.Name,
-			Level:    level,
-			TotalExp: packet.Exp,
-			LevelExp: residual,
-			ExpRatio: ratio,
+			Name:        packet.Name,
+			Level:       level,
+			TotalExp:    packet.Exp,
+			LevelExp:    residual,
+			ExpRatio:    ratio,
+			SightRadius: sightRadius,
 		})
 		if err != nil {
 			console.Warning("on handleUserGet: failed to marshal user data")
@@ -294,6 +296,103 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 		response,
 	); err != nil {
 		console.Warning("on handleRestaurantPost: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// wait for response
+	<-wait
+}
+
+func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		s.handleRestaurantsGet(w, r)
+	default:
+		httpError(w, http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
+	wait := make(chan struct{})
+
+	// parse request from client
+	var userReq CARestaurantsGet
+	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+		console.Warning("on handleRestaurantsGet: failed to decode request")
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketRestaurantsGet{
+		UserID: userReq.UserID,
+		Coord: common.Coordinate{
+			Latitude:  userReq.Latitude,
+			Longitude: userReq.Longitude,
+		},
+	}
+
+	response := func(success bool, p server.Packet) {
+		defer func() {
+			wait <- struct{}{}
+		}()
+
+		// failed to receive packet from database server
+		if !success {
+			console.Warning("on handleRestaurantsGet: no packet received")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		// check packet by type casting from interface
+		var packet *server.DAPacketRestaurants
+		switch p.(type) {
+		case *server.DAPacketRestaurants:
+			packet = p.(*server.DAPacketRestaurants)
+		case *server.DAPacketError:
+			console.Warning("on handleRestaurantsGet: db error: %v",
+				p.(*server.DAPacketError).Message)
+			httpError(w, http.StatusInternalServerError)
+			return
+		default:
+			console.Warning("on handleRestaurantsGet: unexpected packet")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		// build response data
+		rests := ACRestaurantsInfo{
+			Restaurants: make([]Restaurant, 0, len(packet.Restaurants)),
+		}
+		for _, r := range packet.Restaurants {
+			rests.Restaurants = append(rests.Restaurants, Restaurant{
+				Name:      r.Name,
+				Latitude:  r.Latitude,
+				Longitude: r.Longitude,
+			})
+		}
+
+		// serialize user data
+		ser, err := json.Marshal(&rests)
+		if err != nil {
+			console.Warning(
+				"on handleRestaurantsGet: failed to marshal restaurants data")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(ser)
+		console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
+	}
+
+	// send packet to database server and register response handler
+	if err := s.send2DB(
+		&dbReq,
+		response,
+	); err != nil {
+		console.Warning("on handleRestaurantsGet: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}

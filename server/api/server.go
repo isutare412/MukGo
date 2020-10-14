@@ -145,6 +145,11 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
+	case server.PTDARestaurants:
+		var p server.DAPacketRestaurants
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
 	default:
 		parseErr = fmt.Errorf("no parser for %d", int(packetType))
 	}
@@ -181,6 +186,7 @@ func (s *Server) registerHandlers() {
 	s.mux.HandleFunc("/user", s.handleUser)
 	s.mux.HandleFunc("/review", s.handleReview)
 	s.mux.HandleFunc("/restaurant", s.handleRestaurant)
+	s.mux.HandleFunc("/restaurants", s.handleRestaurants)
 }
 
 func (s *Server) send2DB(

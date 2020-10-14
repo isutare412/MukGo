@@ -17,11 +17,13 @@ const (
 	PTADUserGet
 	PTADReviewAdd
 	PTADRestaurantAdd
+	PTADRestaurantsGet
 	PTDAAck
 	PTDAError
 	PTDAUserExist
 	PTDANoSuchUser
 	PTDAUser
+	PTDARestaurants
 	PTLog
 )
 
@@ -58,6 +60,12 @@ type ADPacketRestaurantAdd struct {
 	Coord common.Coordinate
 }
 
+// ADPacketRestaurantsGet request restaurants within user's sight.
+type ADPacketRestaurantsGet struct {
+	UserID string
+	Coord  common.Coordinate
+}
+
 /******************************************************************************
 * Database to API packets
 ******************************************************************************/
@@ -71,6 +79,7 @@ type DAPacketError struct {
 	Message string
 }
 
+// DAPacketUserExist contains error message.
 type DAPacketUserExist struct {
 	UserID string
 }
@@ -80,11 +89,16 @@ type DAPacketNoSuchUser struct {
 	UserID string
 }
 
-// DAPacketUser contains error messge.
+// DAPacketUser contains user data.
 type DAPacketUser struct {
 	UserID string
 	Name   string
 	Exp    int64
+}
+
+// DAPacketRestaurants contains multiple Restaurant models.
+type DAPacketRestaurants struct {
+	Restaurants []common.Restaurant
 }
 
 /******************************************************************************
@@ -123,6 +137,11 @@ func (p *ADPacketRestaurantAdd) Type() PacketType {
 }
 
 // Type implements Packet interface.
+func (p *ADPacketRestaurantsGet) Type() PacketType {
+	return PTADRestaurantsGet
+}
+
+// Type implements Packet interface.
 func (p *DAPacketAck) Type() PacketType {
 	return PTDAAck
 }
@@ -145,6 +164,11 @@ func (p *DAPacketNoSuchUser) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketUser) Type() PacketType {
 	return PTDAUser
+}
+
+// Type implements Packet interface.
+func (p *DAPacketRestaurants) Type() PacketType {
+	return PTDARestaurants
 }
 
 // Type implements Packet interface.
