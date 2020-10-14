@@ -120,6 +120,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 		// check packet by type casting from interface
 		switch p.(type) {
 		case *server.DAPacketAck:
+			break
 		case *server.DAPacketUserExist:
 			console.Warning("on handleUserPost: user exists; UserId(%v)",
 				p.(*server.DAPacketUserExist).UserID)
@@ -182,6 +183,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		// check packet by type casting from interface
 		switch p.(type) {
 		case *server.DAPacketAck:
+			break
 		case *server.DAPacketError:
 			console.Warning("on handleReviewPost: db error: %v",
 				p.(*server.DAPacketError).Message)
@@ -246,6 +248,7 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 		// check packet by type casting from interface
 		switch p.(type) {
 		case *server.DAPacketAck:
+			break
 		case *server.DAPacketError:
 			console.Warning("on handleRestaurantPost: db error: %v",
 				p.(*server.DAPacketError).Message)
@@ -276,6 +279,8 @@ func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		s.handleRestaurantsGet(w, r)
+	case "POST":
+		s.handleRestaurantsPost(w, r)
 	default:
 		httpError(w, http.StatusMethodNotAllowed)
 	}
@@ -325,13 +330,13 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 
 		// build response data
 		rests := ACRestaurantsInfo{
-			Restaurants: make([]Restaurant, 0, len(packet.Restaurants)),
+			Restaurants: make([]*Restaurant, 0, len(packet.Restaurants)),
 		}
 		for _, r := range packet.Restaurants {
-			rests.Restaurants = append(rests.Restaurants, Restaurant{
+			rests.Restaurants = append(rests.Restaurants, &Restaurant{
 				Name:      r.Name,
-				Latitude:  r.Latitude,
-				Longitude: r.Longitude,
+				Latitude:  r.Coord.Latitude,
+				Longitude: r.Coord.Longitude,
 			})
 		}
 
@@ -353,6 +358,68 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	done, err := s.send2DB(&dbReq, response)
 	if err != nil {
 		console.Warning("on handleRestaurantsGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// wait for response
+	<-done
+}
+
+func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
+	// parse request from client
+	var userReq CARestaurantsPost
+	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+		console.Warning("on handleRestaurantsPost: failed to decode request")
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketRestaurantsAdd{
+		Restaurants: make([]*common.Restaurant, 0, len(userReq.Restaurants)),
+	}
+	for _, r := range userReq.Restaurants {
+		dbReq.Restaurants = append(dbReq.Restaurants, &common.Restaurant{
+			Name: r.Name,
+			Coord: common.Coordinate{
+				Latitude:  r.Latitude,
+				Longitude: r.Longitude,
+			},
+		})
+	}
+
+	response := func(success bool, p server.Packet) {
+		// failed to receive packet from database server
+		if !success {
+			console.Warning("on handleRestaurantsPost: no packet received")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		// check packet by type casting from interface
+		switch p.(type) {
+		case *server.DAPacketAck:
+			break
+		case *server.DAPacketError:
+			console.Warning("on handleRestaurantsPost: db error: %v",
+				p.(*server.DAPacketError).Message)
+			httpError(w, http.StatusInternalServerError)
+			return
+		default:
+			console.Warning("on handleRestaurantsPost: unexpected packet")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		console.Info("new restaurants added; count(%v)",
+			len(userReq.Restaurants))
+	}
+
+	// send packet to database server and register response handler
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
+		console.Warning("on handleRestaurantsPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}

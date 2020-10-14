@@ -114,16 +114,41 @@ func (s *Server) handleRestaurantsGet(
 
 	// copy restaurants data
 	resPacket := server.DAPacketRestaurants{
-		Restaurants: make([]common.Restaurant, 0, len(restaurants)),
+		Restaurants: make([]*common.Restaurant, 0, len(restaurants)),
 	}
 	for _, r := range restaurants {
-		resPacket.Restaurants = append(resPacket.Restaurants, common.Restaurant{
-			Name:      r.Name,
-			Latitude:  r.Latitude,
-			Longitude: r.Longitude,
-		})
+		resPacket.Restaurants = append(resPacket.Restaurants,
+			&common.Restaurant{
+				Name: r.Name,
+				Coord: common.Coordinate{
+					Latitude:  r.Latitude,
+					Longitude: r.Longitude,
+				},
+			})
 	}
 
 	console.Info("found restaurants; count(%v)", len(resPacket.Restaurants))
 	return &resPacket
+}
+
+func (s *Server) handleRestaurantsAdd(
+	p *server.ADPacketRestaurantsAdd,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	for _, r := range p.Restaurants {
+		err := queryRestaurantAdd(
+			ctx, s.db, r.Name, r.Coord.Latitude, r.Coord.Longitude)
+
+		if err != nil {
+			console.Warning(
+				"handleRestaurantsAdd: failed to insert restaurant(%v): %v",
+				*r, err)
+			return &server.DAPacketError{Message: "failed to insert restaurant"}
+		}
+	}
+
+	console.Info("insert restaurants; count(%v)", len(p.Restaurants))
+	return &server.DAPacketAck{}
 }

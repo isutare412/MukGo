@@ -40,6 +40,11 @@ type CARestaurantPost struct {
 	Longitude float64 `json:"longitude"`
 }
 
+// CARestaurantsPost defines post data for restaurants.
+type CARestaurantsPost struct {
+	Restaurants []*Restaurant `json:"restaurants"`
+}
+
 // CARestaurantsGet request restarants data within user's sight.
 type CARestaurantsGet struct {
 	UserID    string  `json:"userid"`
@@ -63,5 +68,5 @@ type ACUserInfo struct {
 
 // ACRestaurantsInfo contains multiple restaurants data.
 type ACRestaurantsInfo struct {
-	Restaurants []Restaurant `json:"restaurants"`
+	Restaurants []*Restaurant `json:"restaurants"`
 }

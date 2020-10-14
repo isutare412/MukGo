@@ -12,12 +12,16 @@ type PacketType int32
 
 // All PacketTypes.
 const (
+	// api server to dabase server
 	PTInvalid PacketType = iota
 	PTADUserAdd
 	PTADUserGet
 	PTADReviewAdd
 	PTADRestaurantAdd
 	PTADRestaurantsGet
+	PTADRestaurantsAdd
+
+	// database server to api server
 	PTDAAck
 	PTDAError
 	PTDAUserExist
@@ -66,6 +70,11 @@ type ADPacketRestaurantsGet struct {
 	Coord  common.Coordinate
 }
 
+// ADPacketRestaurantsAdd contains data for new restaurants.
+type ADPacketRestaurantsAdd struct {
+	Restaurants []*common.Restaurant
+}
+
 /******************************************************************************
 * Database to API packets
 ******************************************************************************/
@@ -98,7 +107,7 @@ type DAPacketUser struct {
 
 // DAPacketRestaurants contains multiple Restaurant models.
 type DAPacketRestaurants struct {
-	Restaurants []common.Restaurant
+	Restaurants []*common.Restaurant
 }
 
 /******************************************************************************
@@ -139,6 +148,11 @@ func (p *ADPacketRestaurantAdd) Type() PacketType {
 // Type implements Packet interface.
 func (p *ADPacketRestaurantsGet) Type() PacketType {
 	return PTADRestaurantsGet
+}
+
+// Type implements Packet interface.
+func (p *ADPacketRestaurantsAdd) Type() PacketType {
+	return PTADRestaurantsAdd
 }
 
 // Type implements Packet interface.

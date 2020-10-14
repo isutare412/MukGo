@@ -79,7 +79,7 @@ func queryRestaurantsGet(
 	db *mongo.Database,
 	minLat, maxLat float64,
 	minLon, maxLon float64,
-) ([]Restaurant, error) {
+) ([]*Restaurant, error) {
 	coll := db.Collection(CNRestaurant)
 	cursor, err := coll.Find(
 		ctx,
@@ -98,7 +98,7 @@ func queryRestaurantsGet(
 		return nil, fmt.Errorf("on queryRestaurantsGet: %v", err)
 	}
 
-	restaurants := make([]Restaurant, 0)
+	restaurants := make([]*Restaurant, 0)
 	err = cursor.All(ctx, &restaurants)
 	if err != nil {
 		return nil, fmt.Errorf("on queryRestaurantsGet: %v", err)
