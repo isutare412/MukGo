@@ -192,11 +192,19 @@ func (s *Server) registerHandlers() {
 func (s *Server) send2DB(
 	p server.Packet,
 	response func(bool, server.Packet),
-) error {
+) (<-chan struct{}, error) {
+	// wrapper with done channel when response is called
+	done := make(chan struct{})
+	wrapper := func(b bool, p server.Packet) {
+		response(b, p)
+		done <- struct{}{}
+		close(done)
+	}
+
 	// register response handler
 	correlationID := <-s.handles.IDGet
-	if err := s.handles.Register(correlationID, response); err != nil {
-		return fmt.Errorf("on send2DB: %v", err)
+	if err := s.handles.Register(correlationID, wrapper); err != nil {
+		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
 	// request RPC
@@ -209,7 +217,7 @@ func (s *Server) send2DB(
 		p,
 	); err != nil {
 		s.handles.Pop(correlationID)
-		return fmt.Errorf("on send2DB: %v", err)
+		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
 	// set response handler timeout
@@ -223,7 +231,7 @@ func (s *Server) send2DB(
 		handler(false, nil)
 	}(correlationID)
 
-	return nil
+	return done, nil
 }
 
 // httpError responses to client with proper http error message.

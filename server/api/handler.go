@@ -21,8 +21,6 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
-	wait := make(chan struct{})
-
 	// parse request from client
 	var userReq CAUserGet
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -37,10 +35,6 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := func(success bool, p server.Packet) {
-		defer func() {
-			wait <- struct{}{}
-		}()
-
 		// failed to receive packet from database server
 		if !success {
 			console.Warning("on handleUserGet: no packet received")
@@ -89,22 +83,18 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send packet to database server and register response handler
-	if err := s.send2DB(
-		&dbReq,
-		response,
-	); err != nil {
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
 		console.Warning("on handleUserGet: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// wait for response
-	<-wait
+	<-done
 }
 
 func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
-	wait := make(chan struct{})
-
 	// parse request from client
 	var userReq CAUserPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -120,10 +110,6 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := func(success bool, p server.Packet) {
-		defer func() {
-			wait <- struct{}{}
-		}()
-
 		// failed to receive packet from database server
 		if !success {
 			console.Warning("on handleUserPost: no packet received")
@@ -149,17 +135,15 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send packet to database server and register response handler
-	if err := s.send2DB(
-		&dbReq,
-		response,
-	); err != nil {
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
 		console.Warning("on handleUserPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// wait for response
-	<-wait
+	<-done
 }
 
 func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
@@ -172,8 +156,6 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
-	wait := make(chan struct{})
-
 	// parse request from client
 	var userReq CAReviewPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -190,10 +172,6 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := func(success bool, p server.Packet) {
-		defer func() {
-			wait <- struct{}{}
-		}()
-
 		// failed to receive packet from database server
 		if !success {
 			console.Warning("on handleReviewPost: no packet received")
@@ -219,17 +197,15 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send packet to database server and register response handler
-	if err := s.send2DB(
-		&dbReq,
-		response,
-	); err != nil {
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
 		console.Warning("on handleReviewPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// wait for response
-	<-wait
+	<-done
 }
 
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -242,8 +218,6 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
-	wait := make(chan struct{})
-
 	// parse request from client
 	var userReq CARestaurantPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -262,10 +236,6 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := func(success bool, p server.Packet) {
-		defer func() {
-			wait <- struct{}{}
-		}()
-
 		// failed to receive packet from database server
 		if !success {
 			console.Warning("on handleRestaurantPost: no packet received")
@@ -291,17 +261,15 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send packet to database server and register response handler
-	if err := s.send2DB(
-		&dbReq,
-		response,
-	); err != nil {
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
 		console.Warning("on handleRestaurantPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// wait for response
-	<-wait
+	<-done
 }
 
 func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
@@ -314,8 +282,6 @@ func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
-	wait := make(chan struct{})
-
 	// parse request from client
 	var userReq CARestaurantsGet
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -334,10 +300,6 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := func(success bool, p server.Packet) {
-		defer func() {
-			wait <- struct{}{}
-		}()
-
 		// failed to receive packet from database server
 		if !success {
 			console.Warning("on handleRestaurantsGet: no packet received")
@@ -388,15 +350,13 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send packet to database server and register response handler
-	if err := s.send2DB(
-		&dbReq,
-		response,
-	); err != nil {
+	done, err := s.send2DB(&dbReq, response)
+	if err != nil {
 		console.Warning("on handleRestaurantsGet: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
 	// wait for response
-	<-wait
+	<-done
 }
