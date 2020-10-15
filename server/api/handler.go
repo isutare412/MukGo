@@ -334,6 +334,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		for _, r := range packet.Restaurants {
 			rests.Restaurants = append(rests.Restaurants, &Restaurant{
+				ID:        r.ID.Hex(),
 				Name:      r.Name,
 				Latitude:  r.Coord.Latitude,
 				Longitude: r.Coord.Longitude,

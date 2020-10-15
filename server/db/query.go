@@ -43,7 +43,12 @@ func queryUserGet(
 		})
 
 	if err := cursor.Err(); err != nil {
-		return nil, fmt.Errorf("on queryUserGet: %v", err)
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, err
+		default:
+			return nil, fmt.Errorf("on queryUserGet: %v", err)
+		}
 	}
 
 	var user User

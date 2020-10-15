@@ -34,10 +34,10 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 	if err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
-			console.Warning("cannot find user; packet(%v)", *p)
+			console.Warning("cannot find user; packet(%v): %v", *p, err)
 			return &server.DAPacketNoSuchUser{UserID: p.UserID}
 		default:
-			console.Warning("failed to get user; packet(%v)", *p)
+			console.Warning("failed to get user; packet(%v): %v", *p, err)
 			return &server.DAPacketError{Message: "failed to get user"}
 		}
 	}
@@ -119,6 +119,7 @@ func (s *Server) handleRestaurantsGet(
 	for _, r := range restaurants {
 		resPacket.Restaurants = append(resPacket.Restaurants,
 			&common.Restaurant{
+				ID:   r.ID,
 				Name: r.Name,
 				Coord: common.Coordinate{
 					Latitude:  r.Latitude,
