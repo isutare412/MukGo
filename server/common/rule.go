@@ -37,3 +37,8 @@ func Exp2Sight(exp int64) float64 {
 	level, _, _ := Exp2Level(exp)
 	return Level2Sight(level)
 }
+
+// ReviewExp calculates exp given for each review.
+func ReviewExp() int64 {
+	return 50
+}

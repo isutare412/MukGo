@@ -7,6 +7,7 @@ import (
 	"github.com/isutare412/MukGo/server"
 	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
@@ -165,9 +166,18 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	restID, err := primitive.ObjectIDFromHex(userReq.RestID)
+	if err != nil {
+		console.Warning("on handleReviewPost: invalid restaurantd id; "+
+			"id(%v): %v", userReq.RestID, err)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
 	// create packet for database server
 	var dbReq = server.ADPacketReviewAdd{
 		UserID:  userReq.UserID,
+		RestID:  restID,
 		Score:   userReq.Score,
 		Comment: userReq.Comment,
 	}
@@ -181,9 +191,10 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// check packet by type casting from interface
+		var packet *server.DAPacketUser
 		switch p.(type) {
-		case *server.DAPacketAck:
-			break
+		case *server.DAPacketUser:
+			packet = p.(*server.DAPacketUser)
 		case *server.DAPacketError:
 			console.Warning("on handleReviewPost: db error: %v",
 				p.(*server.DAPacketError).Message)
@@ -195,7 +206,29 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		console.Info("new review from user(%v)", userReq.UserID)
+		// calculate level
+		level, residual, ratio := common.Exp2Level(packet.Exp)
+		sightRadius := common.Level2Sight(level)
+
+		// serialize user data
+		ser, err := json.Marshal(&ACUserInfo{
+			Name:        packet.Name,
+			Level:       level,
+			TotalExp:    packet.Exp,
+			LevelExp:    residual,
+			ExpRatio:    ratio,
+			SightRadius: sightRadius,
+		})
+		if err != nil {
+			console.Warning("on handleReviewPost: failed to marshal user data")
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		// send updated user data
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(ser)
+		console.Info("new review from user; User(%v)", *packet)
 	}
 
 	// send packet to database server and register response handler

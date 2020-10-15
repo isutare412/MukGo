@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -39,7 +40,7 @@ func queryUserGet(
 	cursor := coll.FindOne(
 		ctx,
 		bson.M{
-			"userid": userID,
+			"user_id": userID,
 		})
 
 	if err := cursor.Err(); err != nil {
@@ -56,6 +57,36 @@ func queryUserGet(
 		return nil, fmt.Errorf("on queryUserGet: %v", err)
 	}
 	return &user, nil
+}
+
+func queryUserUpdate(
+	ctx context.Context,
+	db *mongo.Database,
+	user *User,
+) error {
+	coll := db.Collection(CNUser)
+	cursor := coll.FindOneAndUpdate(
+		ctx,
+		bson.M{
+			"user_id": user.UserID,
+		},
+		bson.M{
+			"$set": bson.M{
+				"name": user.Name,
+				"exp":  user.Exp,
+			},
+		},
+	)
+
+	if err := cursor.Err(); err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return err
+		default:
+			return fmt.Errorf("on queryUserUpdate: %v", err)
+		}
+	}
+	return nil
 }
 
 func queryRestaurantAdd(
@@ -77,6 +108,34 @@ func queryRestaurantAdd(
 		return fmt.Errorf("on queryRestaurantAdd: %v", err)
 	}
 	return nil
+}
+
+func queryRestaurantGet(
+	ctx context.Context,
+	db *mongo.Database,
+	id primitive.ObjectID,
+) (*Restaurant, error) {
+	coll := db.Collection(CNRestaurant)
+	cursor := coll.FindOne(
+		ctx,
+		bson.M{
+			"_id": id,
+		})
+
+	if err := cursor.Err(); err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, err
+		default:
+			return nil, fmt.Errorf("on queryRestaurantGet: %v", err)
+		}
+	}
+
+	var rest Restaurant
+	if err := cursor.Decode(&rest); err != nil {
+		return nil, fmt.Errorf("on queryRestaurantGet: %v", err)
+	}
+	return &rest, nil
 }
 
 func queryRestaurantsGet(
@@ -116,6 +175,7 @@ func queryReviewAdd(
 	ctx context.Context,
 	db *mongo.Database,
 	userID string,
+	restID primitive.ObjectID,
 	score int,
 	comment string,
 ) error {
@@ -124,6 +184,7 @@ func queryReviewAdd(
 		ctx,
 		Review{
 			UserID:  userID,
+			RestID:  restID,
 			Score:   score,
 			Comment: comment,
 		})

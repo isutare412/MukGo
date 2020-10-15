@@ -4,16 +4,17 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 // User contains user information.
 type User struct {
-	UserID string `bson:"userid"`
+	UserID string `bson:"user_id"`
 	Name   string `bson:"name"`
 	Exp    int64  `bson:"exp"`
 }
 
 // Review contains review data from user.
 type Review struct {
-	UserID  string `bson:"userid"`
-	Score   int    `bson:"score"`
-	Comment string `bson:"comment"`
+	UserID  string             `bson:"user_id"`
+	RestID  primitive.ObjectID `bson:"restaurant_id"`
+	Score   int                `bson:"score"`
+	Comment string             `bson:"comment"`
 }
 
 // Restaurant contains restaurant information.

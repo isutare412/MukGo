@@ -18,18 +18,19 @@ type Restaurant struct {
 
 // CAUserPost defines post data for user.
 type CAUserPost struct {
-	UserID string `json:"userid"`
+	UserID string `json:"user_id"`
 	Name   string `json:"name"`
 }
 
 // CAUserGet contains data request for user.
 type CAUserGet struct {
-	UserID string `json:"userid"`
+	UserID string `json:"user_id"`
 }
 
 // CAReviewPost defines post data for review.
 type CAReviewPost struct {
-	UserID  string `json:"userid"`
+	UserID  string `json:"user_id"`
+	RestID  string `json:"restaurant_id"`
 	Score   int    `json:"score"`
 	Comment string `json:"comment"`
 }
@@ -48,7 +49,7 @@ type CARestaurantsPost struct {
 
 // CARestaurantsGet request restarants data within user's sight.
 type CARestaurantsGet struct {
-	UserID    string  `json:"userid"`
+	UserID    string  `json:"user_id"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
@@ -61,10 +62,10 @@ type CARestaurantsGet struct {
 type ACUserInfo struct {
 	Name        string  `json:"name"`
 	Level       int     `json:"level"`
-	TotalExp    int64   `json:"totalExp"`
-	LevelExp    int64   `json:"levelExp"`
-	ExpRatio    float64 `json:"expRatio"`
-	SightRadius float64 `json:"sightRadius"`
+	TotalExp    int64   `json:"total_exp"`
+	LevelExp    int64   `json:"level_exp"`
+	ExpRatio    float64 `json:"exp_ratio"`
+	SightRadius float64 `json:"sight_radius"`
 }
 
 // ACRestaurantsInfo contains multiple restaurants data.

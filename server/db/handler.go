@@ -18,7 +18,8 @@ func (s *Server) handleUserAdd(p *server.ADPacketUserAdd) server.Packet {
 
 	err := queryUserAdd(ctx, s.db, p.UserID, p.Name, 0)
 	if err != nil {
-		console.Warning("failed to insert user(%v): %v", *p, err)
+		console.Warning(
+			"on handleUserAdd: failed to insert user(%v): %v", *p, err)
 		return &server.DAPacketUserExist{UserID: p.UserID}
 	}
 
@@ -34,10 +35,12 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 	if err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
-			console.Warning("cannot find user; packet(%v): %v", *p, err)
+			console.Warning(
+				"on handleUserGet: cannot find user; packet(%v): %v", *p, err)
 			return &server.DAPacketNoSuchUser{UserID: p.UserID}
 		default:
-			console.Warning("failed to get user; packet(%v): %v", *p, err)
+			console.Warning(
+				"on handleUserGet: failed to get user; packet(%v): %v", *p, err)
 			return &server.DAPacketError{Message: "failed to get user"}
 		}
 	}
@@ -54,14 +57,62 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	err := queryReviewAdd(ctx, s.db, p.UserID, p.Score, p.Comment)
+	// check user data
+	user, err := queryUserGet(ctx, s.db, p.UserID)
 	if err != nil {
-		console.Warning("failed to insert review(%v): %v", *p, err)
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleReviewAdd: cannot find user; packet(%v): %v", *p, err)
+			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+		default:
+			console.Warning(
+				"on handleReviewAdd: failed to get user; packet(%v): %v",
+				*p, err)
+			return &server.DAPacketError{Message: "failed to get user"}
+		}
+	}
+
+	// check restaurant data
+	_, err = queryRestaurantGet(ctx, s.db, p.RestID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleReviewAdd: cannot find restaurant;"+
+					"packet(%v): %v", *p, err)
+			return &server.DAPacketNoSuchRestaurant{ID: p.RestID}
+		default:
+			console.Warning(
+				"on handleReviewAdd: failed to get restaurant; packet(%v): %v",
+				*p, err)
+			return &server.DAPacketError{Message: "failed to get restaurant"}
+		}
+	}
+
+	// add review data
+	err = queryReviewAdd(ctx, s.db, p.UserID, p.RestID, p.Score, p.Comment)
+	if err != nil {
+		console.Warning(
+			"on handleReviewAdd: failed to insert review(%v): %v", *p, err)
 		return &server.DAPacketError{Message: "failed to insert review"}
 	}
 
+	// add exp to user
+	user.Exp += common.ReviewExp()
+	err = queryUserUpdate(ctx, s.db, user)
+	if err != nil {
+		console.Warning(
+			"on handleReviewAdd: failed update user; User(%v): %v", *user, err)
+		return &server.DAPacketError{Message: "failed to update user exp"}
+	}
+
 	console.Info("insert review; UserID(%v), Score(%v)", p.UserID, p.Score)
-	return &server.DAPacketAck{}
+	return &server.DAPacketUser{
+		UserID: user.UserID,
+		Name:   user.Name,
+		Exp:    user.Exp,
+	}
 }
 
 func (s *Server) handleRestaurantAdd(
@@ -73,7 +124,9 @@ func (s *Server) handleRestaurantAdd(
 	err := queryRestaurantAdd(
 		ctx, s.db, p.Name, p.Coord.Latitude, p.Coord.Longitude)
 	if err != nil {
-		console.Warning("failed to insert restaurant(%v): %v", *p, err)
+		console.Warning(
+			"on handleRestaurantAdd: failed to insert restaurant(%v): %v",
+			*p, err)
 		return &server.DAPacketError{Message: "failed to insert restaurant"}
 	}
 
@@ -91,10 +144,12 @@ func (s *Server) handleRestaurantsGet(
 	if err != nil {
 		switch err {
 		case mongo.ErrNoDocuments:
-			console.Warning("cannot find user; packet(%v)", *p)
+			console.Warning(
+				"on handleRestaurantsGet: cannot find user; packet(%v)", *p)
 			return &server.DAPacketNoSuchUser{UserID: p.UserID}
 		default:
-			console.Warning("failed to get user; packet(%v)", *p)
+			console.Warning(
+				"on handleRestaurantsGet: failed to get user; packet(%v)", *p)
 			return &server.DAPacketError{Message: "failed to get user"}
 		}
 	}
@@ -108,7 +163,9 @@ func (s *Server) handleRestaurantsGet(
 		northWest.Longitude, southEast.Longitude,
 	)
 	if err != nil {
-		console.Warning("failed to find restaurants; Coord(%v): %v", p.Coord, err)
+		console.Warning(
+			"on handleRestaurantsGet: failed to find restaurants; "+
+				"Coord(%v): %v", p.Coord, err)
 		return &server.DAPacketError{Message: "failed to find restaurants"}
 	}
 
@@ -144,7 +201,7 @@ func (s *Server) handleRestaurantsAdd(
 
 		if err != nil {
 			console.Warning(
-				"handleRestaurantsAdd: failed to insert restaurant(%v): %v",
+				"on handleRestaurantsAdd: failed to insert restaurant(%v): %v",
 				*r, err)
 			return &server.DAPacketError{Message: "failed to insert restaurant"}
 		}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // PacketType matches int with packet structure.
@@ -26,6 +27,7 @@ const (
 	PTDAError
 	PTDAUserExist
 	PTDANoSuchUser
+	PTDANoSuchRestaurant
 	PTDAUser
 	PTDARestaurants
 	PTLog
@@ -54,6 +56,7 @@ type ADPacketUserGet struct {
 // ADPacketReviewAdd containes review data.
 type ADPacketReviewAdd struct {
 	UserID  string
+	RestID  primitive.ObjectID
 	Score   int
 	Comment string
 }
@@ -96,6 +99,11 @@ type DAPacketUserExist struct {
 // DAPacketNoSuchUser contains error messge.
 type DAPacketNoSuchUser struct {
 	UserID string
+}
+
+// DAPacketNoSuchRestaurant contains error messge.
+type DAPacketNoSuchRestaurant struct {
+	ID primitive.ObjectID
 }
 
 // DAPacketUser contains user data.
@@ -173,6 +181,11 @@ func (p *DAPacketUserExist) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketNoSuchUser) Type() PacketType {
 	return PTDANoSuchUser
+}
+
+// Type implements Packet interface.
+func (p *DAPacketNoSuchRestaurant) Type() PacketType {
+	return PTDANoSuchRestaurant
 }
 
 // Type implements Packet interface.
