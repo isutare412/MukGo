@@ -43,17 +43,24 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		var packet *server.DAPacketUser
-		switch p.(type) {
-		case *server.DAPacketUser:
-			packet = p.(*server.DAPacketUser)
-		case *server.DAPacketNoSuchUser:
-			console.Warning("on handleUserGet: cannot find user; UserId(%v)",
-				p.(*server.DAPacketNoSuchUser).UserID)
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleUserGet: database internal error")
+			httpError(w, http.StatusInternalServerError)
+			return
+		case server.ETNoSuchUser:
+			console.Warning("on handleUserGet: user not exists; UserID(%v)",
+				dbReq.UserID)
 			httpError(w, http.StatusBadRequest)
 			return
-		default:
+		}
+
+		// check packet by type casting from interface
+		packet, ok := p.(*server.DAPacketUser)
+		if !ok {
 			console.Warning("on handleUserGet: unexpected packet")
 			httpError(w, http.StatusInternalServerError)
 			return
@@ -118,18 +125,19 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		switch p.(type) {
-		case *server.DAPacketAck:
-			break
-		case *server.DAPacketUserExist:
-			console.Warning("on handleUserPost: user exists; UserId(%v)",
-				p.(*server.DAPacketUserExist).UserID)
-			httpError(w, http.StatusBadRequest)
-			return
-		default:
-			console.Warning("on handleUserPost: unexpected packet")
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleUserPost: database internal error")
 			httpError(w, http.StatusInternalServerError)
+			return
+		case server.ETUserExists:
+			console.Warning(
+				"on handleUserPost: user already exists; UserID(%v)",
+				dbReq.UserID)
+			httpError(w, http.StatusBadRequest)
 			return
 		}
 
@@ -190,17 +198,30 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		var packet *server.DAPacketUser
-		switch p.(type) {
-		case *server.DAPacketUser:
-			packet = p.(*server.DAPacketUser)
-		case *server.DAPacketError:
-			console.Warning("on handleReviewPost: db error: %v",
-				p.(*server.DAPacketError).Message)
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleReviewPost: database internal error")
 			httpError(w, http.StatusInternalServerError)
 			return
-		default:
+		case server.ETNoSuchUser:
+			console.Warning("on handleReviewPost: user not exists; UserID(%v)",
+				dbReq.UserID)
+			httpError(w, http.StatusBadRequest)
+			return
+		case server.ETNoSuchRestaurant:
+			console.Warning(
+				"on handleReviewPost: restaurant not exists; RestID(%v)",
+				dbReq.RestID)
+			httpError(w, http.StatusBadRequest)
+			return
+		}
+
+		// check packet by type casting from interface
+		packet, ok := p.(*server.DAPacketUser)
+		if !ok {
 			console.Warning("on handleReviewPost: unexpected packet")
 			httpError(w, http.StatusInternalServerError)
 			return
@@ -278,17 +299,12 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		switch p.(type) {
-		case *server.DAPacketAck:
-			break
-		case *server.DAPacketError:
-			console.Warning("on handleRestaurantPost: db error: %v",
-				p.(*server.DAPacketError).Message)
-			httpError(w, http.StatusInternalServerError)
-			return
-		default:
-			console.Warning("on handleRestaurantPost: unexpected packet")
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleRestaurantPost: database internal error")
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
@@ -345,17 +361,25 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		var packet *server.DAPacketRestaurants
-		switch p.(type) {
-		case *server.DAPacketRestaurants:
-			packet = p.(*server.DAPacketRestaurants)
-		case *server.DAPacketError:
-			console.Warning("on handleRestaurantsGet: db error: %v",
-				p.(*server.DAPacketError).Message)
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleRestaurantsGet: database internal error")
 			httpError(w, http.StatusInternalServerError)
 			return
-		default:
+		case server.ETNoSuchUser:
+			console.Warning(
+				"on handleRestaurantsGet: user not exists; UserID(%v)",
+				dbReq.UserID)
+			httpError(w, http.StatusBadRequest)
+			return
+		}
+
+		// check packet by type casting from interface
+		packet, ok := p.(*server.DAPacketRestaurants)
+		if !ok {
 			console.Warning("on handleRestaurantsGet: unexpected packet")
 			httpError(w, http.StatusInternalServerError)
 			return
@@ -431,17 +455,12 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check packet by type casting from interface
-		switch p.(type) {
-		case *server.DAPacketAck:
-			break
-		case *server.DAPacketError:
-			console.Warning("on handleRestaurantsPost: db error: %v",
-				p.(*server.DAPacketError).Message)
-			httpError(w, http.StatusInternalServerError)
-			return
-		default:
-			console.Warning("on handleRestaurantsPost: unexpected packet")
+		// handle error packet
+		switch getError(p) {
+		case server.ETInvalid:
+			break // not error
+		case server.ETInternal:
+			console.Warning("on handleRestaurantsPost: database internal error")
 			httpError(w, http.StatusInternalServerError)
 			return
 		}

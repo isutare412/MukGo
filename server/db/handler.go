@@ -20,7 +20,7 @@ func (s *Server) handleUserAdd(p *server.ADPacketUserAdd) server.Packet {
 	if err != nil {
 		console.Warning(
 			"on handleUserAdd: failed to insert user(%v): %v", *p, err)
-		return &server.DAPacketUserExist{UserID: p.UserID}
+		return &server.DAPacketError{ErrorType: server.ETUserExists}
 	}
 
 	console.Info("insert user; UserID(%v), Name(%v)", p.UserID, p.Name)
@@ -37,11 +37,11 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 		case mongo.ErrNoDocuments:
 			console.Warning(
 				"on handleUserGet: cannot find user; packet(%v): %v", *p, err)
-			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
 		default:
 			console.Warning(
 				"on handleUserGet: failed to get user; packet(%v): %v", *p, err)
-			return &server.DAPacketError{Message: "failed to get user"}
+			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
 	}
 
@@ -64,12 +64,12 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 		case mongo.ErrNoDocuments:
 			console.Warning(
 				"on handleReviewAdd: cannot find user; packet(%v): %v", *p, err)
-			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
 		default:
 			console.Warning(
 				"on handleReviewAdd: failed to get user; packet(%v): %v",
 				*p, err)
-			return &server.DAPacketError{Message: "failed to get user"}
+			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
 	}
 
@@ -81,12 +81,12 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 			console.Warning(
 				"on handleReviewAdd: cannot find restaurant;"+
 					"packet(%v): %v", *p, err)
-			return &server.DAPacketNoSuchRestaurant{ID: p.RestID}
+			return &server.DAPacketError{ErrorType: server.ETNoSuchRestaurant}
 		default:
 			console.Warning(
 				"on handleReviewAdd: failed to get restaurant; packet(%v): %v",
 				*p, err)
-			return &server.DAPacketError{Message: "failed to get restaurant"}
+			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
 	}
 
@@ -95,7 +95,7 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	if err != nil {
 		console.Warning(
 			"on handleReviewAdd: failed to insert review(%v): %v", *p, err)
-		return &server.DAPacketError{Message: "failed to insert review"}
+		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
 	// add exp to user
@@ -104,7 +104,7 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	if err != nil {
 		console.Warning(
 			"on handleReviewAdd: failed update user; User(%v): %v", *user, err)
-		return &server.DAPacketError{Message: "failed to update user exp"}
+		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
 	console.Info("insert review; UserID(%v), Score(%v)", p.UserID, p.Score)
@@ -127,7 +127,7 @@ func (s *Server) handleRestaurantAdd(
 		console.Warning(
 			"on handleRestaurantAdd: failed to insert restaurant(%v): %v",
 			*p, err)
-		return &server.DAPacketError{Message: "failed to insert restaurant"}
+		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
 	console.Info("insert restaurant; Name(%v)", p.Name)
@@ -146,11 +146,11 @@ func (s *Server) handleRestaurantsGet(
 		case mongo.ErrNoDocuments:
 			console.Warning(
 				"on handleRestaurantsGet: cannot find user; packet(%v)", *p)
-			return &server.DAPacketNoSuchUser{UserID: p.UserID}
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
 		default:
 			console.Warning(
 				"on handleRestaurantsGet: failed to get user; packet(%v)", *p)
-			return &server.DAPacketError{Message: "failed to get user"}
+			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
 	}
 
@@ -166,7 +166,7 @@ func (s *Server) handleRestaurantsGet(
 		console.Warning(
 			"on handleRestaurantsGet: failed to find restaurants; "+
 				"Coord(%v): %v", p.Coord, err)
-		return &server.DAPacketError{Message: "failed to find restaurants"}
+		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
 	// copy restaurants data
@@ -203,7 +203,7 @@ func (s *Server) handleRestaurantsAdd(
 			console.Warning(
 				"on handleRestaurantsAdd: failed to insert restaurant(%v): %v",
 				*r, err)
-			return &server.DAPacketError{Message: "failed to insert restaurant"}
+			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
 	}
 

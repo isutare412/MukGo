@@ -11,6 +11,9 @@ import (
 // PacketType matches int with packet structure.
 type PacketType int32
 
+// ErrorType enumerates error types in error packet.
+type ErrorType int32
+
 // All PacketTypes.
 const (
 	// api server to dabase server
@@ -25,12 +28,20 @@ const (
 	// database server to api server
 	PTDAAck
 	PTDAError
-	PTDAUserExist
-	PTDANoSuchUser
-	PTDANoSuchRestaurant
 	PTDAUser
 	PTDARestaurants
+
+	// log packet type
 	PTLog
+)
+
+// All ErrorTypes.
+const (
+	ETInvalid ErrorType = iota
+	ETInternal
+	ETUserExists
+	ETNoSuchUser
+	ETNoSuchRestaurant
 )
 
 // Packet interface can generate unique PacketType.
@@ -88,22 +99,7 @@ type DAPacketAck struct {
 
 // DAPacketError contains error messge.
 type DAPacketError struct {
-	Message string
-}
-
-// DAPacketUserExist contains error message.
-type DAPacketUserExist struct {
-	UserID string
-}
-
-// DAPacketNoSuchUser contains error messge.
-type DAPacketNoSuchUser struct {
-	UserID string
-}
-
-// DAPacketNoSuchRestaurant contains error messge.
-type DAPacketNoSuchRestaurant struct {
-	ID primitive.ObjectID
+	ErrorType
 }
 
 // DAPacketUser contains user data.
@@ -174,21 +170,6 @@ func (p *DAPacketError) Type() PacketType {
 }
 
 // Type implements Packet interface.
-func (p *DAPacketUserExist) Type() PacketType {
-	return PTDAUserExist
-}
-
-// Type implements Packet interface.
-func (p *DAPacketNoSuchUser) Type() PacketType {
-	return PTDANoSuchUser
-}
-
-// Type implements Packet interface.
-func (p *DAPacketNoSuchRestaurant) Type() PacketType {
-	return PTDANoSuchRestaurant
-}
-
-// Type implements Packet interface.
 func (p *DAPacketUser) Type() PacketType {
 	return PTDAUser
 }
@@ -201,4 +182,25 @@ func (p *DAPacketRestaurants) Type() PacketType {
 // Type implements Packet interface.
 func (p *PacketLog) Type() PacketType {
 	return PTLog
+}
+
+/******************************************************************************
+* ErrorType string interface
+******************************************************************************/
+
+func (e ErrorType) String() string {
+	var msg string
+	switch e {
+	case ETInternal:
+		msg = "internal error"
+	case ETUserExists:
+		msg = "user exists"
+	case ETNoSuchUser:
+		msg = "no such user"
+	case ETNoSuchRestaurant:
+		msg = "no such restaurant"
+	default:
+		msg = "unknown error"
+	}
+	return msg
 }

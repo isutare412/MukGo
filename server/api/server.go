@@ -135,16 +135,6 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
-	case server.PTDANoSuchUser:
-		var p server.DAPacketNoSuchUser
-		packet = &p
-		parseErr = json.Unmarshal(d.Body, &p)
-
-	case server.PTDANoSuchRestaurant:
-		var p server.DAPacketNoSuchRestaurant
-		packet = &p
-		parseErr = json.Unmarshal(d.Body, &p)
-
 	case server.PTDAUser:
 		var p server.DAPacketUser
 		packet = &p
@@ -242,4 +232,13 @@ func (s *Server) send2DB(
 // httpError responses to client with proper http error message.
 func httpError(w http.ResponseWriter, errno int) {
 	http.Error(w, http.StatusText(errno), errno)
+}
+
+// getError checks if p is error packet, then returns its ErrorType.
+func getError(p server.Packet) server.ErrorType {
+	ep, ok := p.(*server.DAPacketError)
+	if ok {
+		return ep.ErrorType
+	}
+	return server.ETInvalid
 }
