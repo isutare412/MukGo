@@ -64,6 +64,7 @@ type ACUserInfo struct {
 	Level       int     `json:"level"`
 	TotalExp    int64   `json:"total_exp"`
 	LevelExp    int64   `json:"level_exp"`
+	CurExp      int64   `json:"cur_exp"`
 	ExpRatio    float64 `json:"exp_ratio"`
 	SightRadius float64 `json:"sight_radius"`
 }

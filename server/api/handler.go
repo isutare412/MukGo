@@ -77,7 +77,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// calculate level
-	level, residual, ratio := common.Exp2Level(packet.Exp)
+	level, levExp, curExp, ratio := common.Exp2Level(packet.Exp)
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
@@ -85,7 +85,8 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 		Name:        packet.Name,
 		Level:       level,
 		TotalExp:    packet.Exp,
-		LevelExp:    residual,
+		LevelExp:    levExp,
+		CurExp:      curExp,
 		ExpRatio:    ratio,
 		SightRadius: sightRadius,
 	})
@@ -234,7 +235,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// calculate level
-	level, residual, ratio := common.Exp2Level(packet.Exp)
+	level, levExp, curExp, ratio := common.Exp2Level(packet.Exp)
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
@@ -242,7 +243,8 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		Name:        packet.Name,
 		Level:       level,
 		TotalExp:    packet.Exp,
-		LevelExp:    residual,
+		LevelExp:    levExp,
+		CurExp:      curExp,
 		ExpRatio:    ratio,
 		SightRadius: sightRadius,
 	})
