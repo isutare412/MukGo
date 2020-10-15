@@ -35,71 +35,69 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 		UserID: userReq.UserID,
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleUserGet: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleUserGet: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		case server.ETNoSuchUser:
-			console.Warning("on handleUserGet: user not exists; UserID(%v)",
-				dbReq.UserID)
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		// check packet by type casting from interface
-		packet, ok := p.(*server.DAPacketUser)
-		if !ok {
-			console.Warning("on handleUserGet: unexpected packet")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// calculate level
-		level, residual, ratio := common.Exp2Level(packet.Exp)
-		sightRadius := common.Level2Sight(level)
-
-		// serialize user data
-		ser, err := json.Marshal(&ACUserInfo{
-			Name:        packet.Name,
-			Level:       level,
-			TotalExp:    packet.Exp,
-			LevelExp:    residual,
-			ExpRatio:    ratio,
-			SightRadius: sightRadius,
-		})
-		if err != nil {
-			console.Warning("on handleUserGet: failed to marshal user data")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(ser)
-		console.Info("sent user data; User(%v)", *packet)
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleUserGet: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleUserGet: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleUserGet: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	case server.ETNoSuchUser:
+		console.Warning("on handleUserGet: user not exists; UserID(%v)",
+			dbReq.UserID)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketUser)
+	if !ok {
+		console.Warning("on handleUserGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// calculate level
+	level, residual, ratio := common.Exp2Level(packet.Exp)
+	sightRadius := common.Level2Sight(level)
+
+	// serialize user data
+	ser, err := json.Marshal(&ACUserInfo{
+		Name:        packet.Name,
+		Level:       level,
+		TotalExp:    packet.Exp,
+		LevelExp:    residual,
+		ExpRatio:    ratio,
+		SightRadius: sightRadius,
+	})
+	if err != nil {
+		console.Warning("on handleUserGet: failed to marshal user data")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ser)
+	console.Info("sent user data; User(%v)", *packet)
 }
 
 func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
@@ -117,43 +115,41 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 		Name:   userReq.Name,
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleUserPost: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleUserPost: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		case server.ETUserExists:
-			console.Warning(
-				"on handleUserPost: user already exists; UserID(%v)",
-				dbReq.UserID)
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		console.Info("new user created(%v)", userReq.Name)
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleUserPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleUserPost: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleUserPost: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	case server.ETUserExists:
+		console.Warning(
+			"on handleUserPost: user already exists; UserID(%v)",
+			dbReq.UserID)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	console.Info("new user created(%v)", userReq.Name)
 }
 
 func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
@@ -190,78 +186,76 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		Comment: userReq.Comment,
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleReviewPost: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleReviewPost: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		case server.ETNoSuchUser:
-			console.Warning("on handleReviewPost: user not exists; UserID(%v)",
-				dbReq.UserID)
-			httpError(w, http.StatusBadRequest)
-			return
-		case server.ETNoSuchRestaurant:
-			console.Warning(
-				"on handleReviewPost: restaurant not exists; RestID(%v)",
-				dbReq.RestID)
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		// check packet by type casting from interface
-		packet, ok := p.(*server.DAPacketUser)
-		if !ok {
-			console.Warning("on handleReviewPost: unexpected packet")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// calculate level
-		level, residual, ratio := common.Exp2Level(packet.Exp)
-		sightRadius := common.Level2Sight(level)
-
-		// serialize user data
-		ser, err := json.Marshal(&ACUserInfo{
-			Name:        packet.Name,
-			Level:       level,
-			TotalExp:    packet.Exp,
-			LevelExp:    residual,
-			ExpRatio:    ratio,
-			SightRadius: sightRadius,
-		})
-		if err != nil {
-			console.Warning("on handleReviewPost: failed to marshal user data")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// send updated user data
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(ser)
-		console.Info("new review from user; User(%v)", *packet)
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleReviewPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleReviewPost: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleReviewPost: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	case server.ETNoSuchUser:
+		console.Warning("on handleReviewPost: user not exists; UserID(%v)",
+			dbReq.UserID)
+		httpError(w, http.StatusBadRequest)
+		return
+	case server.ETNoSuchRestaurant:
+		console.Warning(
+			"on handleReviewPost: restaurant not exists; RestID(%v)",
+			dbReq.RestID)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketUser)
+	if !ok {
+		console.Warning("on handleReviewPost: unexpected packet")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// calculate level
+	level, residual, ratio := common.Exp2Level(packet.Exp)
+	sightRadius := common.Level2Sight(level)
+
+	// serialize user data
+	ser, err := json.Marshal(&ACUserInfo{
+		Name:        packet.Name,
+		Level:       level,
+		TotalExp:    packet.Exp,
+		LevelExp:    residual,
+		ExpRatio:    ratio,
+		SightRadius: sightRadius,
+	})
+	if err != nil {
+		console.Warning("on handleReviewPost: failed to marshal user data")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// send updated user data
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ser)
+	console.Info("new review from user; User(%v)", *packet)
 }
 
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -291,37 +285,35 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleRestaurantPost: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleRestaurantPost: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		console.Info("new restaurant added(%v)", userReq.Name)
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleRestaurantPost: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleRestaurantPost: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	console.Info("new restaurant added(%v)", userReq.Name)
 }
 
 func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
@@ -353,75 +345,73 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleRestaurantsGet: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleRestaurantsGet: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		case server.ETNoSuchUser:
-			console.Warning(
-				"on handleRestaurantsGet: user not exists; UserID(%v)",
-				dbReq.UserID)
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		// check packet by type casting from interface
-		packet, ok := p.(*server.DAPacketRestaurants)
-		if !ok {
-			console.Warning("on handleRestaurantsGet: unexpected packet")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// build response data
-		rests := ACRestaurantsInfo{
-			Restaurants: make([]*Restaurant, 0, len(packet.Restaurants)),
-		}
-		for _, r := range packet.Restaurants {
-			rests.Restaurants = append(rests.Restaurants, &Restaurant{
-				ID:        r.ID.Hex(),
-				Name:      r.Name,
-				Latitude:  r.Coord.Latitude,
-				Longitude: r.Coord.Longitude,
-			})
-		}
-
-		// serialize user data
-		ser, err := json.Marshal(&rests)
-		if err != nil {
-			console.Warning(
-				"on handleRestaurantsGet: failed to marshal restaurants data")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(ser)
-		console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantsGet: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleRestaurantsGet: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleRestaurantsGet: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	case server.ETNoSuchUser:
+		console.Warning(
+			"on handleRestaurantsGet: user not exists; UserID(%v)",
+			dbReq.UserID)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketRestaurants)
+	if !ok {
+		console.Warning("on handleRestaurantsGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// build response data
+	rests := ACRestaurantsInfo{
+		Restaurants: make([]*Restaurant, 0, len(packet.Restaurants)),
+	}
+	for _, r := range packet.Restaurants {
+		rests.Restaurants = append(rests.Restaurants, &Restaurant{
+			ID:        r.ID.Hex(),
+			Name:      r.Name,
+			Latitude:  r.Coord.Latitude,
+			Longitude: r.Coord.Longitude,
+		})
+	}
+
+	// serialize user data
+	ser, err := json.Marshal(&rests)
+	if err != nil {
+		console.Warning(
+			"on handleRestaurantsGet: failed to marshal restaurants data")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ser)
+	console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
 }
 
 func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
@@ -447,36 +437,34 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	response := func(success bool, p server.Packet) {
-		// failed to receive packet from database server
-		if !success {
-			console.Warning("on handleRestaurantsPost: no packet received")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// handle error packet
-		switch getError(p) {
-		case server.ETInvalid:
-			break // not error
-		case server.ETInternal:
-			console.Warning("on handleRestaurantsPost: database internal error")
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		console.Info("new restaurants added; count(%v)",
-			len(userReq.Restaurants))
-	}
-
 	// send packet to database server and register response handler
-	done, err := s.send2DB(&dbReq, response)
+	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantsPost: send2DB failed: %v", err)
 		httpError(w, http.StatusInternalServerError)
 		return
 	}
 
-	// wait for response
-	<-done
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleRestaurantsPost: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleRestaurantsPost: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	console.Info("new restaurants added; count(%v)",
+		len(userReq.Restaurants))
 }

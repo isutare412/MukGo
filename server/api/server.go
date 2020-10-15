@@ -18,7 +18,7 @@ type Server struct {
 	mux  *http.ServeMux
 	mqss *mq.Session
 
-	handles *server.HandleMap
+	packetChans *server.ChannelMap
 }
 
 const responseTimeout = 6 * time.Second
@@ -75,8 +75,8 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	s.mqss = mqSession
 	console.Info("session(%q) established between RabbitMQ", mqaddr)
 
-	// create ResponseMux
-	s.handles = server.NewHandleMap()
+	// create response packet map
+	s.packetChans = server.NewChannelMap()
 
 	// start to listen from RabbitMQ
 	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse, 2)
@@ -114,11 +114,12 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		return false, fmt.Errorf("on DBResponse: %v", err)
 	}
 
-	// retrieve handler
-	handler := s.handles.Pop(d.CorrelationId)
-	if handler == nil {
+	// retrieve packet channel
+	ch := s.packetChans.Pop(d.CorrelationId)
+	if ch == nil {
 		return true, nil // handler dropped by timeout
 	}
+	defer close(ch)
 
 	var packet server.Packet
 	var parseErr error
@@ -151,12 +152,11 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 
 	// on packet parsing failed
 	if parseErr != nil {
-		go handler(false, nil)
 		return false, fmt.Errorf("on DBResponse: %v", parseErr)
 	}
 
-	// call handler
-	go handler(true, packet)
+	// send parsed packet
+	ch <- packet
 
 	return true, nil
 }
@@ -184,21 +184,19 @@ func (s *Server) registerHandlers() {
 	s.mux.HandleFunc("/restaurants", s.handleRestaurants)
 }
 
+// send2DB send packet to database server. It returns chan Packet as response.
+// Response packet from database server is passed through the channel when
+// api server receives the response packet. In error case or timeout,
+// returned channel is closed. So it is safe to wait for the channel.
 func (s *Server) send2DB(
 	p server.Packet,
-	response func(bool, server.Packet),
-) (<-chan struct{}, error) {
+) (<-chan server.Packet, error) {
 	// wrapper with done channel when response is called
-	done := make(chan struct{})
-	wrapper := func(b bool, p server.Packet) {
-		response(b, p)
-		done <- struct{}{}
-		close(done)
-	}
+	pch := make(chan server.Packet)
 
 	// register response handler
-	correlationID := <-s.handles.IDGet
-	if err := s.handles.Register(correlationID, wrapper); err != nil {
+	correlationID := <-s.packetChans.IDGet
+	if err := s.packetChans.Register(correlationID, pch); err != nil {
 		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
@@ -211,7 +209,7 @@ func (s *Server) send2DB(
 		correlationID,
 		p,
 	); err != nil {
-		s.handles.Pop(correlationID)
+		close(s.packetChans.Pop(correlationID))
 		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
@@ -219,14 +217,14 @@ func (s *Server) send2DB(
 	go func(corrID string) {
 		<-time.After(responseTimeout)
 
-		handler := s.handles.Pop(corrID)
-		if handler == nil {
+		ch := s.packetChans.Pop(corrID)
+		if ch == nil {
 			return
 		}
-		handler(false, nil)
+		close(ch)
 	}(correlationID)
 
-	return done, nil
+	return pch, nil
 }
 
 // httpError responses to client with proper http error message.
