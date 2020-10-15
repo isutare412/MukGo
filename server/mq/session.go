@@ -66,14 +66,14 @@ func GetSession(name string) *Session {
 func (s *Session) TryConnect(try int, interval time.Duration) error {
 	for trial := 0; trial < try; trial++ {
 		if trial > 0 {
-			console.Error("try reconnect %d times...", trial)
+			log(console.LLError, "try reconnect %d times...", trial)
 		}
 
 		err := s.connect()
 		if err == nil {
 			return nil
 		}
-		console.Error("failed to TryConnect: %v", err)
+		log(console.LLError, "failed to TryConnect: %v", err)
 
 		time.Sleep(interval)
 	}
@@ -150,7 +150,8 @@ func (s *Session) connect() error {
 	go func() {
 		// when the connection is closed
 		if err, ok := <-conn.NotifyClose(make(chan *amqp.Error)); ok {
-			console.Error("connection(%q) closed: %v", s.config.Addr, err.Error())
+			log(console.LLError, "connection(%q) closed: %v",
+				s.config.Addr, err.Error())
 		} else {
 			return // gracefule close
 		}
@@ -158,9 +159,9 @@ func (s *Session) connect() error {
 		// try reconnect
 		err := s.TryConnect(40, 3000*time.Millisecond)
 		if err != nil {
-			console.Fatal("on reconver connection: %v", err)
+			log(console.LLFatal, "on reconver connection: %v", err)
 		}
-		console.Info("connection(%q) recovered", s.config.Addr)
+		log(console.LLInfo, "connection(%q) recovered", s.config.Addr)
 
 		// notify that the connection is reconstructed
 		s.connNotifier.Source <- struct{}{}
@@ -175,6 +176,7 @@ func (s *Session) connect() error {
 func (s *Session) Consume(
 	exchange, queue string,
 	handler func(*amqp.Delivery) (bool, error),
+	handleNum int,
 ) error {
 	// find target exchange and queue
 	excfg, ok := s.config.Exchanges[exchange]
@@ -209,29 +211,32 @@ func (s *Session) Consume(
 	}
 	s.mu.Unlock()
 
-	// notifier from reconnection event
-	reconn := s.connNotifier.AddSubscriber()
+	// create multiple goroutines
+	for i := 0; i < handleNum; i++ {
+		// notifier from reconnection event
+		reconn := s.connNotifier.AddSubscriber()
 
-	go func() {
-		for {
-			d, ok := <-delivery
-			if !ok { // delievery channel closed
-				// restart Consume after reconnect
-				<-reconn
-				s.connNotifier.RemoveSubscriber(reconn)
-				if err := s.Consume(exchange, queue, handler); err != nil {
-					console.Fatal("failed in Consume: %v", err)
+		go func() {
+			for {
+				d, ok := <-delivery
+				if !ok { // delievery channel closed
+					// restart Consume after reconnect
+					<-reconn
+					s.connNotifier.RemoveSubscriber(reconn)
+					if err := s.Consume(exchange, queue, handler, 1); err != nil {
+						log(console.LLFatal, "failed in Consume: %v", err)
+					}
+					return
 				}
-				return
-			}
 
-			// handle message from RabbitMQ
-			if ok, err := handler(&d); !ok {
-				console.Warning("failed to handle delivery: %v", err)
+				// handle message from RabbitMQ
+				if ok, err := handler(&d); !ok {
+					log(console.LLWarning, "failed to handle delivery: %v", err)
+				}
+				d.Ack(false)
 			}
-			d.Ack(false)
-		}
-	}()
+		}()
+	}
 
 	return nil
 }
@@ -319,4 +324,11 @@ func (s *Session) publish(exchange, key string, p *amqp.Publishing) error {
 	}
 
 	return nil
+}
+
+// log function is for direct logging. Its purpose is to leave logs to
+// stderr ONLY.
+func log(l console.Level, format string, v ...interface{}) {
+	logBody := console.SLogf(l, format, v...)
+	console.Printf(logBody)
 }

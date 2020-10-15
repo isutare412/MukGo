@@ -97,7 +97,7 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 
 // Run start handling logs.
 func (s *Server) Run() error {
-	err := s.mqss.Consume(server.MGLogs, server.Log, s.handleLog)
+	err := s.mqss.Consume(server.MGLogs, server.Log, s.handleLog, 1)
 	if err != nil {
 		return fmt.Errorf("on HandleLogs: %v", err)
 	}
@@ -126,7 +126,9 @@ func (s *Server) handleLog(d *amqp.Delivery) (bool, error) {
 	}
 
 	// now leave log
-	if err := logger.log(packet.Timestamp, packet.Msg); err != nil {
+	if err := logger.log(
+		packet.Timestamp, packet.LogLevel, packet.Msg,
+	); err != nil {
 		return false, fmt.Errorf("on handleLog: %v", err)
 	}
 

@@ -97,6 +97,27 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	s.mqss = session
 	console.Info("session(%s) established between RabbitMQ", mqaddr)
 
+	// addlitionaly send logs to RabbitMQ.
+	console.AddLogHandler(
+		func(l console.Level, format string, v ...interface{}) bool {
+			packet := server.PacketLog{
+				Timestamp: time.Now(),
+				LogLevel:  l,
+				Msg:       fmt.Sprintf(format, v...),
+			}
+
+			if err := s.mqss.Publish(
+				server.MGLogs,
+				"",
+				server.DB,
+				&packet,
+			); err != nil {
+				return false
+			}
+			return true
+		},
+	)
+
 	return s, nil
 }
 
@@ -120,7 +141,7 @@ func (s *Server) InitDB() error {
 
 // Run start handling database requests.
 func (s *Server) Run() error {
-	err := s.mqss.Consume(server.MGDB, server.API2DB, s.handleDBRequest)
+	err := s.mqss.Consume(server.MGDB, server.API2DB, s.handleDBRequest, 4)
 	if err != nil {
 		return fmt.Errorf("on run: %v", err)
 	}
@@ -131,25 +152,8 @@ func (s *Server) Run() error {
 	return nil
 }
 
-func (s *Server) sendLog(format string, v ...interface{}) {
-	packet := server.PacketLog{
-		Timestamp: time.Now(),
-		Msg:       fmt.Sprintf(format, v...),
-	}
-
-	if err := s.mqss.Publish(
-		server.MGLogs,
-		"",
-		server.DB,
-		&packet,
-	); err != nil {
-		console.Error("failed to publish log: %v", err)
-		return
-	}
-}
-
 func (s *Server) handleDBRequest(d *amqp.Delivery) (res bool, err error) {
-	var response server.Packet = &server.PacketError{}
+	var response server.Packet = &server.DAPacketError{}
 	defer func() {
 		// reply RPC with response packet
 		if pubErr := s.mqss.Reply(
@@ -183,8 +187,8 @@ func (s *Server) handlePacket(
 ) (response server.Packet, err error) {
 	// parse packet
 	switch pt {
-	case server.PTUserAdd:
-		var p server.PacketUserAdd
+	case server.PTADUserAdd:
+		var p server.ADPacketUserAdd
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)
@@ -192,56 +196,54 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleUserAdd(&p)
 
-	case server.PTReview:
-		var p server.PacketReview
+	case server.PTADUserGet:
+		var p server.ADPacketUserGet
 		err = json.Unmarshal(ser, &p)
 		if err != nil {
 			err = fmt.Errorf("on handlePacket: %v", err)
 			break
 		}
-		response = s.handleReview(&p)
+		response = s.handleUserGet(&p)
+
+	case server.PTADReviewAdd:
+		var p server.ADPacketReviewAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleReviewAdd(&p)
+
+	case server.PTADRestaurantAdd:
+		var p server.ADPacketRestaurantAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantAdd(&p)
+
+	case server.PTADRestaurantsGet:
+		var p server.ADPacketRestaurantsGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantsGet(&p)
+
+	case server.PTADRestaurantsAdd:
+		var p server.ADPacketRestaurantsAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantsAdd(&p)
 
 	default:
 		err = fmt.Errorf("on handlePacket: no parser for %v", pt)
 	}
 
 	return
-}
-
-// handleUserAdd insert new user.
-func (s *Server) handleUserAdd(p *server.PacketUserAdd) server.Packet {
-	coll := s.db.Collection(CNUser)
-
-	_, err := coll.InsertOne(
-		s.dbctx,
-		User{
-			UserID: p.UserID,
-			Name:   p.Name,
-		})
-	if err != nil {
-		console.Warning("failed to insert packet(%v): %v", *p, err)
-		return &server.PacketError{Message: "failed to insert user"}
-	}
-
-	s.sendLog("insert user; UserID(%d), Name(%s)", p.UserID, p.Name)
-	return &server.PacketAck{}
-}
-
-// handleReview insert new review.
-func (s *Server) handleReview(p *server.PacketReview) server.Packet {
-	coll := s.db.Collection(CNReview)
-
-	_, err := coll.InsertOne(
-		s.dbctx,
-		Review{
-			UserID:  p.UserID,
-			Score:   p.Score,
-			Comment: p.Comment,
-		})
-	if err != nil {
-		return &server.PacketError{Message: "failed to insert review"}
-	}
-
-	s.sendLog("insert review; UserID(%d), Name(%d)", p.UserID, p.Score)
-	return &server.PacketAck{}
 }

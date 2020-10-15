@@ -21,6 +21,8 @@ type Server struct {
 	handles *server.HandleMap
 }
 
+const responseTimeout = 6 * time.Second
+
 var baseConfig = &mq.SessionConfig{
 	Exchanges: map[string]mq.ExchangeConfig{
 		server.MGLogs: {
@@ -76,10 +78,32 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	// create ResponseMux
 	s.handles = server.NewHandleMap()
 
-	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse)
+	// start to listen from RabbitMQ
+	err := s.mqss.Consume(server.MGDB, server.DB2API, s.onDBResponse, 2)
 	if err != nil {
 		return nil, fmt.Errorf("on NewServer: %v", err)
 	}
+
+	// addlitionaly send logs to RabbitMQ.
+	console.AddLogHandler(
+		func(l console.Level, format string, v ...interface{}) bool {
+			packet := server.PacketLog{
+				Timestamp: time.Now(),
+				LogLevel:  l,
+				Msg:       fmt.Sprintf(format, v...),
+			}
+
+			if err := s.mqss.Publish(
+				server.MGLogs,
+				"",
+				server.API,
+				&packet,
+			); err != nil {
+				return false
+			}
+			return true
+		},
+	)
 
 	return s, nil
 }
@@ -101,13 +125,28 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 
 	// parse packet
 	switch packetType {
-	case server.PTAck:
-		var p server.PacketAck
+	case server.PTDAAck:
+		var p server.DAPacketAck
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
-	case server.PTError:
-		var p server.PacketError
+	case server.PTDAError:
+		var p server.DAPacketError
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
+	case server.PTDANoSuchUser:
+		var p server.DAPacketNoSuchUser
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
+	case server.PTDAUser:
+		var p server.DAPacketUser
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
+	case server.PTDARestaurants:
+		var p server.DAPacketRestaurants
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
@@ -146,154 +185,26 @@ func (s *Server) ListenAndServe(addr string) error {
 func (s *Server) registerHandlers() {
 	s.mux.HandleFunc("/user", s.handleUser)
 	s.mux.HandleFunc("/review", s.handleReview)
-}
-
-func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		wait := make(chan struct{})
-
-		// parse request from client
-		var userReq JSONUserAdd
-		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-			console.Warning("on handlerUser: failed to decode request")
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		// create packet for database server
-		var dbReq = server.PacketUserAdd{
-			UserID: userReq.UserID,
-			Name:   userReq.Name,
-		}
-
-		response := func(success bool, p server.Packet) {
-			defer func() {
-				wait <- struct{}{}
-			}()
-
-			// failed to receive packet from database server
-			if !success {
-				console.Warning("on handlerUser: no packet received")
-				httpError(w, http.StatusInternalServerError)
-				return
-			}
-
-			// check packet by type casting from interface
-			_, ok := p.(*server.PacketAck)
-			if !ok {
-				console.Warning("on handlerUser: failed to write to database")
-				httpError(w, http.StatusConflict)
-				return
-			}
-
-			s.sendLog("new user created(%s)", userReq.Name)
-		}
-
-		// send packet to database server and register response handler
-		if err := s.send2DB(
-			&dbReq,
-			response,
-		); err != nil {
-			console.Warning("send2DB failed: %v", err)
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// wait for response
-		<-wait
-
-	default:
-		httpError(w, http.StatusMethodNotAllowed)
-	}
-}
-
-func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		wait := make(chan struct{})
-
-		// parse request from client
-		var userReq JSONReview
-		if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-			console.Warning("on handlerReview: failed to decode request")
-			httpError(w, http.StatusBadRequest)
-			return
-		}
-
-		// create packet for database server
-		var dbReq = server.PacketReview{
-			UserID:  userReq.UserID,
-			Score:   userReq.Score,
-			Comment: userReq.Comment,
-		}
-
-		response := func(success bool, p server.Packet) {
-			defer func() {
-				wait <- struct{}{}
-			}()
-
-			// failed to receive packet from database server
-			if !success {
-				console.Warning("on handlerReview: no packet received")
-				httpError(w, http.StatusInternalServerError)
-				return
-			}
-
-			// check packet by type casting from interface
-			_, ok := p.(*server.PacketAck)
-			if !ok {
-				console.Warning("on handlerReview: failed to write to database")
-				httpError(w, http.StatusInternalServerError)
-				return
-			}
-
-			s.sendLog("new review from user(%d)", userReq.UserID)
-		}
-
-		// send packet to database server and register response handler
-		if err := s.send2DB(
-			&dbReq,
-			response,
-		); err != nil {
-			console.Warning("send2DB failed: %v", err)
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-
-		// wait for response
-		<-wait
-
-	default:
-		httpError(w, http.StatusMethodNotAllowed)
-	}
-}
-
-func (s *Server) sendLog(format string, v ...interface{}) {
-	packet := server.PacketLog{
-		Timestamp: time.Now(),
-		Msg:       fmt.Sprintf(format, v...),
-	}
-
-	if err := s.mqss.Publish(
-		server.MGLogs,
-		"",
-		server.API,
-		&packet,
-	); err != nil {
-		console.Error("failed to publish log: %v", err)
-		return
-	}
+	s.mux.HandleFunc("/restaurant", s.handleRestaurant)
+	s.mux.HandleFunc("/restaurants", s.handleRestaurants)
 }
 
 func (s *Server) send2DB(
 	p server.Packet,
 	response func(bool, server.Packet),
-) error {
+) (<-chan struct{}, error) {
+	// wrapper with done channel when response is called
+	done := make(chan struct{})
+	wrapper := func(b bool, p server.Packet) {
+		response(b, p)
+		done <- struct{}{}
+		close(done)
+	}
+
 	// register response handler
 	correlationID := <-s.handles.IDGet
-	if err := s.handles.Register(correlationID, response); err != nil {
-		return fmt.Errorf("on send2DB: %v", err)
+	if err := s.handles.Register(correlationID, wrapper); err != nil {
+		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
 	// request RPC
@@ -306,12 +217,12 @@ func (s *Server) send2DB(
 		p,
 	); err != nil {
 		s.handles.Pop(correlationID)
-		return fmt.Errorf("on send2DB: %v", err)
+		return nil, fmt.Errorf("on send2DB: %v", err)
 	}
 
 	// set response handler timeout
 	go func(corrID string) {
-		<-time.After(3 * time.Second)
+		<-time.After(responseTimeout)
 
 		handler := s.handles.Pop(corrID)
 		if handler == nil {
@@ -320,7 +231,7 @@ func (s *Server) send2DB(
 		handler(false, nil)
 	}(correlationID)
 
-	return nil
+	return done, nil
 }
 
 // httpError responses to client with proper http error message.
