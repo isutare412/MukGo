@@ -1,0 +1,2 @@
+# All shell script files will be checkout and commited by Linux line ending.
+*.sh text eol=lf
