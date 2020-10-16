@@ -153,6 +153,137 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	console.Info("new user created(%v)", userReq.Name)
 }
 
+func (s *Server) handleUserGetWithToken(w http.ResponseWriter, r *http.Request) {
+	// get user claim from authorization header token
+	claim, err := CheckAuth(r)
+	if err != nil {
+		console.Warning("on handleUserGet: failed to decode authorization header: %v", err)
+		httpError(w, http.StatusUnauthorized)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketUserGet{
+		UserID: claim.Subject,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleUserGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleUserGet: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleUserGet: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	case server.ETNoSuchUser:
+		console.Warning("on handleUserGet: user not exists; UserID(%v)",
+			dbReq.UserID)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketUser)
+	if !ok {
+		console.Warning("on handleUserGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// calculate level
+	level, levExp, curExp, ratio := common.Exp2Level(packet.Exp)
+	sightRadius := common.Level2Sight(level)
+
+	// serialize user data
+	ser, err := json.Marshal(&ACUserInfo{
+		Name:        packet.Name,
+		Level:       level,
+		TotalExp:    packet.Exp,
+		LevelExp:    levExp,
+		CurExp:      curExp,
+		ExpRatio:    ratio,
+		SightRadius: sightRadius,
+	})
+	if err != nil {
+		console.Warning("on handleUserGet: failed to marshal user data")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ser)
+	console.Info("sent user data; User(%v)", *packet)
+}
+
+func (s *Server) handleUserPostWithToken(w http.ResponseWriter, r *http.Request) {
+	// get user claim from authorization header token
+	claim, err := CheckAuth(r)
+	if err != nil {
+		console.Warning("on handleUserPost: failed to decode authorization header: %v", err)
+		httpError(w, http.StatusUnauthorized)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketUserAdd{
+		UserID: claim.Subject,
+		Name:   claim.Name,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleUserPost: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleUserPost: no packet received")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid: // not error
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("{ \"code\": 0 }"))
+		console.Info("new user created(%v)", claim.Name)
+		break
+	case server.ETUserExists: // not give error if user already exist
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("{ \"code\": 1 }"))
+		break
+	case server.ETInternal:
+		console.Warning("on handleUserPost: database internal error")
+		httpError(w, http.StatusInternalServerError)
+		return
+	}
+}
+
 func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
