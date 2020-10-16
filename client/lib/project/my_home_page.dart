@@ -6,7 +6,7 @@ import 'package:contra/utils/colors.dart';
 import 'package:mukgo/project/sample_page.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/map/map_detail.dart';
-import 'package:mukgo/user/user_detail.dart';
+import 'package:mukgo/user/user_detail_test.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -21,10 +21,10 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   final List<Widget> _childrenWidgets = [
     MapDetailPage(),
-    UserDetail(isBarChart: false),
+    UserDetailTestPage(),
   ];
 
-   void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
@@ -41,17 +41,16 @@ class _MyHomePageState extends State<MyHomePage> {
         //-------For Contra Sample Pages (START) ------//
         actions: <Widget>[
           Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, "/sample_page");
-              },
-              child: Icon(
-                Icons.category,
-                size: 26.0,
-              ),
-            )
-          ),
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, "/sample_page");
+                },
+                child: Icon(
+                  Icons.category,
+                  size: 26.0,
+                ),
+              )),
         ],
         //-------For Contra Sample Pages (END) ------//
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mukgo/auth/auth.dart';
+import 'package:mukgo/auth/auth_model.dart';
 
 /// Retrieving
 ///
@@ -10,13 +10,13 @@ import 'package:mukgo/auth/auth.dart';
 // build 바깥에서 호출되게!
 Future<void> googleSignIn(BuildContext context) async {
   var auth = context.read<AuthModel>();
-  return auth.signIn();
+  return auth.googleSignIn();
 }
 
 // build 바깥에서 호출되게!
 Future<void> googleSignOut(BuildContext context) async {
   var auth = context.read<AuthModel>();
-  return auth.signOut();
+  return auth.googleSignOut();
 }
 
 // build 바깥에서 호출되게!

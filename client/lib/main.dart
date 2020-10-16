@@ -73,15 +73,14 @@ import 'package:contra/onboarding/type4/onboard_page_four.dart';
 
 import 'package:provider/provider.dart';
 import 'package:mukgo/project/sample_page.dart';
-import 'package:mukgo/auth/auth.dart';
-import 'package:mukgo/auth/auth_api.dart';
+import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/auth/login_page.dart';
 //import 'package:mukgo/project/project_main.dart';
 import 'package:mukgo/project/my_home_page.dart';
 import 'package:mukgo/map/map_detail.dart';
-import 'package:mukgo/user/user_detail.dart';
 import 'package:mukgo/review/review_form.dart';
 import 'package:mukgo/restaurant/restaurant_detail.dart';
+import 'package:mukgo/user/user_model.dart';
 
 void main() => runApp(MyApp());
 
@@ -105,7 +104,7 @@ class MyApp extends StatelessWidget {
               isBarChart: false,
             ),
         '/project_login': (context) => LoginForm(),
-        '/sample_page': (context)=> SamplePage(),
+        '/sample_page': (context) => SamplePage(),
 
         //-------For Contra Sample Pages (START) ------//
         '/onboard_all': (context) => OnboardPageMain(),
@@ -184,7 +183,18 @@ class MyApp extends StatelessWidget {
       },
     );
 
-    return ChangeNotifierProvider(
-        create: (context) => AuthModel(), child: child);
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthModel(), child: child),
+        ChangeNotifierProxyProvider<AuthModel, UserModel>(
+          create: (context) => UserModel(),
+          update: (context, auth, user) {
+            user.auth = auth;
+            return user;
+          },
+        )
+      ],
+      child: child,
+    );
   }
 }
