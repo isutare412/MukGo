@@ -27,7 +27,7 @@ class AuthModel extends ChangeNotifier {
   Future<void> signIn(GoogleSignInAccount account) async {
     var authentication = await account.authentication;
     print(authentication.toTokenString());
-    _token = authentication.idToken;
+    _token = authentication.accessToken;
     _user = account;
     // var code = await trySignUp(token);
     // print('try sign up response code $code');

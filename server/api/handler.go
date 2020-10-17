@@ -102,18 +102,17 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
-	// parse request from client
-	var userReq CAUserPost
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-		console.Warning("on handleUserPost: failed to decode request")
+	uid, name, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleUserPost: %v", err)
 		httpError(w, http.StatusBadRequest)
 		return
 	}
 
 	// create packet for database server
 	var dbReq = server.ADPacketUserAdd{
-		UserID: userReq.UserID,
-		Name:   userReq.Name,
+		UserID: uid,
+		Name:   name,
 	}
 
 	// send packet to database server and register response handler
@@ -150,12 +149,12 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	console.Info("new user created(%v)", userReq.Name)
+	console.Info("new user created(%v)", name)
 }
 
 func (s *Server) handleUserGetWithToken(w http.ResponseWriter, r *http.Request) {
 	// get user claim from authorization header token
-	claim, err := CheckAuth(r)
+	uid, _, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleUserGet: failed to decode authorization header: %v", err)
 		httpError(w, http.StatusUnauthorized)
@@ -164,7 +163,7 @@ func (s *Server) handleUserGetWithToken(w http.ResponseWriter, r *http.Request) 
 
 	// create packet for database server
 	var dbReq = server.ADPacketUserGet{
-		UserID: claim.Subject,
+		UserID: uid,
 	}
 
 	// send packet to database server and register response handler
@@ -235,7 +234,7 @@ func (s *Server) handleUserGetWithToken(w http.ResponseWriter, r *http.Request) 
 
 func (s *Server) handleUserPostWithToken(w http.ResponseWriter, r *http.Request) {
 	// get user claim from authorization header token
-	claim, err := CheckAuth(r)
+	uid, name, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleUserPost: failed to decode authorization header: %v", err)
 		httpError(w, http.StatusUnauthorized)
@@ -244,8 +243,8 @@ func (s *Server) handleUserPostWithToken(w http.ResponseWriter, r *http.Request)
 
 	// create packet for database server
 	var dbReq = server.ADPacketUserAdd{
-		UserID: claim.Subject,
-		Name:   claim.Name,
+		UserID: uid,
+		Name:   name,
 	}
 
 	// send packet to database server and register response handler
@@ -271,7 +270,7 @@ func (s *Server) handleUserPostWithToken(w http.ResponseWriter, r *http.Request)
 	case server.ETInvalid: // not error
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte("{ \"code\": 0 }"))
-		console.Info("new user created(%v)", claim.Name)
+		console.Info("new user created(%v)", name)
 		break
 	case server.ETUserExists: // not give error if user already exist
 		w.Header().Set("Content-Type", "application/json")

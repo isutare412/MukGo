@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/isutare412/MukGo/server"
@@ -17,6 +18,7 @@ import (
 type Server struct {
 	mux  *http.ServeMux
 	mqss *mq.Session
+	hc   *http.Client
 
 	packetChans *server.ChannelMap
 }
@@ -59,6 +61,9 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 	// register api handlers
 	s.registerHandlers()
 	console.Info("registered handlers")
+
+	// http client for authorization
+	s.hc = &http.Client{}
 
 	// establish rabbitmq session
 	mqaddr := fmt.Sprintf("%s:%d", cfg.RabbitMQ.IP, cfg.RabbitMQ.Port)
@@ -225,6 +230,62 @@ func (s *Server) send2DB(
 	}(correlationID)
 
 	return pch, nil
+}
+
+func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
+	const (
+		authKey = "Authorization"
+		apiURL  = "https://www.googleapis.com/oauth2/v3/userinfo"
+	)
+
+	auth := h.Get(authKey)
+	if auth == "" {
+		err = fmt.Errorf("No Authorization header")
+		return
+	}
+
+	// extract token from header
+	tokens := strings.SplitN(auth, " ", 2)
+	if len(tokens) < 2 {
+		err = fmt.Errorf("Authorization header should be space seperated")
+		return
+	}
+
+	tokenType, token := tokens[0], tokens[1]
+
+	// easy authorization for develeopment purpose
+	if tokenType == "Mukgoer" {
+		uid = token
+		name = token
+		return
+	}
+
+	// build request struct
+	req, terr := http.NewRequest("GET", apiURL, nil)
+	if terr != nil {
+		err = fmt.Errorf("failed request: %v", terr)
+		return
+	}
+
+	// send to google auth api
+	req.Header.Set(authKey, "Bearer "+token)
+	res, terr := s.hc.Do(req)
+	if terr != nil {
+		err = fmt.Errorf("failed send: %v", terr)
+		return
+	}
+
+	// decode json
+	var uc UserClaim
+	terr = json.NewDecoder(res.Body).Decode(&uc)
+	if terr != nil {
+		err = fmt.Errorf("failed decode: %v", terr)
+		return
+	}
+
+	uid = uc.Sub
+	name = uc.Name
+	return
 }
 
 // httpError responses to client with proper http error message.
