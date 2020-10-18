@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/isutare412/MukGo/server"
+	"github.com/isutare412/MukGo/server/api/code"
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
 	"github.com/streadway/amqp"
@@ -251,12 +252,12 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 		return
 	}
 
-	tokenType, token := tokens[0], tokens[1]
+	tokenType, accessToken := tokens[0], tokens[1]
 
 	// easy authorization for develeopment purpose
 	if tokenType == "Mukgoer" {
-		uid = token
-		name = token
+		uid = accessToken
+		name = accessToken
 		return
 	}
 
@@ -268,7 +269,7 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 	}
 
 	// send to google auth api
-	req.Header.Set(authKey, "Bearer "+token)
+	req.Header.Set(authKey, "Bearer "+accessToken)
 	res, terr := s.hc.Do(req)
 	if terr != nil {
 		err = fmt.Errorf("failed send: %v", terr)
@@ -283,14 +284,28 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 		return
 	}
 
+	if uc.Sub == "" {
+		err = fmt.Errorf("invalid access token(%v)", accessToken)
+		return
+	}
+
 	uid = uc.Sub
 	name = uc.Name
 	return
 }
 
 // httpError responses to client with proper http error message.
-func httpError(w http.ResponseWriter, errno int) {
-	http.Error(w, http.StatusText(errno), errno)
+func httpError(w http.ResponseWriter, errno int, code code.Code) {
+	w.WriteHeader(errno)
+
+	// write custom error code to body
+	w.Header().Set("Content-Type", "application/json")
+	reason := ACErrorReason{Code: int32(code)}
+	ser, err := json.Marshal(&reason)
+	if err != nil {
+		panic(fmt.Errorf("on httpError: %v", err))
+	}
+	w.Write(ser)
 }
 
 // getError checks if p is error packet, then returns its ErrorType.

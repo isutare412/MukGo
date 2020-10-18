@@ -39,3 +39,19 @@ Game-like restaurant review service.
 ## Client
 
 - Follow [Flutter VScode guide](https://flutter.dev/docs/get-started/test-drive?tab=vscode)
+
+- Transaction
+
+## Protobuf
+
+- Define custome error code between server and client.
+
+### How to add new error code
+
+1. Fix `protobuf/code.proto`
+
+2. `make protocol` (need docker)
+
+3. New error codes will be compiled to files.
+   - `server/api/code`
+   - `client/lib/protocol`

@@ -55,6 +55,12 @@ type UserClaim struct {
 * API to Client
 ******************************************************************************/
 
+// ACErrorReason contains error code. Error should be defined in code package
+// from protobuf.
+type ACErrorReason struct {
+	Code int32 `json:"code"`
+}
+
 // ACUserInfo contains user data.
 type ACUserInfo struct {
 	Name        string  `json:"name"`
