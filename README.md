@@ -40,8 +40,6 @@ Game-like restaurant review service.
 
 - Follow [Flutter VScode guide](https://flutter.dev/docs/get-started/test-drive?tab=vscode)
 
-- Transaction
-
 ## Protobuf
 
 - Define custome error code between server and client.

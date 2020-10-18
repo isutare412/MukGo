@@ -5,7 +5,7 @@ import 'dart:html';
 import 'package:http/http.dart' as http;
 import 'package:mukgo/protocol/code.pbenum.dart';
 
-String apiUrl = 'http://10.0.2.2:7777';
+String apiUrl = 'http://localhost:7777';
 
 // user data response
 class UserData {
@@ -41,28 +41,28 @@ class UserData {
 
 // fetch user data from api
 Future<UserData> fetchUserData(String token) async {
-  try {
-    var headers = <String, String>{'Authorization': 'Bearer $token'};
-    var res = await http.get('$apiUrl/user', headers: headers);
-    if (res.statusCode != 200) {
-      return null;
-    }
-    return UserData.fromJSON(json.decode(res.body));
-  } catch (e) {
-    return null;
-  }
+  // try {
+  //   var headers = <String, String>{'Authorization': 'Bearer $token'};
+  //   var res = await http.get('$apiUrl/user', headers: headers);
+  //   if (res.statusCode != 200) {
+  //     return null;
+  //   }
+  //   return UserData.fromJSON(json.decode(res.body));
+  // } catch (e) {
+  //   return null;
+  // }
 
   // serve test data instead
-  // await Future.delayed(Duration(seconds: 3));
-  // var dummyUser = UserData(
-  //     name: '홍길동',
-  //     level: 7,
-  //     totalExp: 1000,
-  //     levelExp: 500,
-  //     curExp: 300,
-  //     expRatio: 0.6,
-  //     sightRadius: 1.0);
-  // return dummyUser;
+  await Future.delayed(Duration(seconds: 3));
+  var dummyUser = UserData(
+      name: '홍길동',
+      level: 7,
+      totalExp: 1000,
+      levelExp: 500,
+      curExp: 300,
+      expRatio: 0.6,
+      sightRadius: 1.0);
+  return dummyUser;
 }
 
 // post request to sign up/in
