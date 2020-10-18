@@ -12,9 +12,21 @@ type Restaurant struct {
 	Longitude float64 `json:"longitude"`
 }
 
+// Review model for JSON marshaling.
+type Review struct {
+	UserName string `json:"user_name"`
+	Score    int    `json:"score"`
+	Comment  string `json:"comment"`
+}
+
 /******************************************************************************
 * Client to API
 ******************************************************************************/
+
+// CAReviewsGet requests reviews of restaurant with id.
+type CAReviewsGet struct {
+	RestID string `json:"restaurant_id"`
+}
 
 // CAReviewPost defines post data for review.
 type CAReviewPost struct {
@@ -75,4 +87,9 @@ type ACUserInfo struct {
 // ACRestaurantsInfo contains multiple restaurants data.
 type ACRestaurantsInfo struct {
 	Restaurants []*Restaurant `json:"restaurants"`
+}
+
+// ACReviewsInfo contains multiple restaurants data.
+type ACReviewsInfo struct {
+	Reviews []*Review `json:"reviews"`
 }

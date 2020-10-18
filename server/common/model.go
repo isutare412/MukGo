@@ -8,3 +8,11 @@ type Restaurant struct {
 	Name  string
 	Coord Coordinate
 }
+
+// Review model.
+type Review struct {
+	UserID   string
+	UserName string
+	Score    int
+	Comment  string
+}

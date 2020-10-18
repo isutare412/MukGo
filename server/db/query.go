@@ -171,6 +171,31 @@ func queryRestaurantsGet(
 	return restaurants, nil
 }
 
+func queryReviewsGet(
+	ctx context.Context,
+	db *mongo.Database,
+	restID primitive.ObjectID,
+) ([]*Review, error) {
+	coll := db.Collection(CNReview)
+	cursor, err := coll.Find(
+		ctx,
+		bson.M{
+			"restaurant_id": restID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryReviewsGet: %v", err)
+	}
+
+	reviews := make([]*Review, 0)
+	err = cursor.All(ctx, &reviews)
+	if err != nil {
+		return nil, fmt.Errorf("on queryReviewsGet: %v", err)
+	}
+
+	return reviews, nil
+}
+
 func queryReviewAdd(
 	ctx context.Context,
 	db *mongo.Database,

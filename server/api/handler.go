@@ -265,6 +265,107 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	console.Info("new review from user; User(%v)", *packet)
 }
 
+func (s *Server) handleReviews(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		s.handleReviewsGet(w, r)
+	default:
+		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+	}
+}
+
+func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
+	// parse request from client
+	var userReq CAReviewsGet
+	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+		console.Warning("on handleReviewsGet: failed to decode request")
+		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		return
+	}
+
+	restID, err := primitive.ObjectIDFromHex(userReq.RestID)
+	if err != nil {
+		console.Warning("on handleReviewsGet: invalid restaurantd id; "+
+			"id(%v): %v", userReq.RestID, err)
+		httpError(w, http.StatusBadRequest, code.Code_INVALID_DATA)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketReviewsGet{
+		RestID: restID,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleReviewsGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleReviewsGet: no packet received")
+		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleReviewsGet: database internal error")
+		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		return
+	case server.ETNoSuchRestaurant:
+		console.Warning(
+			"on handleReviewsGet: restaurant not exists; RestID(%v)",
+			dbReq.RestID)
+		httpError(w, http.StatusBadRequest, code.Code_RESTAURANT_NOT_EXISTS)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketReviews)
+	if !ok {
+		console.Warning("on handleReviewsGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// copy reviews into response packet
+	reviews := ACReviewsInfo{
+		Reviews: make([]*Review, 0, len(packet.Reviews)),
+	}
+	for _, r := range packet.Reviews {
+		reviews.Reviews = append(reviews.Reviews,
+			&Review{
+				UserName: r.UserName,
+				Score:    r.Score,
+				Comment:  r.Comment,
+			},
+		)
+	}
+	// serialize user data
+	ser, err := json.Marshal(&reviews)
+	if err != nil {
+		console.Warning("on handleReviewsGet: failed to marshal review data")
+		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// send review data for the restaurant
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ser)
+	console.Info("send reviews; restaurant(%v) reviews(%v)",
+		userReq.RestID, len(reviews.Reviews))
+}
+
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
@@ -279,7 +380,7 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	var userReq CARestaurantPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
 		console.Warning("on handleRestaurantPost: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_AUTH_FAILED)
+		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
 		return
 	}
 

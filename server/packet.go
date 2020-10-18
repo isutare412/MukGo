@@ -20,6 +20,7 @@ const (
 	PTInvalid PacketType = iota
 	PTADUserAdd
 	PTADUserGet
+	PTADReviewsGet
 	PTADReviewAdd
 	PTADRestaurantAdd
 	PTADRestaurantsGet
@@ -30,6 +31,7 @@ const (
 	PTDAError
 	PTDAUser
 	PTDARestaurants
+	PTDAReviews
 
 	// log packet type
 	PTLog
@@ -62,6 +64,11 @@ type ADPacketUserAdd struct {
 // ADPacketUserGet request user data.
 type ADPacketUserGet struct {
 	UserID string
+}
+
+// ADPacketReviewsGet containes review data.
+type ADPacketReviewsGet struct {
+	RestID primitive.ObjectID
 }
 
 // ADPacketReviewAdd containes review data.
@@ -114,6 +121,11 @@ type DAPacketRestaurants struct {
 	Restaurants []*common.Restaurant
 }
 
+// DAPacketReviews contains multiple Review models.
+type DAPacketReviews struct {
+	Reviews []*common.Review
+}
+
 /******************************************************************************
 * Log packets
 ******************************************************************************/
@@ -137,6 +149,11 @@ func (p *ADPacketUserAdd) Type() PacketType {
 // Type implements Packet interface.
 func (p *ADPacketUserGet) Type() PacketType {
 	return PTADUserGet
+}
+
+// Type implements Packet interface.
+func (p *ADPacketReviewsGet) Type() PacketType {
+	return PTADReviewsGet
 }
 
 // Type implements Packet interface.
@@ -177,6 +194,11 @@ func (p *DAPacketUser) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketRestaurants) Type() PacketType {
 	return PTDARestaurants
+}
+
+// Type implements Packet interface.
+func (p *DAPacketReviews) Type() PacketType {
+	return PTDAReviews
 }
 
 // Type implements Packet interface.

@@ -53,6 +53,83 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 	}
 }
 
+func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	// check restaurant data
+	restaurant, err := queryRestaurantGet(ctx, s.db, p.RestID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleReviewsGet: cannot find restaurant;"+
+					"packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETNoSuchRestaurant}
+		default:
+			console.Warning(
+				"on handleReviewsGet: failed to get restaurant; packet(%v): %v",
+				*p, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	reviews, err := queryReviewsGet(ctx, s.db, p.RestID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewsGet: failed to get reviews; packet(%v): %v",
+			*p, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	// find user name from user id.
+	var idMap = make(map[string]string)
+	for _, r := range reviews {
+		// check if name already cached
+		if _, ok := idMap[r.UserID]; ok {
+			continue
+		}
+
+		user, err := queryUserGet(ctx, s.db, r.UserID)
+		if err != nil {
+			switch err {
+			case mongo.ErrNoDocuments:
+				// database integrity contraint broken
+				console.Error(
+					"on handleReviewsGet: cannot find user; uid(%v): %v",
+					r.UserID, err)
+				return &server.DAPacketError{ErrorType: server.ETInternal}
+			default:
+				console.Warning(
+					"on handleReviewsGet: failed to get user; uid(%v): %v",
+					r.UserID, err)
+				return &server.DAPacketError{ErrorType: server.ETInternal}
+			}
+		}
+
+		idMap[r.UserID] = user.Name
+	}
+
+	// copy review data into response packet
+	resPacket := server.DAPacketReviews{
+		Reviews: make([]*common.Review, 0, len(reviews)),
+	}
+	for _, r := range reviews {
+		resPacket.Reviews = append(resPacket.Reviews,
+			&common.Review{
+				UserID:   r.UserID,
+				UserName: idMap[r.UserID],
+				Score:    r.Score,
+				Comment:  r.Comment,
+			},
+		)
+	}
+
+	console.Info("send reviews; restaurant(%v) count(%v)",
+		restaurant.Name, len(resPacket.Reviews))
+	return &resPacket
+}
+
 func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
