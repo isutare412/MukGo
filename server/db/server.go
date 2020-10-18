@@ -128,7 +128,7 @@ func (s *Server) InitDB() error {
 		s.dbctx,
 		mongo.IndexModel{
 			Keys: bson.M{
-				"userid": 1, // index in ascending order
+				"user_id": 1, // index in ascending order
 			},
 			Options: options.Index().SetUnique(true),
 		})
