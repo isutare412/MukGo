@@ -16,20 +16,8 @@ type Restaurant struct {
 * Client to API
 ******************************************************************************/
 
-// CAUserPost defines post data for user.
-type CAUserPost struct {
-	UserID string `json:"user_id"`
-	Name   string `json:"name"`
-}
-
-// CAUserGet contains data request for user.
-type CAUserGet struct {
-	UserID string `json:"user_id"`
-}
-
 // CAReviewPost defines post data for review.
 type CAReviewPost struct {
-	UserID  string `json:"user_id"`
 	RestID  string `json:"restaurant_id"`
 	Score   int    `json:"score"`
 	Comment string `json:"comment"`
@@ -49,7 +37,6 @@ type CARestaurantsPost struct {
 
 // CARestaurantsGet request restarants data within user's sight.
 type CARestaurantsGet struct {
-	UserID    string  `json:"user_id"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }

@@ -22,17 +22,16 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
-	// parse request from client
-	var userReq CAUserGet
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-		console.Warning("on handleUserGet: failed to decode request")
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleUserGet: %v", err)
 		httpError(w, http.StatusBadRequest)
 		return
 	}
 
 	// create packet for database server
 	var dbReq = server.ADPacketUserGet{
-		UserID: userReq.UserID,
+		UserID: uid,
 	}
 
 	// send packet to database server and register response handler
@@ -293,6 +292,13 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleReviewPost: %v", err)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
 	// parse request from client
 	var userReq CAReviewPost
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -311,7 +317,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 
 	// create packet for database server
 	var dbReq = server.ADPacketReviewAdd{
-		UserID:  userReq.UserID,
+		UserID:  uid,
 		RestID:  restID,
 		Score:   userReq.Score,
 		Comment: userReq.Comment,
@@ -460,6 +466,13 @@ func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleRestaurantsGet: %v", err)
+		httpError(w, http.StatusBadRequest)
+		return
+	}
+
 	// parse request from client
 	var userReq CARestaurantsGet
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
@@ -470,7 +483,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 
 	// create packet for database server
 	var dbReq = server.ADPacketRestaurantsGet{
-		UserID: userReq.UserID,
+		UserID: uid,
 		Coord: common.Coordinate{
 			Latitude:  userReq.Latitude,
 			Longitude: userReq.Longitude,
