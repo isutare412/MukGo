@@ -1,6 +1,9 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 
+import 'package:flutter/cupertino.dart';
+import 'package:fixnum/fixnum.dart';
+
+import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/api/api.dart';
 
@@ -11,9 +14,9 @@ class UserModel extends ChangeNotifier {
   // user info data
   String name;
   int level;
-  int totalExp;
-  int levelExp;
-  int curExp;
+  Int64 totalExp;
+  Int64 levelExp;
+  Int64 curExp;
   double expRatio;
   double sightRadius;
 
@@ -37,9 +40,9 @@ class UserModel extends ChangeNotifier {
   void update(
       {String name,
       int level,
-      int totalExp,
-      int levelExp,
-      int curExp,
+      Int64 totalExp,
+      Int64 levelExp,
+      Int64 curExp,
       double expRatio,
       double sightRadius}) {
     this.name = name;
@@ -53,7 +56,7 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateFromUserData(UserData userData) {
+  void updateFromUserData(User userData) {
     update(
         name: userData.name,
         level: userData.level,

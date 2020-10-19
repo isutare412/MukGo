@@ -13,6 +13,6 @@ type Restaurant struct {
 type Review struct {
 	UserID   string
 	UserName string
-	Score    int
+	Score    int32
 	Comment  string
 }

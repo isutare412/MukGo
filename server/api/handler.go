@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/isutare412/MukGo/server"
-	"github.com/isutare412/MukGo/server/api/code"
+	pb "github.com/isutare412/MukGo/server/api/proto"
 	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,7 +18,7 @@ func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		s.handleUserPost(w, r)
 	default:
-		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
 }
 
@@ -26,7 +26,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	uid, _, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleUserGet: %v", err)
-		httpError(w, http.StatusBadRequest, code.Code_AUTH_FAILED)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleUserGet: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleUserGet: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -59,12 +59,12 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleUserGet: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	case server.ETNoSuchUser:
 		console.Warning("on handleUserGet: user not exists; UserID(%v)",
 			dbReq.UserID)
-		httpError(w, http.StatusBadRequest, code.Code_USER_NOT_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_USER_NOT_EXISTS)
 		return
 	}
 
@@ -72,7 +72,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	packet, ok := p.(*server.DAPacketUser)
 	if !ok {
 		console.Warning("on handleUserGet: unexpected packet")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -81,7 +81,8 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := json.Marshal(&ACUserInfo{
+	ser, err := json.Marshal(&pb.User{
+		Id:          packet.UserID,
 		Name:        packet.Name,
 		Level:       level,
 		TotalExp:    packet.Exp,
@@ -92,7 +93,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		console.Warning("on handleUserGet: failed to marshal user data")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -105,7 +106,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	uid, name, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleUserPost: %v", err)
-		httpError(w, http.StatusBadRequest, code.Code_AUTH_FAILED)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
 		return
 	}
 
@@ -119,7 +120,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleUserPost: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -129,7 +130,7 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleUserPost: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -139,12 +140,12 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleUserPost: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	case server.ETUserExists:
 		console.Warning("on handleUserPost: user already exists; UserID(%v)",
 			dbReq.UserID)
-		httpError(w, http.StatusBadRequest, code.Code_USER_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_USER_EXISTS)
 		return
 	}
 
@@ -156,7 +157,7 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		s.handleReviewPost(w, r)
 	default:
-		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
 }
 
@@ -164,23 +165,24 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	uid, _, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleReviewPost: %v", err)
-		httpError(w, http.StatusBadRequest, code.Code_AUTH_FAILED)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
 		return
 	}
 
 	// parse request from client
-	var userReq CAReviewPost
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+	var userReq pb.ReviewPost
+	err = json.NewDecoder(r.Body).Decode(&userReq)
+	if err != nil || userReq.Review == nil {
 		console.Warning("on handleReviewPost: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
-	restID, err := primitive.ObjectIDFromHex(userReq.RestID)
+	restID, err := primitive.ObjectIDFromHex(userReq.RestaurantId)
 	if err != nil {
 		console.Warning("on handleReviewPost: invalid restaurantd id; "+
-			"id(%v): %v", userReq.RestID, err)
-		httpError(w, http.StatusBadRequest, code.Code_INVALID_DATA)
+			"id(%v): %v", userReq.RestaurantId, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
 		return
 	}
 
@@ -188,15 +190,15 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	var dbReq = server.ADPacketReviewAdd{
 		UserID:  uid,
 		RestID:  restID,
-		Score:   userReq.Score,
-		Comment: userReq.Comment,
+		Score:   userReq.Review.Score,
+		Comment: userReq.Review.Comment,
 	}
 
 	// send packet to database server and register response handler
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleReviewPost: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -206,7 +208,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleReviewPost: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -216,18 +218,18 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleReviewPost: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	case server.ETNoSuchUser:
 		console.Warning("on handleReviewPost: user not exists; UserID(%v)",
 			dbReq.UserID)
-		httpError(w, http.StatusBadRequest, code.Code_USER_NOT_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_USER_NOT_EXISTS)
 		return
 	case server.ETNoSuchRestaurant:
 		console.Warning(
 			"on handleReviewPost: restaurant not exists; RestID(%v)",
 			dbReq.RestID)
-		httpError(w, http.StatusBadRequest, code.Code_RESTAURANT_NOT_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_RESTAURANT_NOT_EXISTS)
 		return
 	}
 
@@ -235,7 +237,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	packet, ok := p.(*server.DAPacketUser)
 	if !ok {
 		console.Warning("on handleReviewPost: unexpected packet")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -244,9 +246,9 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := json.Marshal(&ACUserInfo{
+	ser, err := json.Marshal(&pb.User{
+		Id:          packet.UserID,
 		Name:        packet.Name,
-		Level:       level,
 		TotalExp:    packet.Exp,
 		LevelExp:    levExp,
 		CurExp:      curExp,
@@ -255,7 +257,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		console.Warning("on handleReviewPost: failed to marshal user data")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -270,24 +272,24 @@ func (s *Server) handleReviews(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		s.handleReviewsGet(w, r)
 	default:
-		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
 }
 
 func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
-	var userReq CAReviewsGet
+	var userReq pb.ReviewsGet
 	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
 		console.Warning("on handleReviewsGet: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
-	restID, err := primitive.ObjectIDFromHex(userReq.RestID)
+	restID, err := primitive.ObjectIDFromHex(userReq.RestaurantId)
 	if err != nil {
 		console.Warning("on handleReviewsGet: invalid restaurantd id; "+
-			"id(%v): %v", userReq.RestID, err)
-		httpError(w, http.StatusBadRequest, code.Code_INVALID_DATA)
+			"id(%v): %v", userReq.RestaurantId, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
 		return
 	}
 
@@ -300,7 +302,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleReviewsGet: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -310,7 +312,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleReviewsGet: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -320,13 +322,13 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleReviewsGet: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	case server.ETNoSuchRestaurant:
 		console.Warning(
 			"on handleReviewsGet: restaurant not exists; RestID(%v)",
 			dbReq.RestID)
-		httpError(w, http.StatusBadRequest, code.Code_RESTAURANT_NOT_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_RESTAURANT_NOT_EXISTS)
 		return
 	}
 
@@ -334,28 +336,29 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	packet, ok := p.(*server.DAPacketReviews)
 	if !ok {
 		console.Warning("on handleReviewsGet: unexpected packet")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
 	// copy reviews into response packet
-	reviews := ACReviewsInfo{
-		Reviews: make([]*Review, 0, len(packet.Reviews)),
+	reviews := pb.Reviews{
+		Reviews: make([]*pb.Review, 0, len(packet.Reviews)),
 	}
 	for _, r := range packet.Reviews {
 		reviews.Reviews = append(reviews.Reviews,
-			&Review{
+			&pb.Review{
 				UserName: r.UserName,
 				Score:    r.Score,
 				Comment:  r.Comment,
 			},
 		)
 	}
+
 	// serialize user data
 	ser, err := json.Marshal(&reviews)
 	if err != nil {
 		console.Warning("on handleReviewsGet: failed to marshal review data")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -363,7 +366,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(ser)
 	console.Info("send reviews; restaurant(%v) reviews(%v)",
-		userReq.RestID, len(reviews.Reviews))
+		userReq.RestaurantId, len(reviews.Reviews))
 }
 
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -371,25 +374,26 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		s.handleRestaurantPost(w, r)
 	default:
-		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
 }
 
 func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
-	var userReq CARestaurantPost
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+	var userReq pb.RestaurantPost
+	err := json.NewDecoder(r.Body).Decode(&userReq)
+	if err != nil || userReq.Restaurant == nil {
 		console.Warning("on handleRestaurantPost: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
 	// create packet for database server
 	var dbReq = server.ADPacketRestaurantAdd{
-		Name: userReq.Name,
+		Name: userReq.Restaurant.Name,
 		Coord: common.Coordinate{
-			Latitude:  userReq.Latitude,
-			Longitude: userReq.Longitude,
+			Latitude:  userReq.Restaurant.Coord.Latitude,
+			Longitude: userReq.Restaurant.Coord.Longitude,
 		},
 	}
 
@@ -397,7 +401,7 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantPost: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -407,7 +411,7 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleRestaurantPost: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -417,11 +421,11 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleRestaurantPost: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
-	console.Info("new restaurant added(%v)", userReq.Name)
+	console.Info("new restaurant added(%v)", userReq.Restaurant.Name)
 }
 
 func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
@@ -431,7 +435,7 @@ func (s *Server) handleRestaurants(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		s.handleRestaurantsPost(w, r)
 	default:
-		httpError(w, http.StatusMethodNotAllowed, code.Code_METHOD_NOT_ALLOWED)
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
 }
 
@@ -439,15 +443,16 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	uid, _, err := s.authenticate(r.Header)
 	if err != nil {
 		console.Warning("on handleRestaurantsGet: %v", err)
-		httpError(w, http.StatusBadRequest, code.Code_AUTH_FAILED)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
 		return
 	}
 
 	// parse request from client
-	var userReq CARestaurantsGet
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+	var userReq pb.RestaurantsGet
+	err = json.NewDecoder(r.Body).Decode(&userReq)
+	if err != nil || userReq.Coord == nil {
 		console.Warning("on handleRestaurantsGet: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
@@ -455,8 +460,8 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	var dbReq = server.ADPacketRestaurantsGet{
 		UserID: uid,
 		Coord: common.Coordinate{
-			Latitude:  userReq.Latitude,
-			Longitude: userReq.Longitude,
+			Latitude:  userReq.Coord.Latitude,
+			Longitude: userReq.Coord.Longitude,
 		},
 	}
 
@@ -464,7 +469,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantsGet: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -474,7 +479,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleRestaurantsGet: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -484,13 +489,13 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleRestaurantsGet: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	case server.ETNoSuchUser:
 		console.Warning(
 			"on handleRestaurantsGet: user not exists; UserID(%v)",
 			dbReq.UserID)
-		httpError(w, http.StatusBadRequest, code.Code_USER_NOT_EXISTS)
+		httpError(w, http.StatusBadRequest, pb.Code_USER_NOT_EXISTS)
 		return
 	}
 
@@ -498,20 +503,22 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	packet, ok := p.(*server.DAPacketRestaurants)
 	if !ok {
 		console.Warning("on handleRestaurantsGet: unexpected packet")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
 	// build response data
-	rests := ACRestaurantsInfo{
-		Restaurants: make([]*Restaurant, 0, len(packet.Restaurants)),
+	rests := pb.Restaurants{
+		Restaurants: make([]*pb.Restaurant, 0, len(packet.Restaurants)),
 	}
 	for _, r := range packet.Restaurants {
-		rests.Restaurants = append(rests.Restaurants, &Restaurant{
-			ID:        r.ID.Hex(),
-			Name:      r.Name,
-			Latitude:  r.Coord.Latitude,
-			Longitude: r.Coord.Longitude,
+		rests.Restaurants = append(rests.Restaurants, &pb.Restaurant{
+			Id:   r.ID.Hex(),
+			Name: r.Name,
+			Coord: &pb.Coordinate{
+				Latitude:  r.Coord.Latitude,
+				Longitude: r.Coord.Longitude,
+			},
 		})
 	}
 
@@ -520,7 +527,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		console.Warning(
 			"on handleRestaurantsGet: failed to marshal restaurants data")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -531,10 +538,11 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
-	var userReq CARestaurantsPost
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+	var userReq pb.RestaurantsPost
+	err := json.NewDecoder(r.Body).Decode(&userReq)
+	if err != nil || userReq.Restaurants == nil {
 		console.Warning("on handleRestaurantsPost: failed to decode request")
-		httpError(w, http.StatusBadRequest, code.Code_PROTOCOL_MISMATCH)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
@@ -543,11 +551,17 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 		Restaurants: make([]*common.Restaurant, 0, len(userReq.Restaurants)),
 	}
 	for _, r := range userReq.Restaurants {
+		if r.Coord == nil {
+			console.Warning("on handleRestaurantsPost: invalid coordinate")
+			httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+			return
+		}
+
 		dbReq.Restaurants = append(dbReq.Restaurants, &common.Restaurant{
 			Name: r.Name,
 			Coord: common.Coordinate{
-				Latitude:  r.Latitude,
-				Longitude: r.Longitude,
+				Latitude:  r.Coord.Latitude,
+				Longitude: r.Coord.Longitude,
 			},
 		})
 	}
@@ -556,7 +570,7 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 	response, err := s.send2DB(&dbReq)
 	if err != nil {
 		console.Warning("on handleRestaurantsPost: send2DB failed: %v", err)
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -566,7 +580,7 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 	// failed to receive packet from database server
 	if p == nil {
 		console.Warning("on handleRestaurantsPost: no packet received")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
@@ -576,10 +590,9 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 		break // not error
 	case server.ETInternal:
 		console.Warning("on handleRestaurantsPost: database internal error")
-		httpError(w, http.StatusInternalServerError, code.Code_INTERNAL_ERROR)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
 		return
 	}
 
-	console.Info("new restaurants added; count(%v)",
-		len(userReq.Restaurants))
+	console.Info("new restaurants added; count(%v)", len(userReq.Restaurants))
 }

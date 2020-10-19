@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-protoc --dart_out=./protocol_dart -I ./protobuf code.proto
-protoc --go_out=./protocol_go -I ./protobuf code.proto
+BASE_DIR="proto/"
+PROTO_FILES=(model.proto request.proto)
+PROTO_FILES=(${PROTO_FILES[@]/#/${BASE_DIR}})
+
+protoc --dart_out=./protocol_dart -I. ${PROTO_FILES[@]}
+protoc --go_out=./protocol_go -I. ${PROTO_FILES[@]}

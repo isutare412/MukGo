@@ -201,7 +201,7 @@ func queryReviewAdd(
 	db *mongo.Database,
 	userID string,
 	restID primitive.ObjectID,
-	score int,
+	score int32,
 	comment string,
 ) error {
 	coll := db.Collection(CNReview)

@@ -13,7 +13,7 @@ type User struct {
 type Review struct {
 	UserID  string             `bson:"user_id"`
 	RestID  primitive.ObjectID `bson:"restaurant_id"`
-	Score   int                `bson:"score"`
+	Score   int32              `bson:"score"`
 	Comment string             `bson:"comment"`
 }
 

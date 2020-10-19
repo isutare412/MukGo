@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package proto;
+
+/////////////////////////////////////////////////////////////////////////////
+// Enumerates
+/////////////////////////////////////////////////////////////////////////////
+
+enum Code {
+    SUCCESS = 0;
+    INTERNAL_ERROR = 1;
+    METHOD_NOT_ALLOWED = 2;
+    AUTH_FAILED = 3;
+    PROTOCOL_MISMATCH = 4;
+    INVALID_DATA = 5;
+    USER_EXISTS = 6;
+    USER_NOT_EXISTS = 7;
+    RESTAURANT_NOT_EXISTS = 8;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Models
+/////////////////////////////////////////////////////////////////////////////
+
+message User {
+    string id = 1;
+    string name = 2;
+    int32 level = 3;
+    int64 total_exp = 4;
+    int64 level_exp = 5;
+    int64 cur_exp = 6;
+    double exp_ratio = 7;
+    double sight_radius = 8;
+}
+
+message Coordinate {
+    double latitude = 1;
+    double longitude = 2;
+}
+
+message Restaurant {
+    string id = 1;
+    string name = 2;
+    Coordinate coord = 3;
+}
+
+message Review {
+    string id = 1;
+    string user_name = 2;
+    int32 score = 3;
+    string comment = 4;
+}
+
+message Restaurants {
+    repeated Restaurant restaurants = 1;
+}
+
+message Reviews {
+    repeated Review reviews = 1;
+}
+
+message ErrorReason {
+    Code code = 1;
+}

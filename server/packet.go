@@ -75,7 +75,7 @@ type ADPacketReviewsGet struct {
 type ADPacketReviewAdd struct {
 	UserID  string
 	RestID  primitive.ObjectID
-	Score   int
+	Score   int32
 	Comment string
 }
 

@@ -25,9 +25,9 @@ log: ## Build log server
 
 protocol: _build_protoc ## Compile proto file into dart, go files
 	docker run --rm -it \
-		-v $(PWD)/protobuf:/protobuf \
-		-v $(PWD)/client/lib/protocol:/protocol_dart \
-		-v $(PWD)/server/api/code:/protocol_go \
+		-v $(PWD)/proto:/proto \
+		-v $(PWD)/client/lib:/protocol_dart \
+		-v $(PWD)/server/api:/protocol_go \
 		$(PROTOC_IMAGE)
 
 clean: ## Clean binaries

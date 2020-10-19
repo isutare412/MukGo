@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/isutare412/MukGo/server"
-	"github.com/isutare412/MukGo/server/api/code"
+	pb "github.com/isutare412/MukGo/server/api/proto"
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
 	"github.com/streadway/amqp"
@@ -301,12 +301,12 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 }
 
 // httpError responses to client with proper http error message.
-func httpError(w http.ResponseWriter, errno int, code code.Code) {
-	w.WriteHeader(errno)
+func httpError(w http.ResponseWriter, errno int, code pb.Code) {
 
 	// write custom error code to body
 	w.Header().Set("Content-Type", "application/json")
-	reason := ACErrorReason{Code: int32(code)}
+	w.WriteHeader(errno)
+	reason := pb.ErrorReason{Code: code}
 	ser, err := json.Marshal(&reason)
 	if err != nil {
 		panic(fmt.Errorf("on httpError: %v", err))
