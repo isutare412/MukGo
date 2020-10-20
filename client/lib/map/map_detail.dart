@@ -50,7 +50,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
         ));
       }
       */
-      getPositionStream().listen((Position position) async {
+      getPositionStream().listen((Position position) {
         print(position == null
             ? 'Unknown'
             : position.latitude.toString() +
@@ -74,12 +74,21 @@ class _MapDetailPageState extends State<MapDetailPage> {
       _markers.add(Marker(
         markerId: MarkerId('currLoc'),
         position: LatLng(position.latitude, position.longitude),
-        infoWindow: InfoWindow(title: 'Your Location'),
-        onTap: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MapWidget()));
-        },
+        infoWindow: InfoWindow(
+            title: 'Your Location',
+            snippet: 'This is your location',
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => MapWidget()));
+            }),
       ));
+      _circles.add(Circle(
+          circleId: CircleId('currLoc'),
+          center: LatLng(position.latitude, position.longitude),
+          radius: 100,
+          fillColor: Colors.lightBlueAccent.withOpacity(0.5),
+          strokeWidth: 3,
+          strokeColor: Colors.lightBlueAccent));
     });
   }
 
@@ -88,7 +97,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
     return MaterialApp(
       home: Scaffold(
         body: GoogleMap(
-          myLocationEnabled: true,
+          myLocationEnabled: false,
           compassEnabled: true,
           tiltGesturesEnabled: false,
           onMapCreated: _onMapCreated,
