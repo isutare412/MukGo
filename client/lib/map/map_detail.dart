@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../src/locations.dart' as locations;
 import 'package:geolocator/geolocator.dart';
+import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
   @override
@@ -18,6 +19,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   GoogleMapController mapController;
 
   final Set<Marker> _markers = Set<Marker>();
+  final Set<Circle> _circles = Set<Circle>();
   Future<void> _onMapCreated(GoogleMapController controller) async {
     // Get GPS Location
     var currentLocation =
@@ -30,6 +32,9 @@ class _MapDetailPageState extends State<MapDetailPage> {
         markerId: MarkerId('currLoc'),
         position: LatLng(currentLocation.latitude, currentLocation.longitude),
         infoWindow: InfoWindow(title: 'Your Location'),
+        onTap: () {
+          print("Location tapped");
+        },
       ));
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
@@ -70,6 +75,10 @@ class _MapDetailPageState extends State<MapDetailPage> {
         markerId: MarkerId('currLoc'),
         position: LatLng(position.latitude, position.longitude),
         infoWindow: InfoWindow(title: 'Your Location'),
+        onTap: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MapWidget()));
+        },
       ));
     });
   }
@@ -86,6 +95,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
           initialCameraPosition:
               CameraPosition(target: const LatLng(37, 126), zoom: 11.0),
           markers: _markers,
+          circles: _circles,
         ),
       ),
     );
