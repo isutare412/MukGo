@@ -29,8 +29,8 @@ class AuthModel extends ChangeNotifier {
     print(authentication.toTokenString());
     _token = authentication.accessToken;
     _user = account;
-    // var code = await trySignUp(token);
-    // print('try sign up response code $code');
+    var code = await trySignUp(token);
+    print('trySignUp response code: $code');
 
     notifyListeners();
   }
