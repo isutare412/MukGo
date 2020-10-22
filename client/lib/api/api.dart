@@ -6,6 +6,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/proto/request.pb.dart';
 
 String apiUrl = 'http://10.0.2.2:7777';
 
@@ -25,10 +26,12 @@ Future<User> fetchUserData(String token) async {
   try {
     var headers = getAuthHeader(token);
     var res = await http.get('$apiUrl/user', headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('fetchUserData', res.body);
       return null;
     }
+
     print('body: ${res.body}');
     return User()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
@@ -45,6 +48,7 @@ Future<int> trySignUp(String token) async {
   try {
     var headers = getAuthHeader(token);
     var res = await http.post('$apiUrl/user', headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       var reason = ErrorReason()..mergeFromProto3Json(jsonDecode(res.body));
       if (reason.code == Code.USER_EXISTS) {
@@ -64,14 +68,19 @@ Future<int> trySignUp(String token) async {
 }
 
 // get restaurants data from api
-Future<Restaurants> fetchRestaurantsData(String token) async {
+Future<Restaurants> fetchRestaurantsData(String token,
+    {Coordinate coord}) async {
   try {
     var headers = getAuthHeader(token);
-    var res = await http.get('$apiUrl/restaurants', headers: headers);
+    var query = RestaurantsGet()..coord = coord;
+    var uri = Uri.http(apiUrl, '/restaurants', query.toProto3Json());
+    var res = await http.get(uri, headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('fetchRestaurantsData', res.body);
       return null;
     }
+
     print('body: ${res.body}');
     return Restaurants()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
@@ -84,13 +93,15 @@ Future<Restaurants> fetchRestaurantsData(String token) async {
 Future<bool> postRestaurantsData(String token, {Restaurants data}) async {
   try {
     var headers = getAuthHeader(token);
-    var body = data.writeToJsonMap();
-    var res =
-        await http.post('$apiUrl/restaurants', body: body, headers: headers);
+    var body = RestaurantsPost()..restaurants.addAll(data.restaurants);
+    var res = await http.post('$apiUrl/restaurants',
+        body: body.toProto3Json(), headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('postRestaurantsData', res.body);
       return false;
     }
+
     return true;
   } catch (e) {
     printAPIError('postRestaurantsData', e);
@@ -99,16 +110,18 @@ Future<bool> postRestaurantsData(String token, {Restaurants data}) async {
 }
 
 // post restaurant data to api
-Future<bool> postRestaurantData(String token, {Restaurants data}) async {
+Future<bool> postRestaurantData(String token, {Restaurant data}) async {
   try {
     var headers = getAuthHeader(token);
-    var body = data.writeToJsonMap();
-    var res =
-        await http.post('$apiUrl/restaurants', body: body, headers: headers);
+    var body = RestaurantPost()..restaurant = data;
+    var res = await http.post('$apiUrl/restaurants',
+        body: body.toProto3Json(), headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('postRestaurantData', res.body);
       return false;
     }
+
     return true;
   } catch (e) {
     printAPIError('postRestaurantData', e);
@@ -117,14 +130,18 @@ Future<bool> postRestaurantData(String token, {Restaurants data}) async {
 }
 
 // fetch reviews data from api
-Future<Reviews> fetchReviewsData(String token) async {
+Future<Reviews> fetchReviewsData(String token, {String id}) async {
   try {
     var headers = getAuthHeader(token);
-    var res = await http.get('$apiUrl/review', headers: headers);
+    var query = ReviewsGet()..restaurantId = id;
+    var uri = Uri.http(apiUrl, '/reviews', query.toProto3Json());
+    var res = await http.get(uri, headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('fetchReviewsData', res.body);
       return null;
     }
+
     print('body: ${res.body}');
     return Reviews()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
@@ -134,15 +151,20 @@ Future<Reviews> fetchReviewsData(String token) async {
 }
 
 // post review data to api
-Future<bool> postReviewData(String token, {Review data}) async {
+Future<bool> postReviewData(String token, {Review data, String id}) async {
   try {
     var headers = getAuthHeader(token);
-    var body = data.writeToJsonMap();
-    var res = await http.post('$apiUrl/review', body: body, headers: headers);
+    var body = ReviewPost()
+      ..restaurantId = id
+      ..review = data;
+    var res = await http.post('$apiUrl/review',
+        body: body.toProto3Json(), headers: headers);
+
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('postReviewData', res.body);
       return false;
     }
+
     return true;
   } catch (e) {
     printAPIError('postReviewData', e);

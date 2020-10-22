@@ -12,6 +12,7 @@ class UserModel extends ChangeNotifier {
   AuthModel _auth;
 
   // user info data
+  String id;
   String name;
   int level;
   Int64 totalExp;
@@ -38,13 +39,15 @@ class UserModel extends ChangeNotifier {
   }
 
   void update(
-      {String name,
+      {String id,
+      String name,
       int level,
       Int64 totalExp,
       Int64 levelExp,
       Int64 curExp,
       double expRatio,
       double sightRadius}) {
+    this.id = id;
     this.name = name;
     this.level = level;
     this.totalExp = totalExp;
@@ -58,6 +61,7 @@ class UserModel extends ChangeNotifier {
 
   void updateFromUserData(User userData) {
     update(
+        id: userData.id,
         name: userData.name,
         level: userData.level,
         totalExp: userData.totalExp,
@@ -69,6 +73,7 @@ class UserModel extends ChangeNotifier {
 
   void clear() {
     update(
+        id: null,
         name: null,
         level: null,
         totalExp: null,
