@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contra/onboarding/onboard_main.dart';
 
-class SamplePage extends StatefulWidget {@override
+import 'package:mukgo/review/review_detail_test.dart';
+
+class SamplePage extends StatefulWidget {
+  @override
   _SamplePageState createState() => _SamplePageState();
 }
 
@@ -20,6 +23,16 @@ class _SamplePageState extends State<SamplePage> {
           padding: EdgeInsets.all(10),
           child: Column(
             children: <Widget>[
+              ListTile(
+                contentPadding: EdgeInsets.all(20),
+                trailing: Icon(Icons.navigate_next),
+                title: Text("Review"),
+                onTap: () {
+                  Navigator.pushNamed(context, "/project_review",
+                      arguments: ReviewPageArguments(
+                          id: '5f915970fc1495705932c25a', name: 'my home'));
+                },
+              ),
               ListTile(
                 contentPadding: EdgeInsets.all(20),
                 trailing: Icon(Icons.navigate_next),

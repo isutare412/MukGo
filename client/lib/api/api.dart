@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/proto/request.pb.dart';
 
-String apiUrl = 'http://10.0.2.2:7777';
+String apiUrl = '10.0.2.2:7777';
 
 // log api error reason code
 void printResponseError(String api, String body) {
@@ -17,7 +17,7 @@ void printResponseError(String api, String body) {
   print('Response ERROR: $api: ${c.name} (${c.value})');
 }
 
-void printAPIError(String api, String msg) {
+void printAPIError(String api, dynamic msg) {
   print('API Method ERROR: $api: $msg');
 }
 
@@ -25,7 +25,7 @@ void printAPIError(String api, String msg) {
 Future<User> fetchUserData(String token) async {
   try {
     var headers = getAuthHeader(token);
-    var res = await http.get('$apiUrl/user', headers: headers);
+    var res = await http.get('http://$apiUrl/user', headers: headers);
     var body = utf8.decode(res.bodyBytes);
 
     if (res.statusCode != HttpStatus.ok) {
@@ -48,7 +48,7 @@ Future<User> fetchUserData(String token) async {
 Future<int> trySignUp(String token) async {
   try {
     var headers = getAuthHeader(token);
-    var res = await http.post('$apiUrl/user', headers: headers);
+    var res = await http.post('http://$apiUrl/user', headers: headers);
     var body = utf8.decode(res.bodyBytes);
 
     if (res.statusCode != HttpStatus.ok) {
@@ -97,7 +97,7 @@ Future<bool> postRestaurantsData(String token, {Restaurants data}) async {
   try {
     var headers = getAuthHeader(token);
     var query = RestaurantsPost()..restaurants.addAll(data.restaurants);
-    var res = await http.post('$apiUrl/restaurants',
+    var res = await http.post('http://$apiUrl/restaurants',
         body: query.toProto3Json(), headers: headers);
     var body = utf8.decode(res.bodyBytes);
 
@@ -118,7 +118,7 @@ Future<bool> postRestaurantData(String token, {Restaurant data}) async {
   try {
     var headers = getAuthHeader(token);
     var query = RestaurantPost()..restaurant = data;
-    var res = await http.post('$apiUrl/restaurants',
+    var res = await http.post('http://$apiUrl/restaurants',
         body: query.toProto3Json(), headers: headers);
     var body = utf8.decode(res.bodyBytes);
 
@@ -139,8 +139,12 @@ Future<Reviews> fetchReviewsData(String token, {String id}) async {
   try {
     var headers = getAuthHeader(token);
     var query = ReviewsGet()..restaurantId = id;
-    var uri = Uri.http(apiUrl, '/reviews', query.toProto3Json());
+    // TODO : Need Better parsing method
+    // TODO : Change server spec to receive query params, not body
+    var uri =
+        Uri.http(apiUrl, '/reviews', {'restaurant_id': query.restaurantId});
     var res = await http.get(uri, headers: headers);
+    print(uri);
     var body = utf8.decode(res.bodyBytes);
 
     if (res.statusCode != HttpStatus.ok) {
@@ -163,7 +167,7 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
     var query = ReviewPost()
       ..restaurantId = id
       ..review = data;
-    var res = await http.post('$apiUrl/review',
+    var res = await http.post('http://$apiUrl/review',
         body: query.toProto3Json(), headers: headers);
     var body = utf8.decode(res.bodyBytes);
 
@@ -179,8 +183,10 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
   }
 }
 
-Map<String, String> getAuthHeader(String token) =>
-    <String, String>{'Authorization': 'Bearer $token'};
+Map<String, String> getAuthHeader(String token) => <String, String>{
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+      HttpHeaders.contentTypeHeader: 'application/json'
+    };
 
 Future<User> getDummyUser() async {
   await Future.delayed(Duration(seconds: 3));
