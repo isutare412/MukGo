@@ -97,7 +97,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("sent user data; User(%v)", *packet)
 }
@@ -262,7 +262,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send updated user data
-	w.Header().Set("Content-Type", "application/json")
+	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("new review from user; User(%v)", *packet)
 }
@@ -363,7 +363,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send review data for the restaurant
-	w.Header().Set("Content-Type", "application/json")
+	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("send reviews; restaurant(%v) reviews(%v)",
 		userReq.RestaurantId, len(reviews.Reviews))
@@ -531,7 +531,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
 }

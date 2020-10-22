@@ -300,11 +300,15 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 	return
 }
 
+func baseHeader(h http.Header) {
+	h.Set("Content-Type", "application/json; charset=utf-8")
+}
+
 // httpError responses to client with proper http error message.
 func httpError(w http.ResponseWriter, errno int, code pb.Code) {
 
 	// write custom error code to body
-	w.Header().Set("Content-Type", "application/json")
+	baseHeader(w.Header())
 	w.WriteHeader(errno)
 	reason := pb.ErrorReason{Code: code}
 	ser, err := json.Marshal(&reason)

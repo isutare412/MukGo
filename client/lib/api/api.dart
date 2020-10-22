@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fixnum/fixnum.dart';
@@ -10,7 +11,8 @@ String apiUrl = 'http://10.0.2.2:7777';
 
 // log api error reason code
 void printResponseError(String api, String body) {
-  var c = ErrorReason.fromJson(body).code;
+  var reason = ErrorReason()..mergeFromProto3Json(jsonDecode(body));
+  var c = reason.code;
   print('Response ERROR: $api: ${c.name} (${c.value})');
 }
 
@@ -28,7 +30,7 @@ Future<User> fetchUserData(String token) async {
       return null;
     }
     print('body: ${res.body}');
-    return User.fromJson(res.body);
+    return User()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
     printAPIError('fetchUserData', e);
     return null;
@@ -44,7 +46,7 @@ Future<int> trySignUp(String token) async {
     var headers = getAuthHeader(token);
     var res = await http.post('$apiUrl/user', headers: headers);
     if (res.statusCode != HttpStatus.ok) {
-      var reason = ErrorReason.fromJson(res.body);
+      var reason = ErrorReason()..mergeFromProto3Json(jsonDecode(res.body));
       if (reason.code == Code.USER_EXISTS) {
         // already has an account
         return 1;
@@ -71,7 +73,7 @@ Future<Restaurants> fetchRestaurantsData(String token) async {
       return null;
     }
     print('body: ${res.body}');
-    return Restaurants.fromJson(res.body);
+    return Restaurants()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
     printAPIError('fetchRestaurantsData', e);
     return null;
@@ -124,7 +126,7 @@ Future<Reviews> fetchReviewsData(String token) async {
       return null;
     }
     print('body: ${res.body}');
-    return Reviews.fromJson(res.body);
+    return Reviews()..mergeFromProto3Json(jsonDecode(res.body));
   } catch (e) {
     printAPIError('fetchReviewsData', e);
     return null;
