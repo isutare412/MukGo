@@ -51,11 +51,11 @@ class _MapDetailPageState extends State<MapDetailPage> {
       }
       */
       getPositionStream().listen((Position position) {
-        print(position == null
-            ? 'Unknown'
-            : position.latitude.toString() +
-                ', ' +
-                position.longitude.toString());
+        // print(position == null
+        //     ? 'Unknown'
+        //     : position.latitude.toString() +
+        //         ', ' +
+        //         position.longitude.toString());
         updatePinOnMap(position);
         /*
           controller.animateCamera(CameraUpdate.newCameraPosition(
@@ -63,7 +63,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
                   target: LatLng(position.latitude, position.longitude),
                   zoom: 17.0)));
           **/
-        print(_markers.where((m) => m.markerId.value == 'currLoc'));
+        // print(_markers.where((m) => m.markerId.value == 'currLoc'));
       });
     });
   }
