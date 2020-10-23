@@ -320,27 +320,37 @@ func marshalQuery(q url.Values) map[string]string {
 	return values
 }
 
-func marshalBody(h http.Header, r io.Reader, m proto.Message) error {
+func marshalResponse(h http.Header, m proto.Message) ([]byte, error) {
 	ct := h.Get("Content-Type")
 	if strings.Contains(ct, headerProtobuf) {
-		return marshalBodyProto(r, m)
+		return proto.Marshal(m)
 	} else if strings.Contains(ct, headerJSON) {
-		return marshalBodyJSON(r, m)
+		return json.Marshal(m)
 	}
-	return fmt.Errorf("on marshalBody: invalid content-type; type(%v)", ct)
+	return nil, fmt.Errorf("on marshalBody: invalid content-type; type(%v)", ct)
 }
 
-func marshalBodyProto(r io.Reader, m proto.Message) error {
+func unmarshalBody(h http.Header, r io.Reader, m proto.Message) error {
+	ct := h.Get("Content-Type")
+	if strings.Contains(ct, headerProtobuf) {
+		return unmarshalBodyProto(r, m)
+	} else if strings.Contains(ct, headerJSON) {
+		return unmarshalBodyJSON(r, m)
+	}
+	return fmt.Errorf("on unmarshalBody: invalid content-type; type(%v)", ct)
+}
+
+func unmarshalBodyProto(r io.Reader, m proto.Message) error {
 	arr, err := ioutil.ReadAll(r)
 	if err != nil {
-		return fmt.Errorf("on marshalBodyProto: %v", err)
+		return fmt.Errorf("on unmarshalBodyProto: %v", err)
 	}
 	return puOption.Unmarshal(arr, m)
 }
 
-func marshalBodyJSON(r io.Reader, m proto.Message) error {
+func unmarshalBodyJSON(r io.Reader, m proto.Message) error {
 	if err := json.NewDecoder(r).Decode(m); err != nil {
-		return fmt.Errorf("on marshalBodyJSON: %v", err)
+		return fmt.Errorf("on unmarshalBodyJSON: %v", err)
 	}
 	return nil
 }

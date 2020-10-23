@@ -9,7 +9,6 @@ import (
 	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"google.golang.org/protobuf/proto"
 )
 
 func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
@@ -82,16 +81,17 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := proto.Marshal(&pb.User{
-		Id:          packet.UserID,
-		Name:        packet.Name,
-		Level:       level,
-		TotalExp:    packet.Exp,
-		LevelExp:    levExp,
-		CurExp:      curExp,
-		ExpRatio:    ratio,
-		SightRadius: sightRadius,
-	})
+	ser, err := marshalResponse(r.Header,
+		&pb.User{
+			Id:          packet.UserID,
+			Name:        packet.Name,
+			Level:       level,
+			TotalExp:    packet.Exp,
+			LevelExp:    levExp,
+			CurExp:      curExp,
+			ExpRatio:    ratio,
+			SightRadius: sightRadius,
+		})
 	if err != nil {
 		console.Warning("on handleUserGet: failed to marshal user data")
 		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
@@ -172,7 +172,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 
 	// parse request from client
 	var userReq pb.ReviewPost
-	err = marshalBody(r.Header, r.Body, &userReq)
+	err = unmarshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Review == nil {
 		console.Warning("on handleReviewPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
@@ -247,15 +247,16 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := proto.Marshal(&pb.User{
-		Id:          packet.UserID,
-		Name:        packet.Name,
-		TotalExp:    packet.Exp,
-		LevelExp:    levExp,
-		CurExp:      curExp,
-		ExpRatio:    ratio,
-		SightRadius: sightRadius,
-	})
+	ser, err := marshalResponse(r.Header,
+		&pb.User{
+			Id:          packet.UserID,
+			Name:        packet.Name,
+			TotalExp:    packet.Exp,
+			LevelExp:    levExp,
+			CurExp:      curExp,
+			ExpRatio:    ratio,
+			SightRadius: sightRadius,
+		})
 	if err != nil {
 		console.Warning("on handleReviewPost: failed to marshal user data")
 		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
@@ -358,7 +359,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// serialize user data
-	ser, err := proto.Marshal(&reviews)
+	ser, err := marshalResponse(r.Header, &reviews)
 	if err != nil {
 		console.Warning("on handleReviewsGet: failed to marshal review data")
 		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
@@ -384,7 +385,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq pb.RestaurantPost
-	err := marshalBody(r.Header, r.Body, &userReq)
+	err := unmarshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Restaurant == nil {
 		console.Warning("on handleRestaurantPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
@@ -542,7 +543,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// serialize user data
-	ser, err := proto.Marshal(&rests)
+	ser, err := marshalResponse(r.Header, &rests)
 	if err != nil {
 		console.Warning(
 			"on handleRestaurantsGet: failed to marshal restaurants data")
@@ -558,7 +559,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq pb.RestaurantsPost
-	err := marshalBody(r.Header, r.Body, &userReq)
+	err := unmarshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Restaurants == nil {
 		console.Warning("on handleRestaurantsPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
