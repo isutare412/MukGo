@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
 
@@ -186,23 +187,32 @@ class _ReviewForm extends State<ReviewForm> {
                         isPrefix: false,
                         isSuffix: true,
                         text: "Post Review",
-                        callback: () {
+                        callback: () async{
                           var auth=readAuth(context);
                           var review= Review()..comment=commentController.text;
-                          review..score=int.parse(menuController.text);
+                          review..score = rating;
+                          /*erase after checking whether userName, id are unnecessary
                           var userModel=Provider.of<UserModel>(context, listen: false);
                           var userName=userModel.name;
                           review..userName=userName;
                           review..id='1';
+                          */
                           /*
-                          review..rating = rating;
                           review..nym_people= numPeople;
                           review..waiting= waiting;
+                          review..menu=int.parse(menuController.text);
                           */
-                          print(review);
-                          var result= postReviewData(auth.token, data: review, id: widget.restaurant_id);
-                          print(result);
-                          return result;
+                          var result= await postReviewData(auth.token, 
+                            data: review, id: widget.restaurant_id);
+                          return Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RestaurantDetailTestPage(
+                                restaurant_id: widget.restaurant_id,
+                              )
+                            )
+                          );
+                          //Navigator.of(context).pop();
                           //redirect to restaurant detail test page
                         },
                       ),

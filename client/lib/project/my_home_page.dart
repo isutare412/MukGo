@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => RestaurantDetailTestPage(
-                        restaurant_id: '1'
+                        restaurant_id: '5f91b1b3f0bf6a22042589fa',
                     ))
                   );
                 },
