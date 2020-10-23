@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -298,6 +299,23 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 	uid = uc.Sub
 	name = uc.Name
 	return
+}
+
+// marshalQuery converts map[string][]string to map[string]string, then
+// marshal in Json format.
+func marshalQuery(q url.Values) ([]byte, error) {
+	// flatten url.Values by dropping others but the first one
+	values := make(map[string]string, len(q))
+	for k, arr := range q {
+		values[k] = arr[0]
+	}
+
+	// marshal into json format
+	ser, err := json.Marshal(&values)
+	if err != nil {
+		return nil, fmt.Errorf("on flattenQuery: %v", err)
+	}
+	return ser, nil
 }
 
 func baseHeader(h http.Header) {
