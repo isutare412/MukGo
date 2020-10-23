@@ -32,7 +32,7 @@ class _ReviewCardListState extends State<ReviewList> {
 
     futureReviews = Future.microtask(() {
       ReviewPageArguments args = ModalRoute.of(context).settings.arguments;
-      return fetchReviewsData(readAuth(context).token, id: args.id);
+      return fetchReviewsData(readAuth(context).token, restaurantId: args.id);
     });
   }
 

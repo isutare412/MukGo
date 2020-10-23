@@ -11,37 +11,6 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'model.pb.dart' as $0;
 
-class ReviewsGet extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('ReviewsGet', package: const $pb.PackageName('proto'), createEmptyInstance: create)
-    ..aOS(1, 'restaurantId')
-    ..hasRequiredFields = false
-  ;
-
-  ReviewsGet._() : super();
-  factory ReviewsGet() => create();
-  factory ReviewsGet.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ReviewsGet.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  ReviewsGet clone() => ReviewsGet()..mergeFromMessage(this);
-  ReviewsGet copyWith(void Function(ReviewsGet) updates) => super.copyWith((message) => updates(message as ReviewsGet));
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static ReviewsGet create() => ReviewsGet._();
-  ReviewsGet createEmptyInstance() => create();
-  static $pb.PbList<ReviewsGet> createRepeated() => $pb.PbList<ReviewsGet>();
-  @$core.pragma('dart2js:noInline')
-  static ReviewsGet getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ReviewsGet>(create);
-  static ReviewsGet _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get restaurantId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set restaurantId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasRestaurantId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearRestaurantId() => clearField(1);
-}
-
 class ReviewPost extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('ReviewPost', package: const $pb.PackageName('proto'), createEmptyInstance: create)
     ..aOS(1, 'restaurantId')
@@ -141,38 +110,5 @@ class RestaurantsPost extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<$0.Restaurant> get restaurants => $_getList(0);
-}
-
-class RestaurantsGet extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('RestaurantsGet', package: const $pb.PackageName('proto'), createEmptyInstance: create)
-    ..aOM<$0.Coordinate>(1, 'coord', subBuilder: $0.Coordinate.create)
-    ..hasRequiredFields = false
-  ;
-
-  RestaurantsGet._() : super();
-  factory RestaurantsGet() => create();
-  factory RestaurantsGet.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RestaurantsGet.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  RestaurantsGet clone() => RestaurantsGet()..mergeFromMessage(this);
-  RestaurantsGet copyWith(void Function(RestaurantsGet) updates) => super.copyWith((message) => updates(message as RestaurantsGet));
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static RestaurantsGet create() => RestaurantsGet._();
-  RestaurantsGet createEmptyInstance() => create();
-  static $pb.PbList<RestaurantsGet> createRepeated() => $pb.PbList<RestaurantsGet>();
-  @$core.pragma('dart2js:noInline')
-  static RestaurantsGet getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RestaurantsGet>(create);
-  static RestaurantsGet _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $0.Coordinate get coord => $_getN(0);
-  @$pb.TagNumber(1)
-  set coord($0.Coordinate v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasCoord() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearCoord() => clearField(1);
-  @$pb.TagNumber(1)
-  $0.Coordinate ensureCoord() => $_ensure(0);
 }
 

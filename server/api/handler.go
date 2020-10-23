@@ -1,14 +1,15 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/isutare412/MukGo/server"
 	pb "github.com/isutare412/MukGo/server/api/proto"
 	"github.com/isutare412/MukGo/server/common"
 	"github.com/isutare412/MukGo/server/console"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/protobuf/proto"
 )
 
 func (s *Server) handleUser(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +82,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := json.Marshal(&pb.User{
+	ser, err := proto.Marshal(&pb.User{
 		Id:          packet.UserID,
 		Name:        packet.Name,
 		Level:       level,
@@ -171,7 +172,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 
 	// parse request from client
 	var userReq pb.ReviewPost
-	err = json.NewDecoder(r.Body).Decode(&userReq)
+	err = marshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Review == nil {
 		console.Warning("on handleReviewPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
@@ -246,7 +247,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	sightRadius := common.Level2Sight(level)
 
 	// serialize user data
-	ser, err := json.Marshal(&pb.User{
+	ser, err := proto.Marshal(&pb.User{
 		Id:          packet.UserID,
 		Name:        packet.Name,
 		TotalExp:    packet.Exp,
@@ -277,18 +278,20 @@ func (s *Server) handleReviews(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
-	// parse request from client
-	var userReq pb.ReviewsGet
-	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
-		console.Warning("on handleReviewsGet: failed to decode request")
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	id, ok := params["restaurant_id"]
+	if !ok {
+		console.Warning("on handleReviewsGet: need restaurant id")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
 	}
 
-	restID, err := primitive.ObjectIDFromHex(userReq.RestaurantId)
+	// translate restaurant id
+	restID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		console.Warning("on handleReviewsGet: invalid restaurantd id; "+
-			"id(%v): %v", userReq.RestaurantId, err)
+			"id(%v): %v", id, err)
 		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
 		return
 	}
@@ -355,7 +358,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// serialize user data
-	ser, err := json.Marshal(&reviews)
+	ser, err := proto.Marshal(&reviews)
 	if err != nil {
 		console.Warning("on handleReviewsGet: failed to marshal review data")
 		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
@@ -366,7 +369,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("send reviews; restaurant(%v) reviews(%v)",
-		userReq.RestaurantId, len(reviews.Reviews))
+		id, len(reviews.Reviews))
 }
 
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
@@ -381,7 +384,7 @@ func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq pb.RestaurantPost
-	err := json.NewDecoder(r.Body).Decode(&userReq)
+	err := marshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Restaurant == nil {
 		console.Warning("on handleRestaurantPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
@@ -447,12 +450,28 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// parse request from client
-	var userReq pb.RestaurantsGet
-	err = json.NewDecoder(r.Body).Decode(&userReq)
-	if err != nil || userReq.Coord == nil {
-		console.Warning("on handleRestaurantsGet: failed to decode request")
-		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	var latitude, longitude float64
+	if lat, ok := params["latitude"]; ok {
+		latitude, err = strconv.ParseFloat(lat, 64)
+		if err != nil {
+			console.Warning("on handleRestaurantsGet: %v", err)
+			httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+			return
+		}
+	}
+	if lon, ok := params["longitude"]; ok {
+		longitude, err = strconv.ParseFloat(lon, 64)
+		if err != nil {
+			console.Warning("on handleRestaurantsGet: %v", err)
+			httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+			return
+		}
+	}
+	if latitude == 0.0 || longitude == 0.0 {
+		console.Warning("on handleRestaurantsGet: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
 		return
 	}
 
@@ -460,8 +479,8 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	var dbReq = server.ADPacketRestaurantsGet{
 		UserID: uid,
 		Coord: common.Coordinate{
-			Latitude:  userReq.Coord.Latitude,
-			Longitude: userReq.Coord.Longitude,
+			Latitude:  latitude,
+			Longitude: longitude,
 		},
 	}
 
@@ -523,7 +542,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// serialize user data
-	ser, err := json.Marshal(&rests)
+	ser, err := proto.Marshal(&rests)
 	if err != nil {
 		console.Warning(
 			"on handleRestaurantsGet: failed to marshal restaurants data")
@@ -539,7 +558,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq pb.RestaurantsPost
-	err := json.NewDecoder(r.Body).Decode(&userReq)
+	err := marshalBody(r.Header, r.Body, &userReq)
 	if err != nil || userReq.Restaurants == nil {
 		console.Warning("on handleRestaurantsPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)

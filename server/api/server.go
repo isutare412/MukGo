@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,6 +15,7 @@ import (
 	"github.com/isutare412/MukGo/server/console"
 	"github.com/isutare412/MukGo/server/mq"
 	"github.com/streadway/amqp"
+	"google.golang.org/protobuf/proto"
 )
 
 // Server runs as API server for MukGo service. Server should be created with
@@ -26,6 +29,11 @@ type Server struct {
 }
 
 const responseTimeout = 6 * time.Second
+
+const headerJSON = "application/json"
+const headerProtobuf = "application/protobuf"
+
+var puOption = proto.UnmarshalOptions{AllowPartial: true}
 
 var baseConfig = &mq.SessionConfig{
 	Exchanges: map[string]mq.ExchangeConfig{
@@ -301,21 +309,40 @@ func (s *Server) authenticate(h http.Header) (uid, name string, err error) {
 	return
 }
 
-// marshalQuery converts map[string][]string to map[string]string, then
-// marshal in Json format.
-func marshalQuery(q url.Values) ([]byte, error) {
+// marshalQuery converts map[string][]string to map[string]string, keeping
+// only the first one.
+func marshalQuery(q url.Values) map[string]string {
 	// flatten url.Values by dropping others but the first one
 	values := make(map[string]string, len(q))
 	for k, arr := range q {
 		values[k] = arr[0]
 	}
+	return values
+}
 
-	// marshal into json format
-	ser, err := json.Marshal(&values)
-	if err != nil {
-		return nil, fmt.Errorf("on flattenQuery: %v", err)
+func marshalBody(h http.Header, r io.Reader, m proto.Message) error {
+	ct := h.Get("Content-Type")
+	if strings.Contains(ct, headerProtobuf) {
+		return marshalBodyProto(r, m)
+	} else if strings.Contains(ct, headerJSON) {
+		return marshalBodyJSON(r, m)
 	}
-	return ser, nil
+	return fmt.Errorf("on marshalBody: invalid content-type; type(%v)", ct)
+}
+
+func marshalBodyProto(r io.Reader, m proto.Message) error {
+	arr, err := ioutil.ReadAll(r)
+	if err != nil {
+		return fmt.Errorf("on marshalBodyProto: %v", err)
+	}
+	return puOption.Unmarshal(arr, m)
+}
+
+func marshalBodyJSON(r io.Reader, m proto.Message) error {
+	if err := json.NewDecoder(r).Decode(m); err != nil {
+		return fmt.Errorf("on marshalBodyJSON: %v", err)
+	}
+	return nil
 }
 
 func baseHeader(h http.Header) {

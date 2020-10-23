@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
@@ -11,8 +11,8 @@ import 'package:mukgo/proto/request.pb.dart';
 String apiUrl = '10.0.2.2:7777';
 
 // log api error reason code
-void printResponseError(String api, String body) {
-  var reason = ErrorReason()..mergeFromProto3Json(jsonDecode(body));
+void printResponseError(String api, Uint8List bytes) {
+  var reason = ErrorReason.fromBuffer(bytes);
   var c = reason.code;
   print('Response ERROR: $api: ${c.name} (${c.value})');
 }
@@ -26,15 +26,12 @@ Future<User> fetchUserData(String token) async {
   try {
     var headers = getAuthHeader(token);
     var res = await http.get('http://$apiUrl/user', headers: headers);
-    var body = utf8.decode(res.bodyBytes);
-
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('fetchUserData', body);
+      printResponseError('fetchUserData', res.bodyBytes);
       return null;
     }
 
-    print('body: $body');
-    return User()..mergeFromProto3Json(jsonDecode(body));
+    return User.fromBuffer(res.bodyBytes);
   } catch (e) {
     printAPIError('fetchUserData', e);
     return null;
@@ -49,15 +46,13 @@ Future<int> trySignUp(String token) async {
   try {
     var headers = getAuthHeader(token);
     var res = await http.post('http://$apiUrl/user', headers: headers);
-    var body = utf8.decode(res.bodyBytes);
-
     if (res.statusCode != HttpStatus.ok) {
-      var reason = ErrorReason()..mergeFromProto3Json(jsonDecode(body));
+      var reason = ErrorReason.fromBuffer(res.bodyBytes);
       if (reason.code == Code.USER_EXISTS) {
         // already has an account
         return 1;
       }
-      printResponseError('trySignUp', body);
+      printResponseError('trySignUp', res.bodyBytes);
       return null;
     }
 
@@ -74,18 +69,18 @@ Future<Restaurants> fetchRestaurantsData(String token,
     {Coordinate coord}) async {
   try {
     var headers = getAuthHeader(token);
-    var query = RestaurantsGet()..coord = coord;
-    var uri = Uri.http(apiUrl, '/restaurants', query.toProto3Json());
-    var res = await http.get(uri, headers: headers);
-    var body = utf8.decode(res.bodyBytes);
+    var uri = Uri.http(apiUrl, '/restaurants', {
+      'latitude': coord.latitude.toString(),
+      'longitude': coord.longitude.toString(),
+    });
 
+    var res = await http.get(uri, headers: headers);
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('fetchRestaurantsData', body);
+      printResponseError('fetchRestaurantsData', res.bodyBytes);
       return null;
     }
 
-    print('body: ${utf8.decode(res.bodyBytes)}');
-    return Restaurants()..mergeFromProto3Json(jsonDecode(body));
+    return Restaurants.fromBuffer(res.bodyBytes);
   } catch (e) {
     printAPIError('fetchRestaurantsData', e);
     return null;
@@ -98,11 +93,10 @@ Future<bool> postRestaurantsData(String token, {Restaurants data}) async {
     var headers = getAuthHeader(token);
     var query = RestaurantsPost()..restaurants.addAll(data.restaurants);
     var res = await http.post('http://$apiUrl/restaurants',
-        body: query.toProto3Json(), headers: headers);
-    var body = utf8.decode(res.bodyBytes);
+        body: query.writeToBuffer(), headers: headers);
 
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('postRestaurantsData', body);
+      printResponseError('postRestaurantsData', res.bodyBytes);
       return false;
     }
 
@@ -119,11 +113,10 @@ Future<bool> postRestaurantData(String token, {Restaurant data}) async {
     var headers = getAuthHeader(token);
     var query = RestaurantPost()..restaurant = data;
     var res = await http.post('http://$apiUrl/restaurants',
-        body: query.toProto3Json(), headers: headers);
-    var body = utf8.decode(res.bodyBytes);
+        body: query.writeToBuffer(), headers: headers);
 
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('postRestaurantData', body);
+      printResponseError('postRestaurantData', res.bodyBytes);
       return false;
     }
 
@@ -135,25 +128,17 @@ Future<bool> postRestaurantData(String token, {Restaurant data}) async {
 }
 
 // fetch reviews data from api
-Future<Reviews> fetchReviewsData(String token, {String id}) async {
+Future<Reviews> fetchReviewsData(String token, {String restaurantId}) async {
   try {
     var headers = getAuthHeader(token);
-    var query = ReviewsGet()..restaurantId = id;
-    // TODO : Need Better parsing method
-    // TODO : Change server spec to receive query params, not body
-    var uri =
-        Uri.http(apiUrl, '/reviews', {'restaurant_id': query.restaurantId});
+    var uri = Uri.http(apiUrl, '/reviews', {'restaurant_id': restaurantId});
     var res = await http.get(uri, headers: headers);
-    print(uri);
-    var body = utf8.decode(res.bodyBytes);
-
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('fetchReviewsData', body);
+      printResponseError('fetchReviewsData', res.bodyBytes);
       return null;
     }
 
-    print('body: $body');
-    return Reviews()..mergeFromProto3Json(jsonDecode(body));
+    return Reviews.fromBuffer(res.bodyBytes);
   } catch (e) {
     printAPIError('fetchReviewsData', e);
     return null;
@@ -168,11 +153,10 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
       ..restaurantId = id
       ..review = data;
     var res = await http.post('http://$apiUrl/review',
-        body: query.toProto3Json(), headers: headers);
-    var body = utf8.decode(res.bodyBytes);
+        body: query.writeToBuffer(), headers: headers);
 
     if (res.statusCode != HttpStatus.ok) {
-      printResponseError('postReviewData', body);
+      printResponseError('postReviewData', res.bodyBytes);
       return false;
     }
 
@@ -185,7 +169,7 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
 
 Map<String, String> getAuthHeader(String token) => <String, String>{
       HttpHeaders.authorizationHeader: 'Bearer $token',
-      HttpHeaders.contentTypeHeader: 'application/json'
+      HttpHeaders.contentTypeHeader: 'application/protobuf'
     };
 
 Future<User> getDummyUser() async {

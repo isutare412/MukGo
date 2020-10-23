@@ -20,53 +20,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ReviewsGet struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	RestaurantId string `protobuf:"bytes,1,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
-}
-
-func (x *ReviewsGet) Reset() {
-	*x = ReviewsGet{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_request_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ReviewsGet) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ReviewsGet) ProtoMessage() {}
-
-func (x *ReviewsGet) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_request_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ReviewsGet.ProtoReflect.Descriptor instead.
-func (*ReviewsGet) Descriptor() ([]byte, []int) {
-	return file_proto_request_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *ReviewsGet) GetRestaurantId() string {
-	if x != nil {
-		return x.RestaurantId
-	}
-	return ""
-}
-
 type ReviewPost struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -79,7 +32,7 @@ type ReviewPost struct {
 func (x *ReviewPost) Reset() {
 	*x = ReviewPost{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_request_proto_msgTypes[1]
+		mi := &file_proto_request_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -92,7 +45,7 @@ func (x *ReviewPost) String() string {
 func (*ReviewPost) ProtoMessage() {}
 
 func (x *ReviewPost) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_request_proto_msgTypes[1]
+	mi := &file_proto_request_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -105,7 +58,7 @@ func (x *ReviewPost) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviewPost.ProtoReflect.Descriptor instead.
 func (*ReviewPost) Descriptor() ([]byte, []int) {
-	return file_proto_request_proto_rawDescGZIP(), []int{1}
+	return file_proto_request_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ReviewPost) GetRestaurantId() string {
@@ -133,7 +86,7 @@ type RestaurantPost struct {
 func (x *RestaurantPost) Reset() {
 	*x = RestaurantPost{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_request_proto_msgTypes[2]
+		mi := &file_proto_request_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -146,7 +99,7 @@ func (x *RestaurantPost) String() string {
 func (*RestaurantPost) ProtoMessage() {}
 
 func (x *RestaurantPost) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_request_proto_msgTypes[2]
+	mi := &file_proto_request_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -159,7 +112,7 @@ func (x *RestaurantPost) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RestaurantPost.ProtoReflect.Descriptor instead.
 func (*RestaurantPost) Descriptor() ([]byte, []int) {
-	return file_proto_request_proto_rawDescGZIP(), []int{2}
+	return file_proto_request_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RestaurantPost) GetRestaurant() *Restaurant {
@@ -180,7 +133,7 @@ type RestaurantsPost struct {
 func (x *RestaurantsPost) Reset() {
 	*x = RestaurantsPost{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_request_proto_msgTypes[3]
+		mi := &file_proto_request_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -193,7 +146,7 @@ func (x *RestaurantsPost) String() string {
 func (*RestaurantsPost) ProtoMessage() {}
 
 func (x *RestaurantsPost) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_request_proto_msgTypes[3]
+	mi := &file_proto_request_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -206,59 +159,12 @@ func (x *RestaurantsPost) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RestaurantsPost.ProtoReflect.Descriptor instead.
 func (*RestaurantsPost) Descriptor() ([]byte, []int) {
-	return file_proto_request_proto_rawDescGZIP(), []int{3}
+	return file_proto_request_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RestaurantsPost) GetRestaurants() []*Restaurant {
 	if x != nil {
 		return x.Restaurants
-	}
-	return nil
-}
-
-type RestaurantsGet struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Coord *Coordinate `protobuf:"bytes,1,opt,name=coord,proto3" json:"coord,omitempty"`
-}
-
-func (x *RestaurantsGet) Reset() {
-	*x = RestaurantsGet{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_request_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RestaurantsGet) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RestaurantsGet) ProtoMessage() {}
-
-func (x *RestaurantsGet) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_request_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RestaurantsGet.ProtoReflect.Descriptor instead.
-func (*RestaurantsGet) Descriptor() ([]byte, []int) {
-	return file_proto_request_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *RestaurantsGet) GetCoord() *Coordinate {
-	if x != nil {
-		return x.Coord
 	}
 	return nil
 }
@@ -269,28 +175,21 @@ var file_proto_request_proto_rawDesc = []byte{
 	0x0a, 0x13, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
-	0x31, 0x0a, 0x0a, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x73, 0x47, 0x65, 0x74, 0x12, 0x23, 0x0a,
+	0x58, 0x0a, 0x0a, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x50, 0x6f, 0x73, 0x74, 0x12, 0x23, 0x0a,
 	0x0d, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74,
-	0x49, 0x64, 0x22, 0x58, 0x0a, 0x0a, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x50, 0x6f, 0x73, 0x74,
-	0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72,
-	0x61, 0x6e, 0x74, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x06, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65,
-	0x76, 0x69, 0x65, 0x77, 0x52, 0x06, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0x43, 0x0a, 0x0e,
-	0x52, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x50, 0x6f, 0x73, 0x74, 0x12, 0x31,
-	0x0a, 0x0a, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x61,
-	0x75, 0x72, 0x61, 0x6e, 0x74, 0x52, 0x0a, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e,
-	0x74, 0x22, 0x46, 0x0a, 0x0f, 0x52, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x73,
-	0x50, 0x6f, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x0b, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61,
-	0x6e, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x52, 0x0b, 0x72, 0x65,
-	0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x73, 0x22, 0x39, 0x0a, 0x0e, 0x52, 0x65, 0x73,
-	0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x73, 0x47, 0x65, 0x74, 0x12, 0x27, 0x0a, 0x05, 0x63,
-	0x6f, 0x6f, 0x72, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x43, 0x6f, 0x6f, 0x72, 0x64, 0x69, 0x6e, 0x61, 0x74, 0x65, 0x52, 0x05, 0x63,
-	0x6f, 0x6f, 0x72, 0x64, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x49, 0x64, 0x12, 0x25, 0x0a, 0x06, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x76, 0x69, 0x65,
+	0x77, 0x52, 0x06, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0x43, 0x0a, 0x0e, 0x52, 0x65, 0x73,
+	0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x50, 0x6f, 0x73, 0x74, 0x12, 0x31, 0x0a, 0x0a, 0x72,
+	0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61,
+	0x6e, 0x74, 0x52, 0x0a, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x22, 0x46,
+	0x0a, 0x0f, 0x52, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x73, 0x50, 0x6f, 0x73,
+	0x74, 0x12, 0x33, 0x0a, 0x0b, 0x72, 0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x73,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52,
+	0x65, 0x73, 0x74, 0x61, 0x75, 0x72, 0x61, 0x6e, 0x74, 0x52, 0x0b, 0x72, 0x65, 0x73, 0x74, 0x61,
+	0x75, 0x72, 0x61, 0x6e, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -305,27 +204,23 @@ func file_proto_request_proto_rawDescGZIP() []byte {
 	return file_proto_request_proto_rawDescData
 }
 
-var file_proto_request_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_request_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_request_proto_goTypes = []interface{}{
-	(*ReviewsGet)(nil),      // 0: proto.ReviewsGet
-	(*ReviewPost)(nil),      // 1: proto.ReviewPost
-	(*RestaurantPost)(nil),  // 2: proto.RestaurantPost
-	(*RestaurantsPost)(nil), // 3: proto.RestaurantsPost
-	(*RestaurantsGet)(nil),  // 4: proto.RestaurantsGet
-	(*Review)(nil),          // 5: proto.Review
-	(*Restaurant)(nil),      // 6: proto.Restaurant
-	(*Coordinate)(nil),      // 7: proto.Coordinate
+	(*ReviewPost)(nil),      // 0: proto.ReviewPost
+	(*RestaurantPost)(nil),  // 1: proto.RestaurantPost
+	(*RestaurantsPost)(nil), // 2: proto.RestaurantsPost
+	(*Review)(nil),          // 3: proto.Review
+	(*Restaurant)(nil),      // 4: proto.Restaurant
 }
 var file_proto_request_proto_depIdxs = []int32{
-	5, // 0: proto.ReviewPost.review:type_name -> proto.Review
-	6, // 1: proto.RestaurantPost.restaurant:type_name -> proto.Restaurant
-	6, // 2: proto.RestaurantsPost.restaurants:type_name -> proto.Restaurant
-	7, // 3: proto.RestaurantsGet.coord:type_name -> proto.Coordinate
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	3, // 0: proto.ReviewPost.review:type_name -> proto.Review
+	4, // 1: proto.RestaurantPost.restaurant:type_name -> proto.Restaurant
+	4, // 2: proto.RestaurantsPost.restaurants:type_name -> proto.Restaurant
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proto_request_proto_init() }
@@ -336,18 +231,6 @@ func file_proto_request_proto_init() {
 	file_proto_model_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_proto_request_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ReviewsGet); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_request_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ReviewPost); i {
 			case 0:
 				return &v.state
@@ -359,7 +242,7 @@ func file_proto_request_proto_init() {
 				return nil
 			}
 		}
-		file_proto_request_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_request_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RestaurantPost); i {
 			case 0:
 				return &v.state
@@ -371,20 +254,8 @@ func file_proto_request_proto_init() {
 				return nil
 			}
 		}
-		file_proto_request_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_request_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RestaurantsPost); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_request_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RestaurantsGet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -402,7 +273,7 @@ func file_proto_request_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_request_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

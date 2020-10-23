@@ -4,10 +4,6 @@ import "proto/model.proto";
 
 package proto;
 
-message ReviewsGet {
-    string restaurant_id = 1;
-}
-
 message ReviewPost {
     string restaurant_id = 1;
     Review review = 2;
@@ -19,8 +15,4 @@ message RestaurantPost {
 
 message RestaurantsPost {
     repeated Restaurant restaurants = 1;
-}
-
-message RestaurantsGet {
-    Coordinate coord = 1;
 }
