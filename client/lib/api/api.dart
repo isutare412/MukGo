@@ -64,6 +64,24 @@ Future<int> trySignUp(String token) async {
   }
 }
 
+Future<Restaurant> fetchRestaurantData(String token,
+    {String restaurantId}) async {
+  try {
+    var headers = getAuthHeader(token);
+    var uri = Uri.http(apiUrl, '/restaurant', {'restaurant_id': restaurantId});
+    var res = await http.get(uri, headers: headers);
+    if (res.statusCode != HttpStatus.ok) {
+      printResponseError('fetchRestaurantData', res.bodyBytes);
+      return null;
+    }
+
+    return Restaurant.fromBuffer(res.bodyBytes);
+  } catch (e) {
+    printAPIError('fetchRestaurantData', e);
+    return null;
+  }
+}
+
 // get restaurants data from api
 Future<Restaurants> fetchRestaurantsData(String token,
     {Coordinate coord}) async {
