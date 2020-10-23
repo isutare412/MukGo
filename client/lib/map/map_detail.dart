@@ -1,16 +1,31 @@
-import 'package:contra/custom_widgets/button_round_with_shadow.dart';
-import 'package:contra/custom_widgets/button_solid_with_icon.dart';
-import 'package:contra/custom_widgets/custom_app_bar.dart';
-import 'package:contra/login/contra_text.dart';
-import 'package:contra/utils/colors.dart';
+//import 'package:contra/custom_widgets/button_round_with_shadow.dart';
+//import 'package:contra/custom_widgets/button_solid_with_icon.dart';
+//import 'package:contra/custom_widgets/custom_app_bar.dart';
+//import 'package:contra/login/contra_text.dart';
+//import 'package:contra/utils/colors.dart';
+import 'dart:async';
+//import 'dart:convert';
+//import 'dart:io';
+
+//import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../src/locations.dart' as locations;
+//import '../src/locations.dart' as locations;
+//import '../api/api.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mukgo/auth/auth_api.dart';
+import 'package:fixnum/fixnum.dart';
+import 'package:mukgo/api/api.dart';
+import 'package:mukgo/proto/model.pbserver.dart';
+import 'package:mukgo/proto/request.pbserver.dart';
+import 'package:mukgo/user/user_model.dart';
+import 'package:provider/provider.dart';
 import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
+  const MapDetailPage({Key key}) : super(key: key);
+
   @override
   _MapDetailPageState createState() => _MapDetailPageState();
 }
@@ -27,49 +42,19 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
     //final googleOffices = await locations.getGoogleOffices();
     setState(() {
-      _markers.clear();
-      _markers.add(Marker(
-        markerId: MarkerId('currLoc'),
-        position: LatLng(currentLocation.latitude, currentLocation.longitude),
-        infoWindow: InfoWindow(title: 'Your Location'),
-        onTap: () {
-          print("Location tapped");
-        },
-      ));
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
           zoom: 17.0)));
-      /**for (final office in googleOffices.offices) {
-        _markers.add(Marker(
-          markerId: MarkerId(office.name),
-          position: LatLng(office.lat, office.lng),
-          infoWindow: InfoWindow(
-            title: office.name,
-            snippet: office.address,
-          ),
-        ));
-      }
-      */
       getPositionStream().listen((Position position) {
-        // print(position == null
-        //     ? 'Unknown'
-        //     : position.latitude.toString() +
-        //         ', ' +
-        //         position.longitude.toString());
         updatePinOnMap(position);
-        /*
-          controller.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: 17.0)));
-          **/
-        // print(_markers.where((m) => m.markerId.value == 'currLoc'));
+        updateRestaurants(position);
       });
     });
   }
 
   void updatePinOnMap(Position position) async {
     setState(() {
+      // position of user
       _markers.removeWhere((m) => m.markerId.value == 'currLoc');
       _markers.add(Marker(
         markerId: MarkerId('currLoc'),
@@ -82,6 +67,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
                   MaterialPageRoute(builder: (context) => MapWidget()));
             }),
       ));
+
+      // range of user for review
       _circles.add(Circle(
           circleId: CircleId('currLoc'),
           center: LatLng(position.latitude, position.longitude),
@@ -89,6 +76,35 @@ class _MapDetailPageState extends State<MapDetailPage> {
           fillColor: Colors.lightBlueAccent.withOpacity(0.5),
           strokeWidth: 3,
           strokeColor: Colors.lightBlueAccent));
+    });
+  }
+
+  // position of restaurants
+  void updateRestaurants(Position position) async {
+    var auth = readAuth(context);
+    var coord = (<String, double>{
+      'latitude': position.latitude,
+      'longitude': position.longitude
+    });
+    var restaurantData = await getDummyRestaurants();
+    //await fetchRestaurantsData(auth.token,
+    //    coord: Coordinate()..mergeFromProto3Json(coord));
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value != 'currLoc');
+      restaurantData.restaurants.forEach((r) {
+        _markers.add(Marker(
+          markerId: MarkerId(r.id),
+          position: LatLng(r.coord.latitude, r.coord.longitude),
+          infoWindow: InfoWindow(
+              title: r.name,
+              snippet: 'This is ' + r.name,
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => MapWidget()));
+              }),
+        ));
+      });
     });
   }
 
@@ -109,6 +125,21 @@ class _MapDetailPageState extends State<MapDetailPage> {
       ),
     );
   }
+}
+
+Future<Restaurants> getDummyRestaurants() async {
+  await Future.delayed(Duration(microseconds: 100));
+  var dummyRestaurants = Restaurants();
+  for (var i = 0; i < 10; i++) {
+    var dummyRestaurant = Restaurant();
+    dummyRestaurant.id = "5f8e9eafcc0ad2855f7c158" + i.toString();
+    dummyRestaurant.name = "restaurant" + i.toString();
+    dummyRestaurant.coord = Coordinate();
+    dummyRestaurant.coord.latitude = 37.4654628 + i / 100;
+    dummyRestaurant.coord.longitude = 126.9572302 + i / 100;
+    dummyRestaurants.restaurants.add(dummyRestaurant);
+  }
+  return dummyRestaurants;
 }
 
 /**
