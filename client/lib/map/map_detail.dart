@@ -4,6 +4,7 @@
 //import 'package:contra/login/contra_text.dart';
 //import 'package:contra/utils/colors.dart';
 import 'dart:async';
+import 'dart:math';
 //import 'dart:convert';
 //import 'dart:io';
 
@@ -72,7 +73,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
       _circles.add(Circle(
           circleId: CircleId('currLoc'),
           center: LatLng(position.latitude, position.longitude),
-          radius: 100,
+          radius: 1000,
           fillColor: Colors.lightBlueAccent.withOpacity(0.5),
           strokeWidth: 3,
           strokeColor: Colors.lightBlueAccent));
@@ -93,19 +94,26 @@ class _MapDetailPageState extends State<MapDetailPage> {
     setState(() {
       _markers.removeWhere((m) => m.markerId.value != 'currLoc');
       restaurantData.restaurants.forEach((r) {
-        _markers.add(Marker(
-          markerId: MarkerId(r.id),
-          position: LatLng(r.coord.latitude, r.coord.longitude),
-          infoWindow: InfoWindow(
-              title: r.name,
-              snippet: 'This is ' + r.name,
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => MapWidget()));
-              }),
-        ));
+        if (isInMyCircle(position.latitude, position.longitude,
+            r.coord.latitude, r.coord.longitude, 1000)) {
+          _markers.add(Marker(
+            markerId: MarkerId(r.id),
+            position: LatLng(r.coord.latitude, r.coord.longitude),
+            infoWindow: InfoWindow(
+                title: r.name,
+                snippet: 'This is ' + r.name,
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MapWidget()));
+                }),
+          ));
+        }
       });
     });
+  }
+
+  bool isInMyCircle(x1, y1, x2, y2, r) {
+    return distanceBetween(x1, y1, x2, y2) < r;
   }
 
   @override
@@ -135,8 +143,8 @@ Future<Restaurants> getDummyRestaurants() async {
     dummyRestaurant.id = "5f8e9eafcc0ad2855f7c158" + i.toString();
     dummyRestaurant.name = "restaurant" + i.toString();
     dummyRestaurant.coord = Coordinate();
-    dummyRestaurant.coord.latitude = 37.4654628 + i / 100;
-    dummyRestaurant.coord.longitude = 126.9572302 + i / 100;
+    dummyRestaurant.coord.latitude = 37.4654628 + i / 1000;
+    dummyRestaurant.coord.longitude = 126.9572302 + i / 1000;
     dummyRestaurants.restaurants.add(dummyRestaurant);
   }
   return dummyRestaurants;
