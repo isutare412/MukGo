@@ -4,6 +4,7 @@
 //import 'package:contra/login/contra_text.dart';
 //import 'package:contra/utils/colors.dart';
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'dart:math';
 //import 'dart:convert';
 //import 'dart:io';
@@ -11,6 +12,7 @@ import 'dart:math';
 //import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 //import '../src/locations.dart' as locations;
 //import '../api/api.dart';
@@ -22,6 +24,7 @@ import 'package:mukgo/proto/model.pbserver.dart';
 import 'package:mukgo/proto/request.pbserver.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
@@ -46,20 +49,25 @@ class _MapDetailPageState extends State<MapDetailPage> {
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
           zoom: 17.0)));
+      var radius = 300.0;
       getPositionStream().listen((Position position) {
-        updatePinOnMap(position);
-        updateRestaurants(position);
+        updatePinOnMap(position, radius);
+        updateRestaurants(position, radius);
       });
     });
   }
 
-  void updatePinOnMap(Position position) async {
+  void updatePinOnMap(Position position, double radius) async {
+    var userIcon = await _bitmapDescriptorFromSvgAsset(
+        context, 'assets/images/onboarding_image_five.svg');
     setState(() {
       // position of user
       _markers.removeWhere((m) => m.markerId.value == 'currLoc');
       _markers.add(Marker(
         markerId: MarkerId('currLoc'),
         position: LatLng(position.latitude, position.longitude),
+        icon: userIcon,
+        zIndex: 1.0,
         infoWindow: InfoWindow(
             title: 'Your Location',
             snippet: 'This is your location',
@@ -73,7 +81,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
       _circles.add(Circle(
           circleId: CircleId('currLoc'),
           center: LatLng(position.latitude, position.longitude),
-          radius: 1000,
+          radius: radius,
           fillColor: Colors.lightBlueAccent.withOpacity(0.5),
           strokeWidth: 3,
           strokeColor: Colors.lightBlueAccent));
@@ -81,7 +89,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   }
 
   // position of restaurants
-  void updateRestaurants(Position position) async {
+  void updateRestaurants(Position position, double radius) async {
     var auth = readAuth(context);
     var coord = (<String, double>{
       'latitude': position.latitude,
@@ -95,7 +103,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
       _markers.removeWhere((m) => m.markerId.value != 'currLoc');
       restaurantData.restaurants.forEach((r) {
         if (isInMyCircle(position.latitude, position.longitude,
-            r.coord.latitude, r.coord.longitude, 1000)) {
+            r.coord.latitude, r.coord.longitude, radius)) {
           _markers.add(Marker(
             markerId: MarkerId(r.id),
             position: LatLng(r.coord.latitude, r.coord.longitude),
@@ -138,16 +146,33 @@ class _MapDetailPageState extends State<MapDetailPage> {
 Future<Restaurants> getDummyRestaurants() async {
   await Future.delayed(Duration(microseconds: 100));
   var dummyRestaurants = Restaurants();
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 40; i++) {
     var dummyRestaurant = Restaurant();
     dummyRestaurant.id = "5f8e9eafcc0ad2855f7c158" + i.toString();
     dummyRestaurant.name = "restaurant" + i.toString();
     dummyRestaurant.coord = Coordinate();
-    dummyRestaurant.coord.latitude = 37.4654628 + i / 1000;
-    dummyRestaurant.coord.longitude = 126.9572302 + i / 1000;
+    dummyRestaurant.coord.latitude = 37.4654628 + (i - 20) / 5000;
+    dummyRestaurant.coord.longitude = 126.9572302 + (i - 20) / 5000;
     dummyRestaurants.restaurants.add(dummyRestaurant);
   }
   return dummyRestaurants;
+}
+
+Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
+    BuildContext context, String assetName) async {
+  var svgString = await DefaultAssetBundle.of(context).loadString(assetName);
+  var svgDrawableRoot = await svg.fromSvgString(svgString, null);
+
+  var queryData = MediaQuery.of(context);
+  var devicePixelRatio = queryData.devicePixelRatio;
+  var width = 32 * devicePixelRatio;
+  var height = 32 * devicePixelRatio;
+
+  var picture = svgDrawableRoot.toPicture(size: Size(width, height));
+
+  var image = await picture.toImage(width.toInt(), height.toInt());
+  var bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  return BitmapDescriptor.fromBytes(bytes.buffer.asUint8List());
 }
 
 /**
