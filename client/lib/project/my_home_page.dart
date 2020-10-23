@@ -6,6 +6,7 @@ import 'package:contra/utils/colors.dart';
 import 'package:mukgo/project/sample_page.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/map/map_detail.dart';
+import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/user/user_detail_test.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -51,8 +52,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   size: 26.0,
                 ),
               )),
+          //-------For Contra Sample Pages (END) ------//
+          Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RestaurantDetailTestPage(
+                        restaurant_id: '1'
+                    ))
+                  );
+                },
+                child: Icon(
+                  Icons.restaurant_menu,
+                  size: 26.0,
+                ),
+              )),    
         ],
-        //-------For Contra Sample Pages (END) ------//
       ),
       body: Center(
         child: _childrenWidgets.elementAt(_currentIndex),

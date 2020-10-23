@@ -6,8 +6,9 @@ import 'package:flutter_svg/svg.dart';
 class InputTextBoxBigger extends StatelessWidget {
   final String text;
   final String iconPath;
+  final TextEditingController controller;
 
-  const InputTextBoxBigger({this.text, this.iconPath});
+  const InputTextBoxBigger({this.text, this.iconPath, this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +17,7 @@ class InputTextBoxBigger extends StatelessWidget {
       alignment: Alignment.center,
       child: TextField(
         keyboardType: TextInputType.multiline,
+        controller:  controller,
         maxLines: 4,
         textAlign: TextAlign.start,
         textAlignVertical: TextAlignVertical.top,

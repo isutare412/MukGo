@@ -6,13 +6,15 @@ import 'package:flutter_svg/svg.dart';
 class LoginEmailText extends StatelessWidget {
   final String text;
   final String iconPath;
-
-  const LoginEmailText({this.text, this.iconPath});
+  final TextEditingController controller;
+  
+  const LoginEmailText({this.text, this.iconPath, this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: TextField(
+        controller: controller,
         decoration: InputDecoration(
             hintText: text,
             hintStyle: TextStyle(
