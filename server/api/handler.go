@@ -375,11 +375,102 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleRestaurant(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case "GET":
+		s.handleRestaurantGet(w, r)
 	case "POST":
 		s.handleRestaurantPost(w, r)
 	default:
 		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
+}
+
+func (s *Server) handleRestaurantGet(w http.ResponseWriter, r *http.Request) {
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	id, ok := params["restaurant_id"]
+	if !ok {
+		console.Warning("on handleRestaurantGet: need restaurant id")
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+		return
+	}
+
+	// translate restaurant id
+	restID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		console.Warning("on handleRestaurantGet: invalid restaurantd id; "+
+			"id(%v): %v", id, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketRestaurantGet{
+		RestID: restID,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleRestaurantGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleRestaurantGet: no packet received")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleRestaurantGet: database internal error")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	case server.ETNoSuchRestaurant:
+		console.Warning(
+			"on handleRestaurantGet: restaurant not exists; RestID(%v)", restID)
+		httpError(w, http.StatusBadRequest, pb.Code_RESTAURANT_NOT_EXISTS)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketRestaurant)
+	if !ok {
+		console.Warning("on handleRestaurantGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// build response data
+	rest := pb.Restaurant{
+		Id:   packet.Restaurant.ID.Hex(),
+		Name: packet.Restaurant.Name,
+		Coord: &pb.Coordinate{
+			Latitude:  packet.Restaurant.Coord.Latitude,
+			Longitude: packet.Restaurant.Coord.Longitude,
+		},
+	}
+
+	// serialize user data
+	ser, err := marshalResponse(r.Header, &rest)
+	if err != nil {
+		console.Warning(
+			"on handleRestaurantGet: failed to marshal restaurant data")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	baseHeader(w.Header())
+	w.Write(ser)
+	console.Info("sent restaurant data; restaurant(%v)", *packet)
 }
 
 func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
@@ -471,7 +562,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if latitude == 0.0 || longitude == 0.0 {
-		console.Warning("on handleRestaurantsGet: %v", err)
+		console.Warning("on handleRestaurantsGet: no latitude or longitude")
 		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
 		return
 	}

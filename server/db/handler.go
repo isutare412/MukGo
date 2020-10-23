@@ -192,6 +192,41 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	}
 }
 
+func (s *Server) handleRestaurantGet(
+	p *server.ADPacketRestaurantGet,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	restaurant, err := queryRestaurantGet(ctx, s.db, p.RestID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleRestaurantGet: cannot find restaurant; "+
+					"packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETNoSuchRestaurant}
+		default:
+			console.Warning(
+				"on handleRestaurantGet: failed to get restaurant; "+
+					"packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	console.Info("found restaurant; Name(%v)", *restaurant)
+	return &server.DAPacketRestaurant{
+		Restaurant: &common.Restaurant{
+			ID:   restaurant.ID,
+			Name: restaurant.Name,
+			Coord: common.Coordinate{
+				Latitude:  restaurant.Latitude,
+				Longitude: restaurant.Longitude,
+			},
+		},
+	}
+}
+
 func (s *Server) handleRestaurantAdd(
 	p *server.ADPacketRestaurantAdd,
 ) server.Packet {

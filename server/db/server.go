@@ -223,6 +223,15 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleReviewAdd(&p)
 
+	case server.PTADRestaurantGet:
+		var p server.ADPacketRestaurantGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantGet(&p)
+
 	case server.PTADRestaurantAdd:
 		var p server.ADPacketRestaurantAdd
 		err = json.Unmarshal(ser, &p)

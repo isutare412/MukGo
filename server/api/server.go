@@ -156,6 +156,11 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
+	case server.PTDARestaurant:
+		var p server.DAPacketRestaurant
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
 	case server.PTDARestaurants:
 		var p server.DAPacketRestaurants
 		packet = &p

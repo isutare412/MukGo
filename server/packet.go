@@ -22,6 +22,7 @@ const (
 	PTADUserGet
 	PTADReviewsGet
 	PTADReviewAdd
+	PTADRestaurantGet
 	PTADRestaurantAdd
 	PTADRestaurantsGet
 	PTADRestaurantsAdd
@@ -30,6 +31,7 @@ const (
 	PTDAAck
 	PTDAError
 	PTDAUser
+	PTDARestaurant
 	PTDARestaurants
 	PTDAReviews
 
@@ -79,6 +81,11 @@ type ADPacketReviewAdd struct {
 	Comment string
 }
 
+// ADPacketRestaurantGet request restaurant data.
+type ADPacketRestaurantGet struct {
+	RestID primitive.ObjectID
+}
+
 // ADPacketRestaurantAdd contains data for new restaurant.
 type ADPacketRestaurantAdd struct {
 	Name  string
@@ -114,6 +121,11 @@ type DAPacketUser struct {
 	UserID string
 	Name   string
 	Exp    int64
+}
+
+// DAPacketRestaurant contains multiple Restaurant models.
+type DAPacketRestaurant struct {
+	Restaurant *common.Restaurant
 }
 
 // DAPacketRestaurants contains multiple Restaurant models.
@@ -162,6 +174,11 @@ func (p *ADPacketReviewAdd) Type() PacketType {
 }
 
 // Type implements Packet interface.
+func (p *ADPacketRestaurantGet) Type() PacketType {
+	return PTADRestaurantGet
+}
+
+// Type implements Packet interface.
 func (p *ADPacketRestaurantAdd) Type() PacketType {
 	return PTADRestaurantAdd
 }
@@ -189,6 +206,11 @@ func (p *DAPacketError) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketUser) Type() PacketType {
 	return PTDAUser
+}
+
+// Type implements Packet interface.
+func (p *DAPacketRestaurant) Type() PacketType {
+	return PTDARestaurant
 }
 
 // Type implements Packet interface.
