@@ -39,6 +39,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
   final Set<Circle> _circles = Set<Circle>();
 
   var _getPositionSubscription;
+  var tok =
+      'ya29.a0AfH6SMAluBCzC1rJAj3M9Zf9aSDvF-YcDq2iCuB0IvpqGD4tCcR5d81o1734b0LUJSF-F6POGEbwYttGqOt5PYxZqUUoaCSN0VHU9_OW3J4fk94eQB-BJVq_GI288THGc4WS9RVjoM1ZWzfEthSFbIxVx5YmzfxDtvM';
 
   var userIcon;
 
@@ -48,6 +50,11 @@ class _MapDetailPageState extends State<MapDetailPage> {
         await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
     var bitmapDescriptorFromSvgAsset = _bitmapDescriptorFromSvgAsset(
         context, 'assets/images/onboarding_image_five.svg');
+    var userData = await Future.microtask(() {
+      //var auth = readAuth(context);
+      //var tok = auth.token;
+      return fetchUserData(tok);
+    });
     userIcon = await bitmapDescriptorFromSvgAsset;
 
     //final googleOffices = await locations.getGoogleOffices();
@@ -55,7 +62,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
           zoom: 17.0)));
-      var radius = 300.0;
+      var radius = userData.sightRadius;
       _getPositionSubscription =
           getPositionStream().listen((Position position) {
         updatePinOnMap(position, radius);
@@ -100,9 +107,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
     coord.longitude = position.longitude;
 
     var restaurantData = await Future.microtask(() {
-      var auth = readAuth(context);
-      var tok = auth.token;
-      //var tok = 'your_token';
+      //var auth = readAuth(context);
+      //var tok = auth.token;
       return fetchRestaurantsData(tok, coord: coord);
     });
 

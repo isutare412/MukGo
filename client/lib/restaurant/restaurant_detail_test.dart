@@ -46,19 +46,14 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
   @override
   void initState() {
     super.initState();
-<<<<<<< HEAD
-=======
-    var auth = readAuth(context);
-    var tok = auth.token;
-    print(widget.restaurant_id);
->>>>>>> Get restaurant from server and show in map and redirect to restaurant detail page if marker's infoWindow is on tap.
     //GET restaurant info
     futureRestaurant = Future.microtask(() {
       /*
       var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
       return fetchRestaurantData(tok, restaurantId: restaurantId);
       */
-      return fetchRestaurantData(readAuth(context).token, restaurantId: widget.restaurant_id);
+      return fetchRestaurantData(readAuth(context).token,
+          restaurantId: widget.restaurant_id);
     });
     //GET review data
     futureReviews = Future.microtask(() {
@@ -66,15 +61,9 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
       var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
       return fetchReviewsData(tok, restaurantId: restaurantId);
       */
-      return fetchReviewsData(readAuth(context).token, restaurantId: widget.restaurant_id);
+      return fetchReviewsData(readAuth(context).token,
+          restaurantId: widget.restaurant_id);
     });
-<<<<<<< HEAD
-    
-=======
-
-    //var restaurantData= getDummyRestaurant(widget.restaurant_id);
-    //var reviewsData= getDummyReviews(widget.restaurant_id);
->>>>>>> Get restaurant from server and show in map and redirect to restaurant detail page if marker's infoWindow is on tap.
   }
 
   @override
