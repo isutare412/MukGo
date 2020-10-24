@@ -25,6 +25,7 @@ import 'package:mukgo/proto/request.pbserver.dart';
 import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mukgo/user/user_model.dart';
 import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
@@ -39,32 +40,46 @@ class _MapDetailPageState extends State<MapDetailPage> {
   final Set<Circle> _circles = Set<Circle>();
 
   var _getPositionSubscription;
-  // var tok = 'your token';
   var userIcon;
   var userData;
   var initLocation;
 
-  Future<void> _onMapCreated(controller) async {
-    var bitmapDescriptorFromSvgAsset = _bitmapDescriptorFromSvgAsset(
-        context, 'assets/images/onboarding_image_five.svg');
-    userIcon = await Future.microtask(() {
-      return bitmapDescriptorFromSvgAsset;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      // fetch user info after randering
+      return context.read<UserModel>().fetch();
     });
+  }
+
+  Future<void> _onMapCreated(controller) async {
     userData = await Future.microtask(() {
       var auth = readAuth(context);
       var tok = auth.token;
       return fetchUserData(tok);
     });
+    var svg = Provider.of<UserModel>(context, listen: false);
+    var svgDir = svg.profileAsset();
+    var bitmapDescriptorFromSvgAsset =
+        _bitmapDescriptorFromSvgAsset(context, svgDir);
+    userIcon = await Future.microtask(() {
+      return bitmapDescriptorFromSvgAsset;
+    });
     initLocation =
         await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
 
     setState(() {
+      var radius = userData.sightRadius;
+      var zoom = 19 - ((radius + radius) / 100) / 2;
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(initLocation.latitude, initLocation.longitude),
-          zoom: 17.0)));
-      var radius = userData.sightRadius;
+          zoom: zoom)));
       _getPositionSubscription =
           getPositionStream().listen((Position position) {
+        controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: zoom)));
         updatePinOnMap(position, radius);
         updateRestaurants(position, radius);
       });
@@ -150,7 +165,12 @@ class _MapDetailPageState extends State<MapDetailPage> {
         body: GoogleMap(
           myLocationEnabled: false,
           compassEnabled: true,
+          mapToolbarEnabled: false,
           tiltGesturesEnabled: false,
+          rotateGesturesEnabled: false,
+          scrollGesturesEnabled: false,
+          zoomControlsEnabled: false,
+          zoomGesturesEnabled: false,
           onMapCreated: _onMapCreated,
           initialCameraPosition:
               CameraPosition(target: const LatLng(37, 126), zoom: 11.0),
