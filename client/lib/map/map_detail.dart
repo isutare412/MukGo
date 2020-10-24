@@ -41,24 +41,26 @@ class _MapDetailPageState extends State<MapDetailPage> {
   var _getPositionSubscription;
   // var tok = 'your token';
   var userIcon;
+  var userData;
+  var initLocation;
 
   Future<void> _onMapCreated(controller) async {
-    // Get GPS Location
-    var currentLocation =
-        await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
     var bitmapDescriptorFromSvgAsset = _bitmapDescriptorFromSvgAsset(
         context, 'assets/images/onboarding_image_five.svg');
-    var userData = await Future.microtask(() {
+    userIcon = await Future.microtask(() {
+      return bitmapDescriptorFromSvgAsset;
+    });
+    userData = await Future.microtask(() {
       var auth = readAuth(context);
       var tok = auth.token;
       return fetchUserData(tok);
     });
-    userIcon = await bitmapDescriptorFromSvgAsset;
+    initLocation =
+        await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
 
-    //final googleOffices = await locations.getGoogleOffices();
     setState(() {
       controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(currentLocation.latitude, currentLocation.longitude),
+          target: LatLng(initLocation.latitude, initLocation.longitude),
           zoom: 17.0)));
       var radius = userData.sightRadius;
       _getPositionSubscription =
@@ -77,14 +79,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
         markerId: MarkerId('currLoc'),
         position: LatLng(position.latitude, position.longitude),
         icon: userIcon,
-        zIndex: 1.0,
-        infoWindow: InfoWindow(
-            title: 'Your Location',
-            snippet: 'This is your location',
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MapWidget()));
-            }),
+        anchor: Offset(0.5, 0.5),
       ));
 
       // range of user for review
@@ -118,6 +113,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
           _markers.add(Marker(
             markerId: MarkerId(r.id),
             position: LatLng(r.coord.latitude, r.coord.longitude),
+            zIndex: 1.0,
             infoWindow: InfoWindow(
                 title: r.name,
                 snippet: 'This is ' + r.name,
@@ -149,6 +145,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: GoogleMap(
           myLocationEnabled: false,
