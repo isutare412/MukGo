@@ -71,6 +71,31 @@ class UserModel extends ChangeNotifier {
         sightRadius: userData.sightRadius);
   }
 
+  String profileAsset() {
+    switch (level) {
+      case 1:
+        {
+          return 'assets/images/onboarding_image_one.svg';
+        }
+      case 2:
+        {
+          return 'assets/images/onboarding_image_two.svg';
+        }
+      case 3:
+        {
+          return 'assets/images/onboarding_image_three.svg';
+        }
+      case 4:
+        {
+          return 'assets/images/onboarding_image_four.svg';
+        }
+      default:
+        {
+          return 'assets/images/onboarding_image_five.svg';
+        }
+    }
+  }
+
   void clear() {
     update(
         id: null,

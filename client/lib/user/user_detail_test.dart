@@ -31,7 +31,7 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
         child: Column(
           children: <Widget>[
             Expanded(
-              flex: 4,
+              flex: 10,
               child: Container(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -40,18 +40,21 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                       height: 30,
                     ),
                     Center(
-                      child: SvgPicture.asset(
-                        'assets/images/onboarding_image_one.svg',
-                        height: 320,
-                        width: 320,
-                      ),
+                      child:
+                          Consumer<UserModel>(builder: (context, user, child) {
+                        return SvgPicture.asset(
+                          user.profileAsset(),
+                          height: 320,
+                          width: 320,
+                        );
+                      }),
                     ),
                   ],
                 ),
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 8,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
@@ -72,26 +75,52 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                   Padding(
                     padding: const EdgeInsets.only(
                         left: 24.0, right: 24.0, top: 12.0, bottom: 12.0),
-                    child: Consumer<UserModel>(builder: (context, user, child) {
-                      return Text(
-                        user.level != null
-                            ? '레벨: ${user.level}, 총경험치: ${user.totalExp}입니다.'
-                            : '',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 21,
-                            color: trout,
-                            fontWeight: FontWeight.w500),
-                      );
-                    }),
+                    child: Column(children: <Widget>[
+                      Consumer<UserModel>(builder: (context, user, child) {
+                        return Text(
+                          user.level != null ? 'Lv.${user.level}' : '',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 30,
+                              color: trout,
+                              fontWeight: FontWeight.w500),
+                        );
+                      }),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 12.0, left: 40.0, right: 40.0),
+                        child: Consumer<UserModel>(
+                            builder: (context, user, child) {
+                          return LinearProgressIndicator(
+                            value: user.expRatio,
+                            minHeight: 6.0,
+                          );
+                        }),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Consumer<UserModel>(
+                            builder: (context, user, child) {
+                          return Text(
+                            user.level != null
+                                ? '${(user.expRatio * 100).toStringAsFixed(1)}%'
+                                : '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: trout,
+                                fontWeight: FontWeight.w500),
+                          );
+                        }),
+                      )
+                    ]),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 24.0, right: 24.0, top: 12.0, bottom: 12.0),
+                  SizedBox(
+                    width: 120.0,
                     child: ButtonPlain(
                       color: google_red,
                       textColor: white,
-                      text: '다시 불러오기',
+                      text: 'Refresh',
                       onTap: () async {
                         var user = context.read<UserModel>();
                         user.clear();
@@ -99,7 +128,7 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                         print('reloaded');
                       },
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
