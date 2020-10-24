@@ -46,15 +46,13 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
   @override
   void initState() {
     super.initState();
-    var auth=readAuth(context);
-    var tok= auth.token;
     //GET restaurant info
     futureRestaurant = Future.microtask(() {
       /*
       var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
       return fetchRestaurantData(tok, restaurantId: restaurantId);
       */
-      return fetchRestaurantData(tok, restaurantId: widget.restaurant_id);
+      return fetchRestaurantData(readAuth(context).token, restaurantId: widget.restaurant_id);
     });
     //GET review data
     futureReviews = Future.microtask(() {
@@ -62,11 +60,8 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
       var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
       return fetchReviewsData(tok, restaurantId: restaurantId);
       */
-      return fetchReviewsData(tok, restaurantId: widget.restaurant_id);
+      return fetchReviewsData(readAuth(context).token, restaurantId: widget.restaurant_id);
     });
-    
-    //var restaurantData= getDummyRestaurant(widget.restaurant_id);
-    //var reviewsData= getDummyReviews(widget.restaurant_id);  
     
   }
   
