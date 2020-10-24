@@ -39,10 +39,17 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   final Set<Marker> _markers = Set<Marker>();
   final Set<Circle> _circles = Set<Circle>();
+
+  var _getPositionSubscription;
+
+  var userIcon;
+
   Future<void> _onMapCreated(GoogleMapController controller) async {
     // Get GPS Location
     var currentLocation =
         await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    userIcon = await _bitmapDescriptorFromSvgAsset(
+        context, 'assets/images/onboarding_image_five.svg');
 
     //final googleOffices = await locations.getGoogleOffices();
     setState(() {
@@ -50,7 +57,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
           target: LatLng(currentLocation.latitude, currentLocation.longitude),
           zoom: 17.0)));
       var radius = 300.0;
-      getPositionStream().listen((Position position) {
+      _getPositionSubscription =
+          getPositionStream().listen((Position position) {
         updatePinOnMap(position, radius);
         updateRestaurants(position, radius);
       });
@@ -58,8 +66,6 @@ class _MapDetailPageState extends State<MapDetailPage> {
   }
 
   void updatePinOnMap(Position position, double radius) async {
-    var userIcon = await _bitmapDescriptorFromSvgAsset(
-        context, 'assets/images/onboarding_image_five.svg');
     setState(() {
       // position of user
       _markers.removeWhere((m) => m.markerId.value == 'currLoc');
@@ -122,6 +128,12 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   bool isInMyCircle(x1, y1, x2, y2, r) {
     return distanceBetween(x1, y1, x2, y2) < r;
+  }
+
+  @override
+  void dispose() {
+    _getPositionSubscription?.cancel();
+    super.dispose();
   }
 
   @override

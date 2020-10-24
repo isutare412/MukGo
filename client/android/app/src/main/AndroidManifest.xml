@@ -9,9 +9,13 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="mukgo"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config">
         <meta-data android:name="com.google.android.geo.API_KEY"
           android:value="AIzaSyCja7_iKXxFZQtG7RCNISO_j1ETGwgARg8"/>
+        <meta-data android:name="io.flutter.network-policy"
+             android:resource="@xml/network_security_config"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

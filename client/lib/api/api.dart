@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/proto/request.pb.dart';
 
-String apiUrl = '10.0.2.2:7777';
+//String apiUrl = '10.0.2.2:7777';
+String apiUrl = 'redshore.asuscomm.com:7777';
 
 // log api error reason code
 void printResponseError(String api, Uint8List bytes) {
