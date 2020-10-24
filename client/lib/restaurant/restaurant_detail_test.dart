@@ -18,7 +18,6 @@ import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/review/review_card_proj.dart';
 import 'restaurant.dart';
 
-
 /*
 class ReviewPageArguments {
   final String id;
@@ -34,7 +33,8 @@ class RestaurantDetailTestPage extends StatefulWidget {
   final String restaurant_id;
 
   @override
-  _RestaurantDetailTestPageState createState() => _RestaurantDetailTestPageState();
+  _RestaurantDetailTestPageState createState() =>
+      _RestaurantDetailTestPageState();
 }
 
 class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
@@ -46,6 +46,12 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
   @override
   void initState() {
     super.initState();
+<<<<<<< HEAD
+=======
+    var auth = readAuth(context);
+    var tok = auth.token;
+    print(widget.restaurant_id);
+>>>>>>> Get restaurant from server and show in map and redirect to restaurant detail page if marker's infoWindow is on tap.
     //GET restaurant info
     futureRestaurant = Future.microtask(() {
       /*
@@ -62,9 +68,15 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
       */
       return fetchReviewsData(readAuth(context).token, restaurantId: widget.restaurant_id);
     });
+<<<<<<< HEAD
     
+=======
+
+    //var restaurantData= getDummyRestaurant(widget.restaurant_id);
+    //var reviewsData= getDummyReviews(widget.restaurant_id);
+>>>>>>> Get restaurant from server and show in map and redirect to restaurant detail page if marker's infoWindow is on tap.
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,13 +97,11 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                     color: wood_smoke,
                     onPressed: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyHomePage(
-                            title: 'Mukgo Project',
-                          )
-                        )
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyHomePage(
+                                    title: 'Mukgo Project',
+                                  )));
                     },
                   ),
                   Expanded(
@@ -107,13 +117,11 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                     icon: Icon(Icons.edit),
                     onPressed: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReviewForm(
-                            restaurant_id: widget.restaurant_id,
-                          )
-                        )
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ReviewForm(
+                                    restaurant_id: widget.restaurant_id,
+                                  )));
                     },
                   )
                 ],
@@ -141,21 +149,16 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
               }).toList();
 
               return ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ReviewCard(
-                    reviewData: data[index],
-                    onTap: () {}
-                  );
-                }
-              );
+                  itemCount: data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ReviewCard(reviewData: data[index], onTap: () {});
+                  });
             }
 
             return Center(
               child: CircularProgressIndicator(),
             );
-          }  
-        ),
+          }),
     );
   }
 }

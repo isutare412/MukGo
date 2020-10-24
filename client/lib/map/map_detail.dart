@@ -22,14 +22,12 @@ import 'package:fixnum/fixnum.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/proto/model.pbserver.dart';
 import 'package:mukgo/proto/request.pbserver.dart';
-import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
-  const MapDetailPage({Key key}) : super(key: key);
-
   @override
   _MapDetailPageState createState() => _MapDetailPageState();
 }
@@ -44,12 +42,13 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   var userIcon;
 
-  Future<void> _onMapCreated(GoogleMapController controller) async {
+  Future<void> _onMapCreated(controller) async {
     // Get GPS Location
     var currentLocation =
         await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-    userIcon = await _bitmapDescriptorFromSvgAsset(
+    var bitmapDescriptorFromSvgAsset = _bitmapDescriptorFromSvgAsset(
         context, 'assets/images/onboarding_image_five.svg');
+    userIcon = await bitmapDescriptorFromSvgAsset;
 
     //final googleOffices = await locations.getGoogleOffices();
     setState(() {
@@ -96,14 +95,16 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   // position of restaurants
   void updateRestaurants(Position position, double radius) async {
-    var auth = readAuth(context);
-    var coord = (<String, double>{
-      'latitude': position.latitude,
-      'longitude': position.longitude
+    var coord = Coordinate();
+    coord.latitude = position.latitude;
+    coord.longitude = position.longitude;
+
+    var restaurantData = await Future.microtask(() {
+      var auth = readAuth(context);
+      var tok = auth.token;
+      //var tok = 'your_token';
+      return fetchRestaurantsData(tok, coord: coord);
     });
-    var restaurantData = await getDummyRestaurants();
-    //await fetchRestaurantsData(auth.token,
-    //    coord: Coordinate()..mergeFromProto3Json(coord));
 
     setState(() {
       _markers.removeWhere((m) => m.markerId.value != 'currLoc');
@@ -117,8 +118,13 @@ class _MapDetailPageState extends State<MapDetailPage> {
                 title: r.name,
                 snippet: 'This is ' + r.name,
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MapWidget()));
+                  //Navigator.pushNamed(context, '/project_restaurant',
+                  //    arguments: r.id);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RestaurantDetailTestPage(restaurant_id: r.id)));
                 }),
           ));
         }
