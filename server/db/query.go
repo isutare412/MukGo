@@ -203,15 +203,21 @@ func queryReviewAdd(
 	restID primitive.ObjectID,
 	score int32,
 	comment string,
+	menus []string,
+	wait bool,
+	numPeople int32,
 ) error {
 	coll := db.Collection(CNReview)
 	_, err := coll.InsertOne(
 		ctx,
 		Review{
-			UserID:  userID,
-			RestID:  restID,
-			Score:   score,
-			Comment: comment,
+			UserID:    userID,
+			RestID:    restID,
+			Score:     score,
+			Comment:   comment,
+			Menus:     menus,
+			Wait:      wait,
+			NumPeople: numPeople,
 		})
 
 	if err != nil {

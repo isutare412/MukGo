@@ -75,10 +75,13 @@ type ADPacketReviewsGet struct {
 
 // ADPacketReviewAdd containes review data.
 type ADPacketReviewAdd struct {
-	UserID  string
-	RestID  primitive.ObjectID
-	Score   int32
-	Comment string
+	UserID    string
+	RestID    primitive.ObjectID
+	Score     int32
+	Comment   string
+	Menus     []string
+	Wait      bool
+	NumPeople int32
 }
 
 // ADPacketRestaurantGet request restaurant data.

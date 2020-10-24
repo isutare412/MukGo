@@ -211,10 +211,14 @@ class Restaurant extends $pb.GeneratedMessage {
 
 class Review extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('Review', package: const $pb.PackageName('proto'), createEmptyInstance: create)
-    ..aOS(1, 'id')
-    ..aOS(2, 'userName')
-    ..a<$core.int>(3, 'score', $pb.PbFieldType.O3)
-    ..aOS(4, 'comment')
+    ..aOS(1, 'reviewId')
+    ..aOS(2, 'userId')
+    ..aOS(3, 'userName')
+    ..a<$core.int>(4, 'score', $pb.PbFieldType.O3)
+    ..aOS(5, 'comment')
+    ..pPS(6, 'menus')
+    ..aOB(7, 'wait')
+    ..a<$core.int>(8, 'numPeople', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -234,40 +238,70 @@ class Review extends $pb.GeneratedMessage {
   static Review _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get id => $_getSZ(0);
+  $core.String get reviewId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String v) { $_setString(0, v); }
+  set reviewId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasId() => $_has(0);
+  $core.bool hasReviewId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => clearField(1);
+  void clearReviewId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get userName => $_getSZ(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userName($core.String v) { $_setString(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasUserName() => $_has(1);
+  $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearUserName() => clearField(2);
+  void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.int get score => $_getIZ(2);
+  $core.String get userName => $_getSZ(2);
   @$pb.TagNumber(3)
-  set score($core.int v) { $_setSignedInt32(2, v); }
+  set userName($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasScore() => $_has(2);
+  $core.bool hasUserName() => $_has(2);
   @$pb.TagNumber(3)
-  void clearScore() => clearField(3);
+  void clearUserName() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.String get comment => $_getSZ(3);
+  $core.int get score => $_getIZ(3);
   @$pb.TagNumber(4)
-  set comment($core.String v) { $_setString(3, v); }
+  set score($core.int v) { $_setSignedInt32(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasComment() => $_has(3);
+  $core.bool hasScore() => $_has(3);
   @$pb.TagNumber(4)
-  void clearComment() => clearField(4);
+  void clearScore() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get comment => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set comment($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasComment() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearComment() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.List<$core.String> get menus => $_getList(5);
+
+  @$pb.TagNumber(7)
+  $core.bool get wait => $_getBF(6);
+  @$pb.TagNumber(7)
+  set wait($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasWait() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearWait() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get numPeople => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set numPeople($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasNumPeople() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearNumPeople() => clearField(8);
 }
 
 class Restaurants extends $pb.GeneratedMessage {

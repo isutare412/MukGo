@@ -117,10 +117,14 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 	for _, r := range reviews {
 		resPacket.Reviews = append(resPacket.Reviews,
 			&common.Review{
-				UserID:   r.UserID,
-				UserName: idMap[r.UserID],
-				Score:    r.Score,
-				Comment:  r.Comment,
+				ID:        r.ID,
+				UserID:    r.UserID,
+				UserName:  idMap[r.UserID],
+				Score:     r.Score,
+				Comment:   r.Comment,
+				Menus:     r.Menus,
+				Wait:      r.Wait,
+				NumPeople: r.NumPeople,
 			},
 		)
 	}
@@ -168,7 +172,8 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 	}
 
 	// add review data
-	err = queryReviewAdd(ctx, s.db, p.UserID, p.RestID, p.Score, p.Comment)
+	err = queryReviewAdd(ctx, s.db, p.UserID, p.RestID, p.Score, p.Comment,
+		p.Menus, p.Wait, p.NumPeople)
 	if err != nil {
 		console.Warning(
 			"on handleReviewAdd: failed to insert review(%v): %v", *p, err)

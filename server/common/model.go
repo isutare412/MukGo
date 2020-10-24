@@ -11,8 +11,12 @@ type Restaurant struct {
 
 // Review model.
 type Review struct {
-	UserID   string
-	UserName string
-	Score    int32
-	Comment  string
+	ID        primitive.ObjectID
+	UserID    string
+	UserName  string
+	Score     int32
+	Comment   string
+	Menus     []string
+	Wait      bool
+	NumPeople int32
 }

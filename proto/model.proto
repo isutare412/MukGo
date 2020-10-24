@@ -45,10 +45,14 @@ message Restaurant {
 }
 
 message Review {
-    string id = 1;
-    string user_name = 2;
-    int32 score = 3;
-    string comment = 4;
+    string review_id = 1;
+    string user_id = 2;
+    string user_name = 3;
+    int32 score = 4;
+    string comment = 5;
+    repeated string menus = 6;
+    bool wait = 7;
+    int32 num_people = 8;
 }
 
 message Restaurants {

@@ -189,10 +189,13 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 
 	// create packet for database server
 	var dbReq = server.ADPacketReviewAdd{
-		UserID:  uid,
-		RestID:  restID,
-		Score:   userReq.Review.Score,
-		Comment: userReq.Review.Comment,
+		UserID:    uid,
+		RestID:    restID,
+		Score:     userReq.Review.Score,
+		Comment:   userReq.Review.Comment,
+		Menus:     userReq.Review.Menus,
+		Wait:      userReq.Review.Wait,
+		NumPeople: userReq.Review.NumPeople,
 	}
 
 	// send packet to database server and register response handler
@@ -351,9 +354,14 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 	for _, r := range packet.Reviews {
 		reviews.Reviews = append(reviews.Reviews,
 			&pb.Review{
-				UserName: r.UserName,
-				Score:    r.Score,
-				Comment:  r.Comment,
+				ReviewId:  r.ID.Hex(),
+				UserId:    r.UserID,
+				UserName:  r.UserName,
+				Score:     r.Score,
+				Comment:   r.Comment,
+				Menus:     r.Menus,
+				Wait:      r.Wait,
+				NumPeople: r.NumPeople,
 			},
 		)
 	}

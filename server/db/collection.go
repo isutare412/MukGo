@@ -11,10 +11,14 @@ type User struct {
 
 // Review contains review data from user.
 type Review struct {
-	UserID  string             `bson:"user_id"`
-	RestID  primitive.ObjectID `bson:"restaurant_id"`
-	Score   int32              `bson:"score"`
-	Comment string             `bson:"comment"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	UserID    string             `bson:"user_id"`
+	RestID    primitive.ObjectID `bson:"restaurant_id"`
+	Score     int32              `bson:"score"`
+	Comment   string             `bson:"comment"`
+	Menus     []string           `bson:"menus"`
+	Wait      bool               `bson:"wait"`
+	NumPeople int32              `bson:"num_people"`
 }
 
 // Restaurant contains restaurant information.

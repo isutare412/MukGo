@@ -54,10 +54,14 @@ const Restaurant$json = const {
 const Review$json = const {
   '1': 'Review',
   '2': const [
-    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    const {'1': 'user_name', '3': 2, '4': 1, '5': 9, '10': 'userName'},
-    const {'1': 'score', '3': 3, '4': 1, '5': 5, '10': 'score'},
-    const {'1': 'comment', '3': 4, '4': 1, '5': 9, '10': 'comment'},
+    const {'1': 'review_id', '3': 1, '4': 1, '5': 9, '10': 'reviewId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'user_name', '3': 3, '4': 1, '5': 9, '10': 'userName'},
+    const {'1': 'score', '3': 4, '4': 1, '5': 5, '10': 'score'},
+    const {'1': 'comment', '3': 5, '4': 1, '5': 9, '10': 'comment'},
+    const {'1': 'menus', '3': 6, '4': 3, '5': 9, '10': 'menus'},
+    const {'1': 'wait', '3': 7, '4': 1, '5': 8, '10': 'wait'},
+    const {'1': 'num_people', '3': 8, '4': 1, '5': 5, '10': 'numPeople'},
   ],
 };
 
