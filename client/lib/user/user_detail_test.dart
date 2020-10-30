@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/review/review_detail_test.dart';
 
 class UserDetailTestPage extends StatefulWidget {
   const UserDetailTestPage({Key key}) : super(key: key);
@@ -127,6 +128,23 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                         await user.fetch();
                         print('reloaded');
                       },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: SizedBox(
+                      width: 120.0,
+                      child: ButtonPlain(
+                        color: lightening_yellow,
+                        textColor: white,
+                        text: 'Test Review',
+                        onTap: () {
+                          Navigator.pushNamed(context, "/review-list",
+                              arguments: ReviewPageArguments(
+                                  id: '5f915970fc1495705932c25a',
+                                  name: 'my home'));
+                        },
+                      ),
                     ),
                   )
                 ],

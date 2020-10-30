@@ -81,6 +81,7 @@ import 'package:mukgo/map/map_detail.dart';
 import 'package:mukgo/review/review_detail_test.dart';
 import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/app.dart';
 
 void main() => runApp(MyApp());
 
@@ -95,7 +96,8 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Montserrat',
           primarySwatch: Colors.blue,
           primaryColor: persian_blue),
-      home: MyHomePage(title: 'Mukgo Project'),
+      // home: MyHomePage(title: 'Mukgo Project'),
+      home: App(title: 'Mukgo Project'),
       routes: {
         '/project_map': (context) => MapDetailPage(),
         '/project_restaurant': (context) => RestaurantDetailPage(),
