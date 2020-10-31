@@ -20,6 +20,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:mukgo/api/api.dart';
+import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/proto/model.pbserver.dart';
 import 'package:mukgo/proto/request.pbserver.dart';
 import 'package:mukgo/restaurant/restaurant_detail_test.dart';
@@ -41,52 +42,45 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   var _getPositionSubscription;
   var userIcon;
-  var userData;
   var initLocation;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      // fetch user info after randering
-      return context.read<UserModel>().fetch();
-    });
-  }
+  UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
-    userData = await Future.microtask(() {
-      var auth = readAuth(context);
-      var tok = auth.token;
-      return fetchUserData(tok);
+    _getPositionSubscription = getPositionStream().listen((Position position) {
+      Future.microtask(() async {
+        await context.read<UserModel>().fetch();
+        userData = context.read<UserModel>();
+        var radius = 100.0;
+        if (userData != null) {
+          radius = userData.sightRadius;
+
+          var zoom = 19 - ((radius + radius) / 100) / 2;
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(
+                  target: LatLng(position.latitude, position.longitude),
+                  zoom: zoom)));
+          _getPositionSubscription?.cancel();
+          // fetch user info after randering
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(
+                  target: LatLng(position.latitude, position.longitude),
+                  zoom: zoom)));
+          updatePinOnMap(position, radius);
+          updateRestaurants(position, radius);
+        }
+      });
     });
-    var svg = Provider.of<UserModel>(context, listen: false);
-    var svgDir = svg.profileAsset();
+
+    setState(() {});
+  }
+
+  void updatePinOnMap(Position position, double radius) async {
+    var svgDir = userData.profileAsset();
     var bitmapDescriptorFromSvgAsset =
         _bitmapDescriptorFromSvgAsset(context, svgDir);
     userIcon = await Future.microtask(() {
       return bitmapDescriptorFromSvgAsset;
     });
-    initLocation =
-        await getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-
-    setState(() {
-      var radius = userData.sightRadius;
-      var zoom = 19 - ((radius + radius) / 100) / 2;
-      controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-          target: LatLng(initLocation.latitude, initLocation.longitude),
-          zoom: zoom)));
-      _getPositionSubscription =
-          getPositionStream().listen((Position position) {
-        controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: zoom)));
-        updatePinOnMap(position, radius);
-        updateRestaurants(position, radius);
-      });
-    });
-  }
-
-  void updatePinOnMap(Position position, double radius) async {
     setState(() {
       // position of user
       _markers.removeWhere((m) => m.markerId.value == 'currLoc');
@@ -114,37 +108,39 @@ class _MapDetailPageState extends State<MapDetailPage> {
     coord.latitude = position.latitude;
     coord.longitude = position.longitude;
 
-    var restaurantData = await Future.microtask(() {
+    await Future.microtask(() async {
       var auth = readAuth(context);
       var tok = auth.token;
-      return fetchRestaurantsData(tok, coord: coord);
-    });
+      var restaurantData = await fetchRestaurantsData(tok, coord: coord);
+      setState(() {
+        _markers.removeWhere((m) => m.markerId.value != 'currLoc');
 
-    setState(() {
-      _markers.removeWhere((m) => m.markerId.value != 'currLoc');
-      restaurantData.restaurants.forEach((r) {
-        if (isInMyCircle(position.latitude, position.longitude,
-            r.coord.latitude, r.coord.longitude, radius)) {
-          _markers.add(Marker(
-            markerId: MarkerId(r.id),
-            position: LatLng(r.coord.latitude, r.coord.longitude),
-            zIndex: 1.0,
-            infoWindow: InfoWindow(
-                title: r.name,
-                snippet: 'This is ' + r.name,
-                onTap: () {
-                  //Navigator.pushNamed(context, '/project_restaurant',
-                  //    arguments: r.id);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              RestaurantDetailTestPage(restaurant_id: r.id)));
-                }),
-          ));
-        }
+        restaurantData.restaurants.forEach((r) {
+          if (isInMyCircle(position.latitude, position.longitude,
+              r.coord.latitude, r.coord.longitude, radius)) {
+            _markers.add(Marker(
+              markerId: MarkerId(r.id),
+              position: LatLng(r.coord.latitude, r.coord.longitude),
+              zIndex: 1.0,
+              infoWindow: InfoWindow(
+                  title: r.name,
+                  snippet: 'This is ' + r.name,
+                  onTap: () {
+                    //Navigator.pushNamed(context, '/project_restaurant',
+                    //    arguments: r.id);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                RestaurantDetailTestPage(restaurant_id: r.id)));
+                  }),
+            ));
+          }
+        });
       });
     });
+
+    setState(() {});
   }
 
   bool isInMyCircle(x1, y1, x2, y2, r) {
@@ -170,7 +166,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
           rotateGesturesEnabled: false,
           scrollGesturesEnabled: false,
           zoomControlsEnabled: false,
-          zoomGesturesEnabled: false,
+          //zoomGesturesEnabled: false,
           onMapCreated: _onMapCreated,
           initialCameraPosition:
               CameraPosition(target: const LatLng(37, 126), zoom: 11.0),
