@@ -68,123 +68,49 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: white,
-      appBar: CustomAppBar(
-        height: 150,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    color: wood_smoke,
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MyHomePage(
-                                    title: 'Mukgo Project',
-                                  )));
-                    },
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: ContraText(
-                      size: 27,
-                      alignment: Alignment.bottomCenter,
-                      text: "contra",
-                    ),
-                  ),
-                  IconButton(
-                    color: wood_smoke,
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ReviewForm(
-                                    restaurant_id: widget.restaurant_id,
-                                  )));
-                    },
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: FutureBuilder<Reviews>(
-          future: futureReviews,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              var reviews = snapshot.data.reviews;
-              var data = reviews.asMap().entries.map((entry) {
-                var i = entry.key;
-                var review = entry.value;
-                var color = colors[i % colors.length];
-                return ReviewCardData(
-                    user: review.userName,
-                    comment: review.comment,
-                    score: review.score,
-                    like: 4,
-                    time: 'june 11',
-                    bgColor: color);
-              }).toList();
+    return FutureBuilder<Reviews>(
+        future: futureReviews,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            var reviews = snapshot.data.reviews;
+            var data = reviews.asMap().entries.map((entry) {
+              var i = entry.key;
+              var review = entry.value;
+              var color = colors[i % colors.length];
+              return ReviewCardData(
+                  user: review.userName,
+                  comment: review.comment,
+                  score: review.score,
+                  like: 4,
+                  time: 'june 11',
+                  bgColor: color);
+            }).toList();
 
-              return ListView.builder(
-                  itemCount: data.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ReviewCard(reviewData: data[index], onTap: () {});
-                  });
-            }
+            return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ReviewCard(reviewData: data[index], onTap: () {});
+                });
+          }
 
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }),
-    );
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 }
 
 /*
-List<ReviewCardData> dummyData;
-            dummyData.add(ReviewCardData(
-              user: 'Gina',
-              comment: 'MENU1',
-              score: 4,
-              like: 4,
-              time: 'june 11',
-              bgColor: colors[0]
-            ));
-            dummyData.add(ReviewCardData(
-              user: 'Gina2',
-              comment: 'MENU2',
-              score: 4,
-              like: 4,
-              time: 'june 11',
-              bgColor: colors[0]
-            ));
-            dummyData.add(ReviewCardData(
-              user: 'Gina3',
-              comment: 'MENU3',
-              score: 4,
-              like: 4,
-              time: 'june 11',
-              bgColor: colors[2]
-            ));
-            return ListView.builder(
-                itemCount: dummyData.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ReviewListItem(
-                    reviewcard: dummyData[index],
-                    onTap: () {}
-                  );
-                }
-            );
+IconButton(
+  color: wood_smoke,
+  icon: Icon(Icons.edit),
+  onPressed: () {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ReviewForm(
+                  restaurant_id: widget.restaurant_id,
+                )));
+  },
+)
 */
