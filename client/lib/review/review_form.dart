@@ -28,8 +28,8 @@ class _ReviewForm extends State<ReviewForm> {
   final commentController = TextEditingController();
 
   int numPeople = 1;
-  int rating=3;
-  bool waiting=false;
+  int rating = 3;
+  bool waiting = false;
 
   @override
   void initState() {
@@ -71,13 +71,14 @@ class _ReviewForm extends State<ReviewForm> {
                     children: <Widget>[
                       Container(
                         padding: EdgeInsets.only(
-                          left:20, right:20, top:10, bottom:10),
+                            left: 20, right: 20, top: 10, bottom: 10),
                         margin: EdgeInsets.only(left: 2, right: 2, bottom: 2),
                         decoration: ShapeDecoration(
-                          color: athens,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
-                          )),
+                            color: athens,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(16)),
+                            )),
                         child: Column(
                           children: <Widget>[
                             Row(
@@ -85,7 +86,8 @@ class _ReviewForm extends State<ReviewForm> {
                               children: [
                                 Text(
                                   'Number of People :  ',
-                                  style: TextStyle(fontSize:18),),
+                                  style: TextStyle(fontSize: 18),
+                                ),
                                 DropdownButton<int>(
                                   value: numPeople,
                                   icon: Icon(Icons.arrow_downward),
@@ -98,10 +100,10 @@ class _ReviewForm extends State<ReviewForm> {
                                   ),
                                   onChanged: (int newValue) {
                                     setState(() {
-                                      numPeople= newValue;
+                                      numPeople = newValue;
                                     });
                                   },
-                                  items: <int>[1,2,3,4,5,6,7,8,9,10]
+                                  items: <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                                       .map<DropdownMenuItem<int>>((int value) {
                                     return DropdownMenuItem<int>(
                                       value: value,
@@ -116,30 +118,31 @@ class _ReviewForm extends State<ReviewForm> {
                               children: [
                                 Text(
                                   'Rating :  ',
-                                  style: TextStyle(fontSize:18),),
-                                DropdownButton<int>(
-                                value: rating,
-                                icon: Icon(Icons.arrow_downward),
-                                iconSize: 24,
-                                elevation: 16,
-                                style: TextStyle(color: Colors.black),
-                                underline: Container(
-                                  height: 2,
-                                  color: Colors.deepOrangeAccent,
+                                  style: TextStyle(fontSize: 18),
                                 ),
-                                onChanged: (int newValue) {
-                                  setState(() {
-                                    rating= newValue;
-                                  });
-                                },
-                                items: <int>[1,2,3,4,5]
-                                    .map<DropdownMenuItem<int>>((int value) {
-                                  return DropdownMenuItem<int>(
-                                    value: value,
-                                    child: Text(value.toString()),
-                                  );
-                                }).toList(),
-                              ),
+                                DropdownButton<int>(
+                                  value: rating,
+                                  icon: Icon(Icons.arrow_downward),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  style: TextStyle(color: Colors.black),
+                                  underline: Container(
+                                    height: 2,
+                                    color: Colors.deepOrangeAccent,
+                                  ),
+                                  onChanged: (int newValue) {
+                                    setState(() {
+                                      rating = newValue;
+                                    });
+                                  },
+                                  items: <int>[1, 2, 3, 4, 5]
+                                      .map<DropdownMenuItem<int>>((int value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value,
+                                      child: Text(value.toString()),
+                                    );
+                                  }).toList(),
+                                ),
                               ],
                             ),
                             Row(
@@ -147,14 +150,15 @@ class _ReviewForm extends State<ReviewForm> {
                               children: [
                                 Text(
                                   'Waiting :  ',
-                                  style: TextStyle(fontSize:18),),
+                                  style: TextStyle(fontSize: 18),
+                                ),
                                 Checkbox(
-                                    value: waiting,
-                                    onChanged: (bool value) {
-                                        setState(() {
-                                            waiting = value;
-                                        });
-                                    },
+                                  value: waiting,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      waiting = value;
+                                    });
+                                  },
                                 ),
                               ],
                             ),
@@ -164,7 +168,8 @@ class _ReviewForm extends State<ReviewForm> {
                       SizedBox(
                         height: 24,
                       ),
-                      LoginEmailText( //nim people, score
+                      LoginEmailText(
+                        //nim people, score
                         text: "menu",
                         iconPath: "assets/icons/ic_search.svg",
                         controller: menuController,
@@ -187,31 +192,30 @@ class _ReviewForm extends State<ReviewForm> {
                         isPrefix: false,
                         isSuffix: true,
                         text: "Post Review",
-                        callback: () async{
-                          var auth=readAuth(context);
-                          var review= Review()..comment=commentController.text;
+                        callback: () async {
+                          var auth = getAuth(context);
+                          var review = Review()
+                            ..comment = commentController.text;
                           review..score = rating;
+                          review..menus[0] = menuController.text;
+                          review..wait = waiting;
+                          review..numPeople = numPeople;
                           /*erase after checking whether userName, id are unnecessary
                           var userModel=Provider.of<UserModel>(context, listen: false);
                           var userName=userModel.name;
                           review..userName=userName;
                           review..id='1';
                           */
-                          /*
-                          review..nym_people= numPeople;
-                          review..waiting= waiting;
-                          review..menu=int.parse(menuController.text);
-                          */
-                          var result= await postReviewData(auth.token, 
-                            data: review, id: widget.restaurant_id);
+
+                          var result = await postReviewData(auth.token,
+                              data: review, id: widget.restaurant_id);
                           return Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RestaurantDetailTestPage(
-                                restaurant_id: widget.restaurant_id,
-                              )
-                            )
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      RestaurantDetailTestPage(
+                                        restaurant_id: widget.restaurant_id,
+                                      )));
                           //Navigator.of(context).pop();
                           //redirect to restaurant detail test page
                         },
