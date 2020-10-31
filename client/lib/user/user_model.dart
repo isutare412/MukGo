@@ -34,7 +34,9 @@ class UserModel extends ChangeNotifier {
 
   // fetch fresh user data from server
   Future<void> fetch() async {
+    if (auth.token == null) return;
     var userData = await fetchUserData(auth.token);
+    if (userData == null) return;
     updateFromUserData(userData);
   }
 

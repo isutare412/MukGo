@@ -192,6 +192,7 @@ class MyApp extends StatelessWidget {
           create: (context) => UserModel(),
           update: (context, auth, user) {
             user.auth = auth;
+            user.fetch();
             return user;
           },
         )
