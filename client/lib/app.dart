@@ -19,7 +19,7 @@ Map<String, WidgetBuilder> routes = {
 };
 
 class App extends StatefulWidget {
-  App({Key key, this.title}) : super(key: key);
+  App({Key key, this.title = 'Mukgo Project'}) : super(key: key);
 
   final String title;
 

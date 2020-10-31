@@ -81,6 +81,7 @@ import 'package:mukgo/map/map_detail.dart';
 import 'package:mukgo/review/review_detail_test.dart';
 import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/loading.dart';
 import 'package:mukgo/app.dart';
 
 void main() => runApp(MyApp());
@@ -97,8 +98,10 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           primaryColor: persian_blue),
       // home: MyHomePage(title: 'Mukgo Project'),
-      home: App(title: 'Mukgo Project'),
+      // home: App(title: 'Mukgo Project'),
+      home: LoadingScreen(),
       routes: {
+        '/project': (context) => App(title: 'Mukgo Project'),
         '/project_map': (context) => MapDetailPage(),
         '/project_restaurant': (context) => RestaurantDetailPage(),
         '/project_review': (context) => ReviewList(),
@@ -107,6 +110,7 @@ class MyApp extends StatelessWidget {
             ),
         '/project_login': (context) => LoginForm(),
         '/sample_page': (context) => SamplePage(),
+        '/loading': (context) => LoadingScreen(),
 
         //-------For Contra Sample Pages (START) ------//
         '/onboard_all': (context) => OnboardPageMain(),

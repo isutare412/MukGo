@@ -26,6 +26,20 @@ class _SamplePageState extends State<SamplePage> {
               ListTile(
                 contentPadding: EdgeInsets.all(20),
                 trailing: Icon(Icons.navigate_next),
+                title: Text("Loading Screen"),
+                onTap: () {
+                  Navigator.pushNamed(context, "/loading");
+                  /*
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => OnboardPageMain()),
+                  );
+                  */
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.all(20),
+                trailing: Icon(Icons.navigate_next),
                 title: Text("Review"),
                 onTap: () {
                   Navigator.pushNamed(context, "/project_review",

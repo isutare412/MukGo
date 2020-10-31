@@ -37,6 +37,7 @@ dependencies:
     path: ./contra
   geolocator: ^6.0.0
   protobuf: ^1.0.1
+  animated_text_kit: ^2.5.1
 
 dev_dependencies:
   flutter_test:

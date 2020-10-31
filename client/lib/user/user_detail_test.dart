@@ -116,37 +116,51 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                       )
                     ]),
                   ),
-                  SizedBox(
-                    width: 120.0,
-                    child: ButtonPlain(
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: RaisedButton(
+                      padding: EdgeInsets.all(16),
                       color: google_red,
                       textColor: white,
-                      text: 'Refresh',
-                      onTap: () async {
+                      onPressed: () async {
                         var user = context.read<UserModel>();
                         user.clear();
                         await user.fetch();
                         print('reloaded');
                       },
+                      child: Text(
+                        'Refresh',
+                        style: TextStyle(
+                            fontSize: 21.0, fontWeight: FontWeight.bold),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                        // side: BorderSide(color: black, width: 2.0)
+                      ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: SizedBox(
-                      width: 120.0,
-                      child: ButtonPlain(
-                        color: lightening_yellow,
-                        textColor: white,
-                        text: 'Test Review',
-                        onTap: () {
-                          Navigator.pushNamed(context, "/review-list",
-                              arguments: ReviewPageArguments(
-                                  id: '5f915970fc1495705932c25a',
-                                  name: 'my home'));
-                        },
+                    padding: const EdgeInsets.only(top: 6),
+                    child: RaisedButton(
+                      padding: EdgeInsets.all(16),
+                      color: white,
+                      textColor: black,
+                      onPressed: () {
+                        Navigator.pushNamed(context, "/review-list",
+                            arguments: ReviewPageArguments(
+                                id: '5f915970fc1495705932c25a',
+                                name: 'my home'));
+                      },
+                      child: Text(
+                        'Reviews',
+                        style: TextStyle(
+                            fontSize: 21.0, fontWeight: FontWeight.bold),
                       ),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          side: BorderSide(color: black, width: 2.0)),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
