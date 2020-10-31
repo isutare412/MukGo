@@ -197,7 +197,7 @@ class _ReviewForm extends State<ReviewForm> {
                           var review = Review()
                             ..comment = commentController.text;
                           review..score = rating;
-                          review..menus[0] = menuController.text;
+                          review..menus.add(menuController.text);
                           review..wait = waiting;
                           review..numPeople = numPeople;
                           /*erase after checking whether userName, id are unnecessary
