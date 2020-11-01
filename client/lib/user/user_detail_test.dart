@@ -139,28 +139,6 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: RaisedButton(
-                      padding: EdgeInsets.all(16),
-                      color: white,
-                      textColor: black,
-                      onPressed: () {
-                        Navigator.pushNamed(context, "/review-list",
-                            arguments: ReviewPageArguments(
-                                id: '5f915970fc1495705932c25a',
-                                name: 'my home'));
-                      },
-                      child: Text(
-                        'Reviews',
-                        style: TextStyle(
-                            fontSize: 21.0, fontWeight: FontWeight.bold),
-                      ),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                          side: BorderSide(color: black, width: 2.0)),
-                    ),
-                  ),
                 ],
               ),
             ),
