@@ -46,28 +46,29 @@ class _MapDetailPageState extends State<MapDetailPage> {
   UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
-    _getPositionSubscription = getPositionStream().listen((Position position) {
-      Future.microtask(() async {
-        await context.read<UserModel>().fetch();
-        userData = context.read<UserModel>();
-        var radius = 100.0;
-        if (userData != null) {
-          radius = userData.sightRadius;
+    _getPositionSubscription = Timer.periodic(Duration(seconds: 1), (timer) {
+      getCurrentPosition().then((position) {
+        Future.microtask(() async {
+          await context.read<UserModel>().fetch();
+          userData = context.read<UserModel>();
+          var radius = 100.0;
+          if (userData != null) {
+            radius = userData.sightRadius;
 
-          var zoom = 19 - ((radius + radius) / 100) / 2;
-          controller.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: zoom)));
-          _getPositionSubscription?.cancel();
-          // fetch user info after randering
-          controller.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: zoom)));
-          updatePinOnMap(position, radius);
-          updateRestaurants(position, radius);
-        }
+            var zoom = 19 - ((radius + radius) / 100) / 2;
+            controller.animateCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(position.latitude, position.longitude),
+                    zoom: zoom)));
+            // fetch user info after randering
+            controller.animateCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(position.latitude, position.longitude),
+                    zoom: zoom)));
+            updatePinOnMap(position, radius);
+            updateRestaurants(position, radius);
+          }
+        });
       });
     });
 
