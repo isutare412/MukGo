@@ -53,25 +53,19 @@ class _MapDetailPageState extends State<MapDetailPage> {
           var radius = 100.0;
           if (userData != null) {
             radius = userData.sightRadius;
-
             var zoom = 19 - ((radius + radius) / 100) / 2;
+
             controller.animateCamera(CameraUpdate.newCameraPosition(
                 CameraPosition(
                     target: LatLng(position.latitude, position.longitude),
                     zoom: zoom)));
-            // fetch user info after randering
-            controller.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    target: LatLng(position.latitude, position.longitude),
-                    zoom: zoom)));
+
             updatePinOnMap(position, radius);
             updateRestaurants(position, radius);
           }
         });
       });
     });
-
-    setState(() {});
   }
 
   void updatePinOnMap(Position position, double radius) async {
