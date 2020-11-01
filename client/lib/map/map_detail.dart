@@ -46,24 +46,22 @@ class _MapDetailPageState extends State<MapDetailPage> {
   UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
-    _getPositionSubscription = Timer.periodic(Duration(seconds: 1), (timer) {
-      getCurrentPosition().then((position) {
-        context.read<UserModel>().fetch().then((value) {
-          userData = context.read<UserModel>();
-          var radius = 100.0;
-          if (userData != null) {
-            radius = userData.sightRadius;
-            var zoom = 19 - ((radius + radius) / 100) / 2;
+    _getPositionSubscription = getPositionStream().listen((position) {
+      context.read<UserModel>().fetch().then((value) {
+        userData = context.read<UserModel>();
+        var radius = 100.0;
+        if (userData != null) {
+          radius = userData.sightRadius;
+          var zoom = 19 - ((radius + radius) / 100) / 2;
 
-            controller.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    target: LatLng(position.latitude, position.longitude),
-                    zoom: zoom)));
+          controller.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(
+                  target: LatLng(position.latitude, position.longitude),
+                  zoom: zoom)));
 
-            updatePinOnMap(position, radius);
-            updateRestaurants(position, radius);
-          }
-        });
+          updatePinOnMap(position, radius);
+          updateRestaurants(position, radius);
+        }
       });
     });
   }
