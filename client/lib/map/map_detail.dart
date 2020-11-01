@@ -48,8 +48,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   Future<void> _onMapCreated(controller) async {
     _getPositionSubscription = Timer.periodic(Duration(seconds: 1), (timer) {
       getCurrentPosition().then((position) {
-        Future.microtask(() async {
-          await context.read<UserModel>().fetch();
+        context.read<UserModel>().fetch().then((value) {
           userData = context.read<UserModel>();
           var radius = 100.0;
           if (userData != null) {
@@ -93,6 +92,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
       ));
 
       // range of user for review
+      _circles.removeWhere((m) => m.circleId.value == 'currLoc');
       _circles.add(Circle(
           circleId: CircleId('currLoc'),
           center: LatLng(position.latitude, position.longitude),
