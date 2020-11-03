@@ -86,11 +86,27 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                   bgColor: color);
             }).toList();
 
-            return ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ReviewCard(reviewData: data[index], onTap: () {});
-                });
+            return Column(children: <Widget>[
+              Container(
+                height: 500.0,
+                child: ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ReviewCard(reviewData: data[index], onTap: () {});
+                    }),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ReviewForm(restaurant_id: widget.restaurant_id)));
+                },
+                child:
+                    const Text('Write Review', style: TextStyle(fontSize: 20)),
+              ),
+            ]);
           }
 
           return Center(
