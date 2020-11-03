@@ -22,7 +22,6 @@ import 'restaurant.dart';
 class ReviewPageArguments {
   final String id;
   final String name;
-
   ReviewPageArguments({this.id, this.name});
 }
 */
@@ -86,11 +85,27 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                   bgColor: color);
             }).toList();
 
-            return ListView.builder(
-                itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ReviewCard(reviewData: data[index], onTap: () {});
-                });
+            return Column(children: <Widget>[
+              Container(
+                height: 500.0,
+                child: ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ReviewCard(reviewData: data[index], onTap: () {});
+                    }),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ReviewForm(restaurant_id: widget.restaurant_id)));
+                },
+                child:
+                    const Text('Write Review', style: TextStyle(fontSize: 20)),
+              ),
+            ]);
           }
 
           return Center(
@@ -99,18 +114,3 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
         });
   }
 }
-
-/* Icon should be added later
-IconButton(
-  color: wood_smoke,
-  icon: Icon(Icons.edit),
-  onPressed: () {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ReviewForm(
-                  restaurant_id: widget.restaurant_id,
-                )));
-  },
-)
-*/

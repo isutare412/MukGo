@@ -30,6 +30,7 @@ class _ReviewForm extends State<ReviewForm> {
   int numPeople = 1;
   int rating = 3;
   bool waiting = false;
+  List<String> _menu = List<String>();
 
   @override
   void initState() {
@@ -47,201 +48,260 @@ class _ReviewForm extends State<ReviewForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    children: <Widget>[
-                      ContraText(
-                        text: "Create Review",
-                        alignment: Alignment.centerLeft,
-                      ),
-                    ],
-                  ),
+    return Stack(
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20.0),
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: Row(
+                  children: <Widget>[
+                    ContraText(
+                      size: 30.0,
+                      text: "Create Review",
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ],
                 ),
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(
-                            left: 20, right: 20, top: 10, bottom: 10),
-                        margin: EdgeInsets.only(left: 2, right: 2, bottom: 2),
-                        decoration: ShapeDecoration(
-                            color: athens,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(16)),
-                            )),
-                        child: Column(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Number of People :  ',
-                                  style: TextStyle(fontSize: 18),
+              ),
+              Expanded(
+                flex: 5,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(
+                          left: 20, right: 20, top: 10, bottom: 10),
+                      margin: EdgeInsets.only(left: 2, right: 2, bottom: 2),
+                      decoration: ShapeDecoration(
+                          color: athens,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                          )),
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Number of People :  ',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              DropdownButton<int>(
+                                value: numPeople,
+                                icon: Icon(Icons.arrow_downward),
+                                iconSize: 24,
+                                elevation: 16,
+                                style: TextStyle(color: Colors.black),
+                                underline: Container(
+                                  height: 2,
+                                  color: Colors.deepPurpleAccent,
                                 ),
-                                DropdownButton<int>(
-                                  value: numPeople,
-                                  icon: Icon(Icons.arrow_downward),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(color: Colors.black),
-                                  underline: Container(
-                                    height: 2,
-                                    color: Colors.deepPurpleAccent,
-                                  ),
-                                  onChanged: (int newValue) {
-                                    setState(() {
-                                      numPeople = newValue;
-                                    });
-                                  },
-                                  items: <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                                      .map<DropdownMenuItem<int>>((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(value.toString()),
-                                    );
-                                  }).toList(),
+                                onChanged: (int newValue) {
+                                  setState(() {
+                                    numPeople = newValue;
+                                  });
+                                },
+                                items: <int>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                                    .map<DropdownMenuItem<int>>((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Rating :  ',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              DropdownButton<int>(
+                                value: rating,
+                                icon: Icon(Icons.arrow_downward),
+                                iconSize: 24,
+                                elevation: 16,
+                                style: TextStyle(color: Colors.black),
+                                underline: Container(
+                                  height: 2,
+                                  color: Colors.deepOrangeAccent,
                                 ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Rating :  ',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                DropdownButton<int>(
-                                  value: rating,
-                                  icon: Icon(Icons.arrow_downward),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(color: Colors.black),
-                                  underline: Container(
-                                    height: 2,
-                                    color: Colors.deepOrangeAccent,
-                                  ),
-                                  onChanged: (int newValue) {
-                                    setState(() {
-                                      rating = newValue;
-                                    });
-                                  },
-                                  items: <int>[1, 2, 3, 4, 5]
-                                      .map<DropdownMenuItem<int>>((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: Text(value.toString()),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Waiting :  ',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                Checkbox(
-                                  value: waiting,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      waiting = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
+                                onChanged: (int newValue) {
+                                  setState(() {
+                                    rating = newValue;
+                                  });
+                                },
+                                items: <int>[1, 2, 3, 4, 5]
+                                    .map<DropdownMenuItem<int>>((int value) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(value.toString()),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Waiting :  ',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              Checkbox(
+                                value: waiting,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    waiting = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Column(children: <Widget>[
+                      Row(children: <Widget>[
+                        Text(
+                          'Menu :  ',
+                          style: TextStyle(fontSize: 18),
                         ),
-                      ),
-                      SizedBox(
-                        height: 24,
-                      ),
-                      LoginEmailText(
-                        //nim people, score
-                        text: "menu",
-                        iconPath: "assets/icons/ic_search.svg",
-                        controller: menuController,
-                      ),
-                      SizedBox(
-                        height: 24,
-                      ),
-                      InputTextBoxBigger(
-                        text: "comment",
-                        iconPath: "assets/icons/mail.svg",
-                        controller: commentController,
-                      ),
-                      SizedBox(
-                        height: 24,
-                      ),
-                      ButtonPlainWithIcon(
-                        color: wood_smoke,
-                        textColor: white,
-                        iconPath: "assets/icons/arrow_next.svg",
-                        isPrefix: false,
-                        isSuffix: true,
-                        text: "Post Review",
-                        callback: () async {
-                          var auth = getAuth(context);
-                          var review = Review()
-                            ..comment = commentController.text;
-                          review..score = rating;
-                          review..menus.add(menuController.text);
-                          review..wait = waiting;
-                          review..numPeople = numPeople;
-                          /*erase after checking whether userName, id are unnecessary
-                          var userModel=Provider.of<UserModel>(context, listen: false);
-                          var userName=userModel.name;
-                          review..userName=userName;
-                          review..id='1';
-                          */
+                        Container(
+                            width: 180,
+                            child: TextField(
+                                controller: menuController,
+                                decoration: InputDecoration(
+                                  hintText: "Enter your menu",
+                                  suffixIcon: IconButton(
+                                    onPressed: () => menuController.clear(),
+                                    icon: Icon(Icons.clear),
+                                  ),
+                                ))),
+                        Container(
+                          child: RaisedButton(
+                            onPressed: () {
+                              setState(() {
+                                if (menuController.text.isNotEmpty) {
+                                  if (!_menu.contains(menuController.text)) {
+                                    _menu.add(menuController.text);
+                                  }
+                                }
 
-                          var result = await postReviewData(auth.token,
-                              data: review, id: widget.restaurant_id);
-                          return Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      RestaurantDetailTestPage(
-                                        restaurant_id: widget.restaurant_id,
-                                      )));
-                          //Navigator.of(context).pop();
-                          //redirect to restaurant detail test page
-                        },
-                      ),
-                    ],
-                  ),
+                                menuController.clear();
+                              });
+                            },
+                            child: Text('Submit'),
+                          ),
+                        ),
+                      ]),
+                      Container(
+                          margin: EdgeInsets.symmetric(vertical: 20.0),
+                          height: 25.0,
+                          child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.all(1),
+                              itemCount: _menu.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Container(
+                                  width: 200,
+                                  padding: EdgeInsets.only(right: 3.0),
+                                  child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text('${_menu[index]}'),
+                                        IconButton(
+                                          icon: Icon(Icons.clear),
+                                          iconSize: 25.0,
+                                          color: Colors.blueGrey,
+                                          onPressed: () {
+                                            setState(() {
+                                              _menu.removeAt(index);
+                                            });
+                                          },
+                                        ),
+                                      ]),
+                                );
+                              })),
+                    ]),
+                    InputTextBoxBigger(
+                      text: "comment",
+                      iconPath: "assets/icons/mail.svg",
+                      controller: commentController,
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    ButtonPlainWithIcon(
+                      color: wood_smoke,
+                      textColor: white,
+                      iconPath: "assets/icons/arrow_next.svg",
+                      isPrefix: false,
+                      isSuffix: true,
+                      text: "Post Review",
+                      callback: () async {
+                        var auth = getAuth(context);
+                        var review = Review()..comment = commentController.text;
+                        review..score = rating;
+                        for (int i = 0; i < _menu.length; i++) {
+                          review..menus.add(_menu[i]);
+                        }
+                        review..wait = waiting;
+                        review..numPeople = numPeople;
+                        var now = new DateTime.now();
+                        var current_time = now.year.toString() +
+                            '/' +
+                            now.month.toString() +
+                            '/' +
+                            now.day.toString() +
+                            '  ' +
+                            now.hour.toString() +
+                            ':' +
+                            now.minute.toString();
+                        /*add after time attribute is added
+                        review..time= current_tiem;
+                        */
+                        var result = await postReviewData(auth.token,
+                            data: review, id: widget.restaurant_id);
+                        return Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RestaurantDetailTestPage(
+                                      restaurant_id: widget.restaurant_id,
+                                    )));
+                        //Navigator.of(context).pop();
+                        //redirect to restaurant detail test page
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Positioned(
-            right: 20,
-            top: 40,
-            child: ButtonRoundWithShadow(
-              size: 48,
-              iconPath: "assets/icons/close.svg",
-              borderColor: black,
-              shadowColor: black,
-              color: white,
-              callback: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          )
-        ],
-      ),
+        ),
+        Positioned(
+          right: 20,
+          top: 40,
+          child: ButtonRoundWithShadow(
+            size: 48,
+            iconPath: "assets/icons/close.svg",
+            borderColor: black,
+            shadowColor: black,
+            color: white,
+            callback: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        )
+      ],
     );
   }
 }
