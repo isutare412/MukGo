@@ -121,9 +121,7 @@ type DAPacketError struct {
 
 // DAPacketUser contains user data.
 type DAPacketUser struct {
-	UserID string
-	Name   string
-	Exp    int64
+	*common.User
 }
 
 // DAPacketRestaurant contains multiple Restaurant models.

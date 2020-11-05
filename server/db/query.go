@@ -15,14 +15,18 @@ func queryUserAdd(
 	userID string,
 	name string,
 	exp int64,
+	reviewCount int32,
+	likeCount int32,
 ) error {
 	coll := db.Collection(CNUser)
 	_, err := coll.InsertOne(
 		ctx,
 		User{
-			UserID: userID,
-			Name:   name,
-			Exp:    exp,
+			UserID:      userID,
+			Name:        name,
+			Exp:         exp,
+			ReviewCount: reviewCount,
+			LikeCount:   likeCount,
 		})
 
 	if err != nil {
@@ -72,8 +76,10 @@ func queryUserUpdate(
 		},
 		bson.M{
 			"$set": bson.M{
-				"name": user.Name,
-				"exp":  user.Exp,
+				"name":         user.Name,
+				"exp":          user.Exp,
+				"review_count": user.ReviewCount,
+				"like_count":   user.LikeCount,
 			},
 		},
 	)

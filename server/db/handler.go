@@ -16,7 +16,7 @@ func (s *Server) handleUserAdd(p *server.ADPacketUserAdd) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
 
-	err := queryUserAdd(ctx, s.db, p.UserID, p.Name, 0)
+	err := queryUserAdd(ctx, s.db, p.UserID, p.Name, 0, 0, 0)
 	if err != nil {
 		console.Warning(
 			"on handleUserAdd: failed to insert user(%v): %v", *p, err)
@@ -47,9 +47,13 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 
 	console.Info("send user data; User(%v)", *user)
 	return &server.DAPacketUser{
-		UserID: user.UserID,
-		Name:   user.Name,
-		Exp:    user.Exp,
+		User: &common.User{
+			UserID:      user.UserID,
+			Name:        user.Name,
+			Exp:         user.Exp,
+			ReviewCount: user.ReviewCount,
+			LikeCount:   user.LikeCount,
+		},
 	}
 }
 
@@ -182,6 +186,7 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 
 	// add exp to user
 	user.Exp += common.ReviewExp()
+	user.ReviewCount++
 	err = queryUserUpdate(ctx, s.db, user)
 	if err != nil {
 		console.Warning(
@@ -191,9 +196,13 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 
 	console.Info("insert review; UserID(%v), Score(%v)", p.UserID, p.Score)
 	return &server.DAPacketUser{
-		UserID: user.UserID,
-		Name:   user.Name,
-		Exp:    user.Exp,
+		User: &common.User{
+			UserID:      user.UserID,
+			Name:        user.Name,
+			Exp:         user.Exp,
+			ReviewCount: user.ReviewCount,
+			LikeCount:   user.LikeCount,
+		},
 	}
 }
 

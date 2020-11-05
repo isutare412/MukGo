@@ -91,6 +91,8 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 			CurExp:      curExp,
 			ExpRatio:    ratio,
 			SightRadius: sightRadius,
+			ReviewCount: packet.ReviewCount,
+			LikeCount:   packet.LikeCount,
 		})
 	if err != nil {
 		console.Warning("on handleUserGet: failed to marshal user data")
@@ -259,6 +261,8 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 			CurExp:      curExp,
 			ExpRatio:    ratio,
 			SightRadius: sightRadius,
+			ReviewCount: packet.ReviewCount,
+			LikeCount:   packet.LikeCount,
 		})
 	if err != nil {
 		console.Warning("on handleReviewPost: failed to marshal user data")

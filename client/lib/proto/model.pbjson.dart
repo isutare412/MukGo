@@ -31,6 +31,8 @@ const User$json = const {
     const {'1': 'cur_exp', '3': 6, '4': 1, '5': 3, '10': 'curExp'},
     const {'1': 'exp_ratio', '3': 7, '4': 1, '5': 1, '10': 'expRatio'},
     const {'1': 'sight_radius', '3': 8, '4': 1, '5': 1, '10': 'sightRadius'},
+    const {'1': 'review_count', '3': 9, '4': 1, '5': 5, '10': 'reviewCount'},
+    const {'1': 'like_count', '3': 10, '4': 1, '5': 5, '10': 'likeCount'},
   ],
 };
 

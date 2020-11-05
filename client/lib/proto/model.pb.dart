@@ -24,6 +24,8 @@ class User extends $pb.GeneratedMessage {
     ..aInt64(6, 'curExp')
     ..a<$core.double>(7, 'expRatio', $pb.PbFieldType.OD)
     ..a<$core.double>(8, 'sightRadius', $pb.PbFieldType.OD)
+    ..a<$core.int>(9, 'reviewCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(10, 'likeCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -113,6 +115,24 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasSightRadius() => $_has(7);
   @$pb.TagNumber(8)
   void clearSightRadius() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get reviewCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set reviewCount($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasReviewCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearReviewCount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get likeCount => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set likeCount($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasLikeCount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLikeCount() => clearField(10);
 }
 
 class Coordinate extends $pb.GeneratedMessage {

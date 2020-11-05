@@ -20,3 +20,12 @@ type Review struct {
 	Wait      bool
 	NumPeople int32
 }
+
+// User model.
+type User struct {
+	UserID      string
+	Name        string
+	Exp         int64
+	ReviewCount int32
+	LikeCount   int32
+}
