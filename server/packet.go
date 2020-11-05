@@ -26,11 +26,13 @@ const (
 	PTADRestaurantAdd
 	PTADRestaurantsGet
 	PTADRestaurantsAdd
+	PTADRankingGet
 
 	// database server to api server
 	PTDAAck
 	PTDAError
 	PTDAUser
+	PTDAUsers
 	PTDARestaurant
 	PTDARestaurants
 	PTDAReviews
@@ -106,6 +108,10 @@ type ADPacketRestaurantsAdd struct {
 	Restaurants []*common.Restaurant
 }
 
+// ADPacketRankingGet requests user ranking.
+type ADPacketRankingGet struct {
+}
+
 /******************************************************************************
 * Database to API packets
 ******************************************************************************/
@@ -122,6 +128,11 @@ type DAPacketError struct {
 // DAPacketUser contains user data.
 type DAPacketUser struct {
 	*common.User
+}
+
+// DAPacketUsers contains users ordered by certain criterion.
+type DAPacketUsers struct {
+	Users []*common.User
 }
 
 // DAPacketRestaurant contains multiple Restaurant models.
@@ -195,6 +206,11 @@ func (p *ADPacketRestaurantsAdd) Type() PacketType {
 }
 
 // Type implements Packet interface.
+func (p *ADPacketRankingGet) Type() PacketType {
+	return PTADRankingGet
+}
+
+// Type implements Packet interface.
 func (p *DAPacketAck) Type() PacketType {
 	return PTDAAck
 }
@@ -207,6 +223,11 @@ func (p *DAPacketError) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketUser) Type() PacketType {
 	return PTDAUser
+}
+
+// Type implements Packet interface.
+func (p *DAPacketUsers) Type() PacketType {
+	return PTDAUsers
 }
 
 // Type implements Packet interface.

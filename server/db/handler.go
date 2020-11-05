@@ -336,3 +336,32 @@ func (s *Server) handleRestaurantsAdd(
 	console.Info("insert restaurants; count(%v)", len(p.Restaurants))
 	return &server.DAPacketAck{}
 }
+
+func (s *Server) handleRankingGet(
+	p *server.ADPacketRankingGet,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	users, err := queryUserRankingGet(ctx, s.db, 10)
+	if err != nil {
+		console.Warning("on handleRankingGet: failed to get ranking: %v", err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	pusers := make([]*common.User, 0, len(users))
+	for _, u := range users {
+		pusers = append(pusers,
+			&common.User{
+				UserID:      u.UserID,
+				Name:        u.Name,
+				Exp:         u.Exp,
+				ReviewCount: u.ReviewCount,
+				LikeCount:   u.LikeCount,
+			},
+		)
+	}
+
+	console.Info("send rankings; count(%v)", len(pusers))
+	return &server.DAPacketUsers{Users: pusers}
+}

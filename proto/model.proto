@@ -57,6 +57,10 @@ message Review {
     int32 num_people = 8;
 }
 
+message Users {
+    repeated User users = 1;
+}
+
 message Restaurants {
     repeated Restaurant restaurants = 1;
 }

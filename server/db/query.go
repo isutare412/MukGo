@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func queryUserAdd(
@@ -230,4 +231,32 @@ func queryReviewAdd(
 		return fmt.Errorf("on queryReviewAdd: %v", err)
 	}
 	return nil
+}
+
+func queryUserRankingGet(
+	ctx context.Context,
+	db *mongo.Database,
+	top int64,
+) ([]*User, error) {
+	fopt := options.Find()
+	fopt.SetSort(bson.M{"review_count": -1})
+	fopt.SetLimit(top)
+
+	coll := db.Collection(CNUser)
+	cursor, err := coll.Find(
+		ctx,
+		bson.D{},
+		fopt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryUserRankingGet: %v", err)
+	}
+
+	users := make([]*User, 0)
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, fmt.Errorf("on queryUserRankingGet: %v", err)
+	}
+
+	return users, nil
 }

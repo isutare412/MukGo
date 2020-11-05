@@ -83,6 +83,25 @@ Future<Restaurant> fetchRestaurantData(String token,
   }
 }
 
+// get ranking data from api
+Future<Users> fetchRankingData(String token) async {
+  try {
+    var headers = getAuthHeader(token);
+    var uri = Uri.http(apiUrl, '/ranking', {});
+
+    var res = await http.get(uri, headers: headers);
+    if (res.statusCode != HttpStatus.ok) {
+      printResponseError('fetchRankingData', res.bodyBytes);
+      return null;
+    }
+
+    return Users.fromBuffer(res.bodyBytes);
+  } catch (e) {
+    printAPIError('fetchRankingData', e);
+    return null;
+  }
+}
+
 // get restaurants data from api
 Future<Restaurants> fetchRestaurantsData(String token,
     {Coordinate coord}) async {

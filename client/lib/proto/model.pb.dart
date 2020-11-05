@@ -324,6 +324,31 @@ class Review extends $pb.GeneratedMessage {
   void clearNumPeople() => clearField(8);
 }
 
+class Users extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Users', package: const $pb.PackageName('proto'), createEmptyInstance: create)
+    ..pc<User>(1, 'users', $pb.PbFieldType.PM, subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  Users._() : super();
+  factory Users() => create();
+  factory Users.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Users.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Users clone() => Users()..mergeFromMessage(this);
+  Users copyWith(void Function(Users) updates) => super.copyWith((message) => updates(message as Users));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static Users create() => Users._();
+  Users createEmptyInstance() => create();
+  static $pb.PbList<Users> createRepeated() => $pb.PbList<Users>();
+  @$core.pragma('dart2js:noInline')
+  static Users getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Users>(create);
+  static Users _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<User> get users => $_getList(0);
+}
+
 class Restaurants extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('Restaurants', package: const $pb.PackageName('proto'), createEmptyInstance: create)
     ..pc<Restaurant>(1, 'restaurants', $pb.PbFieldType.PM, subBuilder: Restaurant.create)

@@ -259,6 +259,15 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleRestaurantsAdd(&p)
 
+	case server.PTADRankingGet:
+		var p server.ADPacketRankingGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRankingGet(&p)
+
 	default:
 		err = fmt.Errorf("on handlePacket: no parser for %v", pt)
 	}

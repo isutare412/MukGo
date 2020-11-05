@@ -156,6 +156,11 @@ func (s *Server) onDBResponse(d *amqp.Delivery) (bool, error) {
 		packet = &p
 		parseErr = json.Unmarshal(d.Body, &p)
 
+	case server.PTDAUsers:
+		var p server.DAPacketUsers
+		packet = &p
+		parseErr = json.Unmarshal(d.Body, &p)
+
 	case server.PTDARestaurant:
 		var p server.DAPacketRestaurant
 		packet = &p
@@ -208,6 +213,7 @@ func (s *Server) registerHandlers() {
 	s.mux.HandleFunc("/reviews", s.handleReviews)
 	s.mux.HandleFunc("/restaurant", s.handleRestaurant)
 	s.mux.HandleFunc("/restaurants", s.handleRestaurants)
+	s.mux.HandleFunc("/ranking", s.handleRanking)
 }
 
 // send2DB send packet to database server. It returns chan Packet as response.

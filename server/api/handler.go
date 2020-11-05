@@ -719,3 +719,82 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 
 	console.Info("new restaurants added; count(%v)", len(userReq.Restaurants))
 }
+
+func (s *Server) handleRanking(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		s.handleRankingGet(w, r)
+	default:
+		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
+	}
+}
+
+func (s *Server) handleRankingGet(w http.ResponseWriter, r *http.Request) {
+	// create packet for database server
+	var dbReq = server.ADPacketRankingGet{}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleRankingGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleRankingGet: no packet received")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleRankingGet: database internal error")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketUsers)
+	if !ok {
+		console.Warning("on handleRankingGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// copy user rankings for protobuf
+	users := pb.Users{
+		Users: make([]*pb.User, 0, len(packet.Users)),
+	}
+	for _, u := range packet.Users {
+		users.Users = append(users.Users,
+			&pb.User{
+				Id:          u.UserID,
+				Name:        u.Name,
+				TotalExp:    u.Exp,
+				ReviewCount: u.ReviewCount,
+				LikeCount:   u.LikeCount,
+			},
+		)
+	}
+
+	// serialize user data
+	ser, err := marshalResponse(r.Header, &users)
+	if err != nil {
+		console.Warning(
+			"on handleRankingGet: failed to marshal ranking data")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	baseHeader(w.Header())
+	w.Write(ser)
+	console.Info("sent ranking data; count(%v)", len(users.Users))
+}

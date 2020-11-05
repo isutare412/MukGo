@@ -67,6 +67,13 @@ const Review$json = const {
   ],
 };
 
+const Users$json = const {
+  '1': 'Users',
+  '2': const [
+    const {'1': 'users', '3': 1, '4': 3, '5': 11, '6': '.proto.User', '10': 'users'},
+  ],
+};
+
 const Restaurants$json = const {
   '1': 'Restaurants',
   '2': const [
