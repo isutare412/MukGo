@@ -38,6 +38,8 @@ dependencies:
   geolocator: ^6.0.0
   protobuf: ^1.0.1
   animated_text_kit: ^2.5.1
+  intl: ^0.16.1
+  modal_bottom_sheet: ^0.2.2
 
 dev_dependencies:
   flutter_test:

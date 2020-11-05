@@ -1,21 +1,17 @@
-import 'dart:convert';
+import 'dart:async';
 
-import 'package:contra/custom_widgets/custom_app_bar.dart';
-import 'package:contra/custom_widgets/custom_header.dart';
-import 'package:contra/custom_widgets/custom_search_text.dart';
-import 'package:contra/login/contra_text.dart';
-import 'package:contra/utils/colors.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:mukgo/project/my_home_page.dart';
+import 'package:contra/utils/colors.dart';
+import 'package:contra/custom_widgets/button_solid_with_icon.dart';
 
 import 'package:mukgo/review/review_form.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/proto/model.pb.dart';
-import 'dart:async';
 import 'package:mukgo/auth/auth_api.dart';
-import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/review/review_card_proj.dart';
+import 'package:mukgo/restaurant/review_filter.dart';
 import 'restaurant.dart';
 
 /*
@@ -41,25 +37,54 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
 
   Future<Reviews> futureReviews;
   Future<Restaurant> futureRestaurant;
+  final DateFormat formatter = DateFormat('MMMd');
+  Filter filter;
+
+  void setFilter(Filter newFilter) {
+    setState(() {
+      filter = newFilter;
+    });
+  }
+
+  void orderReviews(List<Review> reviews) {
+    var multiplyer = filter.order.ascending ? 1 : -1;
+    if (filter.order.key == 'score') {
+      reviews.sort((a, b) => multiplyer * a.score.compareTo(b.score));
+    } else {
+      reviews.sort((a, b) => multiplyer * a.timestamp.compareTo(b.timestamp));
+    }
+  }
+
+  List<Review> filterReviews(List<Review> reviews) {
+    return reviews.where((review) {
+      var checkPeople = review.numPeople <= filter.numPeople;
+      bool checkLine;
+      if (filter.wait == 'true') {
+        checkLine = review.wait;
+      } else if (filter.wait == 'false') {
+        checkLine = !review.wait;
+      } else {
+        checkLine = true;
+      }
+
+      return checkPeople && checkLine;
+    }).toList();
+  }
 
   @override
   void initState() {
     super.initState();
+    filter = Filter(
+        numPeople: 10,
+        wait: 'disable',
+        order: Order(key: 'time', ascending: false));
     //GET restaurant info
     futureRestaurant = Future.microtask(() {
-      /*
-      var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
-      return fetchRestaurantData(tok, restaurantId: restaurantId);
-      */
       return fetchRestaurantData(readAuth(context).token,
           restaurantId: widget.restaurant_id);
     });
     //GET review data
     futureReviews = Future.microtask(() {
-      /*
-      var restaurantId = ModalRoute.of(context).settings.arguments.restaurantId;
-      return fetchReviewsData(tok, restaurantId: restaurantId);
-      */
       return fetchReviewsData(readAuth(context).token,
           restaurantId: widget.restaurant_id);
     });
@@ -67,44 +92,75 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
 
   @override
   Widget build(BuildContext context) {
+    print(filter.order.key);
     return FutureBuilder<Reviews>(
         future: futureReviews,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var reviews = snapshot.data.reviews;
+            reviews = filterReviews(reviews);
+            orderReviews(reviews);
             var data = reviews.asMap().entries.map((entry) {
               var i = entry.key;
               var review = entry.value;
               var color = colors[i % colors.length];
+              var time = formatter.format(DateTime.fromMillisecondsSinceEpoch(
+                  review.timestamp.toInt()));
+              var menus = review.menus;
               return ReviewCardData(
                   user: review.userName,
                   comment: review.comment,
                   score: review.score,
-                  like: 4,
-                  time: 'june 11',
-                  bgColor: color);
+                  like: review.numPeople,
+                  time: time,
+                  bgColor: color,
+                  menus: menus);
             }).toList();
 
-            return Column(children: <Widget>[
-              Container(
-                height: 500.0,
-                child: ListView.builder(
+            return Stack(children: <Widget>[
+              SingleChildScrollView(
+                  child: Column(children: <Widget>[
+                FilterOpenWidget(
+                  onTap: () {
+                    showMaterialModalBottomSheet(
+                      context: context,
+                      builder: (context, scrollController) =>
+                          FilterModal(preFilter: filter, callback: setFilter),
+                    );
+                  },
+                ),
+                ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     itemCount: data.length,
                     itemBuilder: (BuildContext context, int index) {
                       return ReviewCard(reviewData: data[index], onTap: () {});
                     }),
-              ),
-              RaisedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              ReviewForm(restaurant_id: widget.restaurant_id)));
-                },
-                child:
-                    const Text('Write Review', style: TextStyle(fontSize: 20)),
-              ),
+                SizedBox(
+                  height: 60,
+                ),
+              ])),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 12),
+                    child: ButtonPlainWithIcon(
+                      color: wood_smoke,
+                      textColor: white,
+                      iconPath: 'assets/icons/arrow_next.svg',
+                      isPrefix: false,
+                      isSuffix: true,
+                      text: 'Write Review',
+                      callback: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ReviewForm(
+                                    restaurant_id: widget.restaurant_id)));
+                      },
+                    )),
+              )
             ]);
           }
 

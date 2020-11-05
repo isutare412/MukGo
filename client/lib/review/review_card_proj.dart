@@ -9,9 +9,16 @@ class ReviewCardData {
   final int like;
   final String time;
   final Color bgColor;
-  
+  final List<String> menus;
+
   const ReviewCardData(
-      {this.user, this.comment, this.score, this.like, this.time, this.bgColor});
+      {this.user,
+      this.comment,
+      this.score,
+      this.like,
+      this.time,
+      this.bgColor,
+      this.menus});
 }
 
 class ReviewCard extends StatelessWidget {
@@ -79,19 +86,33 @@ class ReviewCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(
-                    height: 12,
+                    height: 6,
                   ),
                   Text(
                     reviewData.comment,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: wood_smoke,
-                      fontSize: 21),
-                  ),    
+                        fontWeight: FontWeight.bold,
+                        color: wood_smoke,
+                        fontSize: 21),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: reviewData.menus
+                        .map((menu) => Padding(
+                            padding: EdgeInsets.only(right: 6),
+                            child: Text(
+                              '#$menu',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: trout),
+                            )))
+                        .toList(),
+                  ),
                   SizedBox(
-                    height: 12,
+                    height: 6,
                   ),
                   Row(
                     children: <Widget>[
