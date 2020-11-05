@@ -21,6 +21,7 @@ type Review struct {
 	Menus     []string           `bson:"menus"`
 	Wait      bool               `bson:"wait"`
 	NumPeople int32              `bson:"num_people"`
+	Timestamp int64              `bson:"timestamp"`
 }
 
 // Restaurant contains restaurant information.

@@ -55,6 +55,7 @@ message Review {
     repeated string menus = 6;
     bool wait = 7;
     int32 num_people = 8;
+    int64 timestamp = 9;
 }
 
 message Users {

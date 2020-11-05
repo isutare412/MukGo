@@ -129,6 +129,7 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 				Menus:     r.Menus,
 				Wait:      r.Wait,
 				NumPeople: r.NumPeople,
+				Timestamp: r.Timestamp,
 			},
 		)
 	}
@@ -177,7 +178,7 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 
 	// add review data
 	err = queryReviewAdd(ctx, s.db, p.UserID, p.RestID, p.Score, p.Comment,
-		p.Menus, p.Wait, p.NumPeople)
+		p.Menus, p.Wait, p.NumPeople, p.Timestamp)
 	if err != nil {
 		console.Warning(
 			"on handleReviewAdd: failed to insert review(%v): %v", *p, err)

@@ -213,6 +213,7 @@ func queryReviewAdd(
 	menus []string,
 	wait bool,
 	numPeople int32,
+	timestamp int64,
 ) error {
 	coll := db.Collection(CNReview)
 	_, err := coll.InsertOne(
@@ -225,6 +226,7 @@ func queryReviewAdd(
 			Menus:     menus,
 			Wait:      wait,
 			NumPeople: numPeople,
+			Timestamp: timestamp,
 		})
 
 	if err != nil {

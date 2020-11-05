@@ -84,6 +84,7 @@ type ADPacketReviewAdd struct {
 	Menus     []string
 	Wait      bool
 	NumPeople int32
+	Timestamp int64
 }
 
 // ADPacketRestaurantGet request restaurant data.

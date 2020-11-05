@@ -239,6 +239,7 @@ class Review extends $pb.GeneratedMessage {
     ..pPS(6, 'menus')
     ..aOB(7, 'wait')
     ..a<$core.int>(8, 'numPeople', $pb.PbFieldType.O3)
+    ..aInt64(9, 'timestamp')
     ..hasRequiredFields = false
   ;
 
@@ -322,6 +323,15 @@ class Review extends $pb.GeneratedMessage {
   $core.bool hasNumPeople() => $_has(7);
   @$pb.TagNumber(8)
   void clearNumPeople() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get timestamp => $_getI64(8);
+  @$pb.TagNumber(9)
+  set timestamp($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTimestamp() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTimestamp() => clearField(9);
 }
 
 class Users extends $pb.GeneratedMessage {

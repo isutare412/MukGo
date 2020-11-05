@@ -4,6 +4,7 @@ import 'package:contra/login/contra_text.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
@@ -249,25 +250,14 @@ class _ReviewForm extends State<ReviewForm> {
                       callback: () async {
                         var auth = getAuth(context);
                         var review = Review()..comment = commentController.text;
-                        review..score = rating;
+                        review.score = rating;
                         for (int i = 0; i < _menu.length; i++) {
-                          review..menus.add(_menu[i]);
+                          review.menus.add(_menu[i]);
                         }
-                        review..wait = waiting;
-                        review..numPeople = numPeople;
-                        var now = new DateTime.now();
-                        var current_time = now.year.toString() +
-                            '/' +
-                            now.month.toString() +
-                            '/' +
-                            now.day.toString() +
-                            '  ' +
-                            now.hour.toString() +
-                            ':' +
-                            now.minute.toString();
-                        /*add after time attribute is added
-                        review..time= current_tiem;
-                        */
+                        review.wait = waiting;
+                        review.numPeople = numPeople;
+                        review.timestamp =
+                            Int64(DateTime.now().millisecondsSinceEpoch);
                         var result = await postReviewData(auth.token,
                             data: review, id: widget.restaurant_id);
                         return Navigator.push(

@@ -198,6 +198,7 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 		Menus:     userReq.Review.Menus,
 		Wait:      userReq.Review.Wait,
 		NumPeople: userReq.Review.NumPeople,
+		Timestamp: userReq.Review.Timestamp,
 	}
 
 	// send packet to database server and register response handler
@@ -366,6 +367,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 				Menus:     r.Menus,
 				Wait:      r.Wait,
 				NumPeople: r.NumPeople,
+				Timestamp: r.Timestamp,
 			},
 		)
 	}

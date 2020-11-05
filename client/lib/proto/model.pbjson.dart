@@ -64,6 +64,7 @@ const Review$json = const {
     const {'1': 'menus', '3': 6, '4': 3, '5': 9, '10': 'menus'},
     const {'1': 'wait', '3': 7, '4': 1, '5': 8, '10': 'wait'},
     const {'1': 'num_people', '3': 8, '4': 1, '5': 5, '10': 'numPeople'},
+    const {'1': 'timestamp', '3': 9, '4': 1, '5': 3, '10': 'timestamp'},
   ],
 };
 
