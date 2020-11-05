@@ -48,27 +48,26 @@ class _ReviewForm extends State<ReviewForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20.0),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: Row(
-                  children: <Widget>[
-                    ContraText(
-                      size: 30.0,
-                      text: "Create Review",
-                      alignment: Alignment.centerLeft,
-                    ),
-                  ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20.0),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 20, bottom: 10),
+                  child: Row(
+                    children: <Widget>[
+                      ContraText(
+                        size: 30.0,
+                        text: 'Create Review',
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Column(
+                Column(
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.only(
@@ -283,25 +282,24 @@ class _ReviewForm extends State<ReviewForm> {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Positioned(
-          right: 20,
-          top: 40,
-          child: ButtonRoundWithShadow(
-            size: 48,
-            iconPath: "assets/icons/close.svg",
-            borderColor: black,
-            shadowColor: black,
-            color: white,
-            callback: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        )
-      ],
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: ButtonRoundWithShadow(
+              size: 48,
+              iconPath: "assets/icons/close.svg",
+              borderColor: black,
+              shadowColor: black,
+              color: white,
+              callback: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          )
+        ],
+      ),
     );
   }
 }
