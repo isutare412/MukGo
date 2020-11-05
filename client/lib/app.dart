@@ -99,21 +99,21 @@ class AppState extends State<App> {
                 )),
           ],
         ),
-        floatingActionButton: Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: ButtonRoundWithShadow(
-                size: 60,
-                borderColor: wood_smoke,
-                color: white,
-                callback: () {
-                  googleSignOut(context);
-                },
-                shadowColor: wood_smoke,
-                iconPath: 'assets/icons/ic_add.svg'),
-          ),
-        ),
+        // floatingActionButton: Align(
+        //   alignment: Alignment.bottomRight,
+        //   child: Padding(
+        //     padding: const EdgeInsets.all(24.0),
+        //     child: ButtonRoundWithShadow(
+        //         size: 60,
+        //         borderColor: wood_smoke,
+        //         color: white,
+        //         callback: () {
+        //           googleSignOut(context);
+        //         },
+        //         shadowColor: wood_smoke,
+        //         iconPath: 'assets/icons/ic_add.svg'),
+        //   ),
+        // ),
         body: Stack(children: <Widget>[
           _buildOffstageNavigator(TabItem.map, '/map'),
           _buildOffstageNavigator(TabItem.user, '/user'),

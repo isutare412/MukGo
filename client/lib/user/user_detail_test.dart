@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:mukgo/review/review_detail_test.dart';
+import 'package:mukgo/auth/auth_api.dart';
 
 class UserDetailTestPage extends StatefulWidget {
   const UserDetailTestPage({Key key}) : super(key: key);
@@ -131,7 +132,7 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -155,16 +156,13 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: RaisedButton(
                     padding: EdgeInsets.all(16),
-                    color: google_red,
+                    color: lightening_yellow,
                     textColor: white,
-                    onPressed: () async {
-                      var user = context.read<UserModel>();
-                      user.clear();
-                      await user.fetch();
-                      print('reloaded');
+                    onPressed: () {
+                      googleSignOut(context);
                     },
                     child: Text(
-                      'Refresh',
+                      'Logout',
                       style: TextStyle(
                           fontSize: 21.0, fontWeight: FontWeight.bold),
                     ),
