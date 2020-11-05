@@ -20,6 +20,8 @@ class UserModel extends ChangeNotifier {
   Int64 curExp;
   double expRatio;
   double sightRadius;
+  int reviewCount;
+  int likeCount;
 
   // simple auth model accesors for debug usage
   AuthModel get auth => _auth;
@@ -48,7 +50,9 @@ class UserModel extends ChangeNotifier {
       Int64 levelExp,
       Int64 curExp,
       double expRatio,
-      double sightRadius}) {
+      double sightRadius,
+      int reviewCount,
+      int likeCount}) {
     this.id = id;
     this.name = name;
     this.level = level;
@@ -57,6 +61,8 @@ class UserModel extends ChangeNotifier {
     this.curExp = curExp;
     this.expRatio = expRatio;
     this.sightRadius = sightRadius;
+    this.reviewCount = reviewCount;
+    this.likeCount = likeCount;
 
     notifyListeners();
   }
@@ -70,7 +76,9 @@ class UserModel extends ChangeNotifier {
         levelExp: userData.levelExp,
         curExp: userData.curExp,
         expRatio: userData.expRatio,
-        sightRadius: userData.sightRadius);
+        sightRadius: userData.sightRadius,
+        reviewCount: userData.reviewCount,
+        likeCount: userData.likeCount);
   }
 
   String profileAsset() {
@@ -107,6 +115,8 @@ class UserModel extends ChangeNotifier {
         levelExp: null,
         curExp: null,
         expRatio: null,
-        sightRadius: null);
+        sightRadius: null,
+        reviewCount: null,
+        likeCount: null);
   }
 }
