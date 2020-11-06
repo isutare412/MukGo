@@ -47,6 +47,15 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   Future<void> _onMapCreated(controller) async {
     _getPositionSubscription = getPositionStream().listen((position) {
+      var markerShown = false;
+      for (var m in _markers) {
+        if (markerShown) break;
+        controller.isMarkerInfoWindowShown(m.markerId).then((value) {
+          if (value) {
+            markerShown = true;
+          }
+        });
+      }
       context.read<UserModel>().fetch().then((value) {
         userData = context.read<UserModel>();
         var radius = 100.0;
@@ -54,10 +63,15 @@ class _MapDetailPageState extends State<MapDetailPage> {
           radius = userData.sightRadius;
           var zoom = 19 - ((radius + radius) / 100) / 2;
 
-          controller.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(
-                  target: LatLng(position.latitude, position.longitude),
-                  zoom: zoom)));
+          if (!markerShown)
+            controller.animateCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(position.latitude, position.longitude),
+                    zoom: zoom)));
+
+          print(position.latitude.toString() +
+              ", " +
+              position.longitude.toString());
 
           updatePinOnMap(position, radius);
           updateRestaurants(position, radius);
