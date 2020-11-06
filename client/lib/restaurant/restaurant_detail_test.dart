@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:contra/custom_widgets/button_solid_with_icon.dart';
+import 'package:mukgo/review/review_card_data.dart';
 
+import 'package:mukgo/review/review_detail_test.dart';
 import 'package:mukgo/review/review_form.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/proto/model.pb.dart';
@@ -111,10 +113,11 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                   user: review.userName,
                   comment: review.comment,
                   score: review.score,
-                  like: review.numPeople,
+                  numPeople: review.numPeople,
                   time: time,
                   bgColor: color,
-                  menus: menus);
+                  menus: menus,
+                  waiting: review.wait);
             }).toList();
 
             return Stack(children: <Widget>[
@@ -130,12 +133,21 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                   },
                 ),
                 ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: data.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return ReviewCard(reviewData: data[index], onTap: () {});
-                    }),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ReviewCard(
+                        reviewData: data[index],
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReviewDetailPage(
+                                      review_data: data[index])));
+                        });
+                  },
+                ),
                 SizedBox(
                   height: 60,
                 ),

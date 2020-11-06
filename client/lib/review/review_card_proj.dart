@@ -1,25 +1,10 @@
 import 'package:contra/login/contra_text.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:flutter/material.dart';
-
-class ReviewCardData {
-  final String user;
-  final String comment;
-  final int score;
-  final int like;
-  final String time;
-  final Color bgColor;
-  final List<String> menus;
-
-  const ReviewCardData(
-      {this.user,
-      this.comment,
-      this.score,
-      this.like,
-      this.time,
-      this.bgColor,
-      this.menus});
-}
+import 'package:mukgo/review/review_card_data.dart';
+import 'package:mukgo/user/user_model.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ReviewCard extends StatelessWidget {
   final ReviewCardData reviewData;
@@ -36,28 +21,13 @@ class ReviewCard extends StatelessWidget {
         padding: EdgeInsets.all(24),
         child: Row(
           children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: Container(
-                width: 100,
-                height: 100,
-//                child: SvgPicture.asset(
-//                  "assets/icons/placeholder_icon.svg",
-//                  width: 40,
-//                  height: 40,
-//                ),
-                child: Icon(
-                  Icons.image,
-                  color: white,
-                  size: 40,
-                ),
-                decoration: ShapeDecoration(
-                    color: reviewData.bgColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                        side: BorderSide(color: wood_smoke, width: 2))),
-              ),
-            ),
+            Consumer<UserModel>(builder: (context, user, child) {
+              return SvgPicture.asset(
+                user.profileAsset(),
+                height: 50,
+                width: 50,
+              );
+            }),
             SizedBox(
               width: 24,
             ),
@@ -97,8 +67,9 @@ class ReviewCard extends StatelessWidget {
                         color: wood_smoke,
                         fontSize: 21),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
                     children: reviewData.menus
                         .map((menu) => Padding(
                             padding: EdgeInsets.only(right: 6),
@@ -137,11 +108,11 @@ class ReviewCard extends StatelessWidget {
                         child: Row(
                           children: <Widget>[
                             Icon(
-                              Icons.favorite_border,
+                              Icons.person,
                               color: wood_smoke,
                             ),
                             ContraText(
-                              text: reviewData.like.toString(),
+                              text: reviewData.numPeople.toString(),
                               size: 13,
                               alignment: Alignment.center,
                             )

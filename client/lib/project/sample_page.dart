@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contra/onboarding/onboard_main.dart';
+import 'package:mukgo/review/review_detail.dart';
 
 import 'package:mukgo/review/review_detail_test.dart';
 

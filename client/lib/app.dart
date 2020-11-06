@@ -15,7 +15,6 @@ Map<String, WidgetBuilder> routes = {
   '/map': (context) => MapDetailPage(),
   '/user': (context) => UserDetailTestPage(),
   '/restaurant': (context) => RestaurantDetailTestPage(),
-  '/review-list': (context) => ReviewList(),
 };
 
 class App extends StatefulWidget {

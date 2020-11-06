@@ -104,7 +104,6 @@ class MyApp extends StatelessWidget {
         '/project': (context) => App(title: 'Mukgo Project'),
         '/project_map': (context) => MapDetailPage(),
         '/project_restaurant': (context) => RestaurantDetailPage(),
-        '/project_review': (context) => ReviewList(),
         '/project_user': (context) => ChartsPage(
               isBarChart: false,
             ),

@@ -202,35 +202,40 @@ class _ReviewForm extends State<ReviewForm> {
                           ),
                         ),
                       ]),
-                      Container(
-                          margin: EdgeInsets.symmetric(vertical: 20.0),
-                          height: 25.0,
-                          child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.all(1),
-                              itemCount: _menu.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Container(
-                                  width: 200,
-                                  padding: EdgeInsets.only(right: 3.0),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Text('${_menu[index]}'),
-                                        IconButton(
-                                          icon: Icon(Icons.clear),
-                                          iconSize: 25.0,
-                                          color: Colors.blueGrey,
-                                          onPressed: () {
-                                            setState(() {
-                                              _menu.removeAt(index);
-                                            });
-                                          },
-                                        ),
-                                      ]),
-                                );
-                              })),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Wrap(
+                        spacing: 2.0,
+                        children: _menu
+                            .map((menu) => Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(
+                                        width: 30,
+                                      ),
+                                      Flexible(
+                                          child: Text(menu,
+                                              style: TextStyle(
+                                                backgroundColor:
+                                                    Colors.grey[300],
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              softWrap: true)),
+                                      IconButton(
+                                        icon: Icon(Icons.clear),
+                                        iconSize: 20.0,
+                                        color: Colors.blueGrey,
+                                        onPressed: () {
+                                          setState(() {
+                                            _menu.remove(menu);
+                                          });
+                                        },
+                                      ),
+                                    ]))
+                            .toList(),
+                      ),
                     ]),
                     InputTextBoxBigger(
                       text: "comment",
