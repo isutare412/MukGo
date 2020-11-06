@@ -776,11 +776,15 @@ func (s *Server) handleRankingGet(w http.ResponseWriter, r *http.Request) {
 		Users: make([]*pb.User, 0, len(packet.Users)),
 	}
 	for _, u := range packet.Users {
+		// calculate level
+		level, _, _, _ := common.Exp2Level(u.Exp)
+
 		users.Users = append(users.Users,
 			&pb.User{
 				Id:          u.UserID,
 				Name:        u.Name,
 				TotalExp:    u.Exp,
+				Level:       level,
 				ReviewCount: u.ReviewCount,
 				LikeCount:   u.LikeCount,
 			},
