@@ -33,7 +33,7 @@ func Exp2Level(exp int64) (level int32, levExp, curExp int64, ratio float64) {
 // Level2Sight returns a radius of user's sight derived from user's level.
 // Returned radius is METER.
 func Level2Sight(level int32) float64 {
-	return 10.0 + float64(level)*10.0
+	return 20.0 + float64(level)*15.0
 }
 
 // Exp2Sight returns a radius of user's sight derived from user's exp point.
