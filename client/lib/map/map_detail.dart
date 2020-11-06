@@ -69,10 +69,6 @@ class _MapDetailPageState extends State<MapDetailPage> {
                     target: LatLng(position.latitude, position.longitude),
                     zoom: zoom)));
 
-          print(position.latitude.toString() +
-              ", " +
-              position.longitude.toString());
-
           updatePinOnMap(position, radius);
           updateRestaurants(position, radius);
         }
