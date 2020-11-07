@@ -344,7 +344,7 @@ func (s *Server) handleRestaurantsGet(
 			})
 	}
 
-	console.Info("found restaurants; count(%v)", len(resPacket.Restaurants))
+	// console.Info("found restaurants; count(%v)", len(resPacket.Restaurants))
 	return &resPacket
 }
 
@@ -496,6 +496,7 @@ func (s *Server) handleLikeAdd(
 	}
 	likeCount = int32(len(likes))
 
+	console.Info("saved like; uid(%v) rid(%v)", p.UserID, p.ReviewID.Hex())
 	return &server.DAPacketReview{
 		Review: &common.Review{
 			ID:        review.ID,

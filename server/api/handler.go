@@ -672,7 +672,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 
 	baseHeader(w.Header())
 	w.Write(ser)
-	console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
+	// console.Info("sent restaurants data; count(%v)", len(rests.Restaurants))
 }
 
 func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
