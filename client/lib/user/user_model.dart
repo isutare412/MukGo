@@ -22,6 +22,7 @@ class UserModel extends ChangeNotifier {
   double sightRadius;
   int reviewCount;
   int likeCount;
+  List<RestaurantTypeCount> restaurantTypeCounts;
 
   // simple auth model accesors for debug usage
   AuthModel get auth => _auth;
@@ -35,24 +36,26 @@ class UserModel extends ChangeNotifier {
   }
 
   // fetch fresh user data from server
-  Future<void> fetch() async {
+  Future<void> fetch({bool heavy = false}) async {
     if (auth.token == null) return;
-    var userData = await fetchUserData(auth.token);
+    var userData = await fetchUserData(auth.token, heavyRequest: heavy);
     if (userData == null) return;
-    updateFromUserData(userData);
+    updateFromUserData(userData, heavyUpdate: heavy);
   }
 
-  void update(
-      {String id,
-      String name,
-      int level,
-      Int64 totalExp,
-      Int64 levelExp,
-      Int64 curExp,
-      double expRatio,
-      double sightRadius,
-      int reviewCount,
-      int likeCount}) {
+  void update({
+    String id,
+    String name,
+    int level,
+    Int64 totalExp,
+    Int64 levelExp,
+    Int64 curExp,
+    double expRatio,
+    double sightRadius,
+    int reviewCount,
+    int likeCount,
+    List<RestaurantTypeCount> rtCounts,
+  }) {
     this.id = id;
     this.name = name;
     this.level = level;
@@ -64,10 +67,17 @@ class UserModel extends ChangeNotifier {
     this.reviewCount = reviewCount;
     this.likeCount = likeCount;
 
+    if (rtCounts != null && rtCounts.isNotEmpty) {
+      restaurantTypeCounts.clear();
+      restaurantTypeCounts.addAll(rtCounts);
+      // sort type counts by ascending order
+      restaurantTypeCounts.sort((a, b) => a.type.value - b.type.value);
+    }
+
     notifyListeners();
   }
 
-  void updateFromUserData(User userData) {
+  void updateFromUserData(User userData, {bool heavyUpdate}) {
     update(
         id: userData.id,
         name: userData.name,

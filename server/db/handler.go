@@ -45,6 +45,49 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 		}
 	}
 
+	// find restaurant counts if heavy request
+	var rtCounts map[int32]int32
+
+	// queries for heavy request
+	if p.HeavyRequest {
+		rtCounts = make(map[int32]int32)
+
+		// find review by user
+		reviews, err := queryReviewsGetByUser(ctx, s.db, p.UserID)
+		if err != nil {
+			console.Warning(
+				"on handleUserGet: failed to get reviews; packet(%v): %v",
+				*p, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+
+		for _, review := range reviews {
+			// find restaurant data
+			restaurant, err := queryRestaurantGet(ctx, s.db, review.RestID)
+			if err != nil {
+				switch err {
+				case mongo.ErrNoDocuments:
+					console.Warning(
+						"on handleUserGet: cannot find restaurant;"+
+							" packet(%v): %v", *p, err)
+					return &server.DAPacketError{ErrorType: server.ETInternal}
+				default:
+					console.Warning(
+						"on handleUserGet: failed to get restaurant; packet(%v): %v",
+						*p, err)
+					return &server.DAPacketError{ErrorType: server.ETInternal}
+				}
+			}
+
+			// count group by restaurant type
+			if restaurant.Type != 0 {
+				rtCounts[restaurant.Type]++
+			}
+		}
+
+		console.Info("send user heavy data; User(%v)", user.Name)
+	}
+
 	// console.Info("send user data; User(%v)", *user)
 	return &server.DAPacketUser{
 		User: &common.User{
@@ -53,6 +96,7 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 			Exp:         user.Exp,
 			ReviewCount: user.ReviewCount,
 			LikeCount:   user.LikeCount,
+			RTCounts:    rtCounts,
 		},
 	}
 }

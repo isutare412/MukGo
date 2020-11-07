@@ -63,11 +63,12 @@ class _MapDetailPageState extends State<MapDetailPage> {
           radius = userData.sightRadius;
           var zoom = 19 - ((radius + radius) / 100) / 2;
 
-          if (!markerShown)
+          if (!markerShown) {
             controller.animateCamera(CameraUpdate.newCameraPosition(
                 CameraPosition(
                     target: LatLng(position.latitude, position.longitude),
                     zoom: zoom)));
+          }
 
           updatePinOnMap(position, radius);
           updateRestaurants(position, radius);

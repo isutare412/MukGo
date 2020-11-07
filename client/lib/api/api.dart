@@ -23,10 +23,14 @@ void printAPIError(String api, dynamic msg) {
 }
 
 // fetch user data from api
-Future<User> fetchUserData(String token) async {
+Future<User> fetchUserData(String token, {bool heavyRequest}) async {
   try {
     var headers = getAuthHeader(token);
-    var res = await http.get('http://$apiUrl/user', headers: headers);
+    var uri = (heavyRequest)
+        ? Uri.http(apiUrl, '/user', {'heavy': 'true'})
+        : Uri.http(apiUrl, '/user');
+
+    var res = await http.get(uri, headers: headers);
     if (res.statusCode != HttpStatus.ok) {
       printResponseError('fetchUserData', res.bodyBytes);
       return null;

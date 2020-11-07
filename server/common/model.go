@@ -35,4 +35,5 @@ type User struct {
 	Exp         int64
 	ReviewCount int32
 	LikeCount   int32
+	RTCounts    map[int32]int32
 }

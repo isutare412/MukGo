@@ -30,9 +30,17 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// parse query parameters
+	var heavyRequest bool
+	params := marshalQuery(r.URL.Query())
+	if params["heavy"] != "" {
+		heavyRequest = true
+	}
+
 	// create packet for database server
 	var dbReq = server.ADPacketUserGet{
-		UserID: uid,
+		UserID:       uid,
+		HeavyRequest: heavyRequest,
 	}
 
 	// send packet to database server and register response handler
@@ -80,19 +88,35 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 	level, levExp, curExp, ratio := common.Exp2Level(packet.Exp)
 	sightRadius := common.Level2Sight(level)
 
+	// copy restaurant type count for achievement if heavy request
+	var rtCount []*pb.RestaurantTypeCount
+	if heavyRequest && packet.RTCounts != nil {
+		rtCount = make([]*pb.RestaurantTypeCount, 0, len(packet.RTCounts))
+
+		for t, c := range packet.RTCounts {
+			rtCount = append(rtCount,
+				&pb.RestaurantTypeCount{
+					Type:  pb.RestaurantType(t),
+					Count: c,
+				},
+			)
+		}
+	}
+
 	// serialize user data
 	ser, err := marshalResponse(r.Header,
 		&pb.User{
-			Id:          packet.UserID,
-			Name:        packet.Name,
-			Level:       level,
-			TotalExp:    packet.Exp,
-			LevelExp:    levExp,
-			CurExp:      curExp,
-			ExpRatio:    ratio,
-			SightRadius: sightRadius,
-			ReviewCount: packet.ReviewCount,
-			LikeCount:   packet.LikeCount,
+			Id:                  packet.UserID,
+			Name:                packet.Name,
+			Level:               level,
+			TotalExp:            packet.Exp,
+			LevelExp:            levExp,
+			CurExp:              curExp,
+			ExpRatio:            ratio,
+			SightRadius:         sightRadius,
+			ReviewCount:         packet.ReviewCount,
+			LikeCount:           packet.LikeCount,
+			RestaurantTypeCount: rtCount,
 		})
 	if err != nil {
 		console.Warning("on handleUserGet: failed to marshal user data")
@@ -102,6 +126,9 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 
 	baseHeader(w.Header())
 	w.Write(ser)
+	if heavyRequest {
+		console.Info("sent user heavy data; User(%v)", packet.Name)
+	}
 	// console.Info("sent user data; User(%v)", *packet)
 }
 

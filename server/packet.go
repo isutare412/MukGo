@@ -72,7 +72,8 @@ type ADPacketUserAdd struct {
 
 // ADPacketUserGet request user data.
 type ADPacketUserGet struct {
-	UserID string
+	UserID       string
+	HeavyRequest bool
 }
 
 // ADPacketReviewGet containes review data.
