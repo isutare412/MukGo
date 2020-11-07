@@ -157,11 +157,106 @@ func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case "GET":
+		s.handleReviewGet(w, r)
 	case "POST":
 		s.handleReviewPost(w, r)
 	default:
 		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
+}
+
+func (s *Server) handleReviewGet(w http.ResponseWriter, r *http.Request) {
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleReviewGet: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
+		return
+	}
+
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	rid := params["review_id"]
+	if rid == "" {
+		console.Warning("on handleReviewGet: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+		return
+	}
+
+	reviewID, err := primitive.ObjectIDFromHex(rid)
+	if err != nil {
+		console.Warning("on handleReviewGet: invalid review id; "+
+			"rid(%v): %v", rid, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketReviewGet{
+		UserID:   uid,
+		ReviewID: reviewID,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleReviewGet: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETInternal:
+		console.Warning("on handleReviewGet: database internal error")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketReview)
+	if !ok {
+		console.Warning("on handleReviewGet: unexpected packet")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// calculate level
+	level, _, _, _ := common.Exp2Level(packet.UserExp)
+
+	// copy review into response packet
+	review := pb.Review{
+		ReviewId:  packet.ID.Hex(),
+		UserId:    packet.UserID,
+		UserName:  packet.UserName,
+		Score:     packet.Score,
+		Comment:   packet.Comment,
+		Menus:     packet.Menus,
+		Wait:      packet.Wait,
+		NumPeople: packet.NumPeople,
+		Timestamp: packet.Timestamp,
+		UserLevel: level,
+		LikeCount: packet.LikeCount,
+		LikedByMe: packet.LikedByMe,
+	}
+
+	// serialize user data
+	ser, err := marshalResponse(r.Header, &review)
+	if err != nil {
+		console.Warning("on handleReviewGet: failed to marshal review data")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// send updated review data
+	baseHeader(w.Header())
+	w.Write(ser)
+	console.Info("sent review; user(%v) review(%v)", uid, rid)
 }
 
 func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {

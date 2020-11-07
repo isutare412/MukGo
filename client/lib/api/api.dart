@@ -165,6 +165,24 @@ Future<bool> postRestaurantData(String token, {Restaurant data}) async {
   }
 }
 
+// fetch review data from api
+Future<Review> fetchReviewData(String token, {String reviewId}) async {
+  try {
+    var headers = getAuthHeader(token);
+    var uri = Uri.http(apiUrl, '/review', {'review_id': reviewId});
+    var res = await http.get(uri, headers: headers);
+    if (res.statusCode != HttpStatus.ok) {
+      printResponseError('fetchReviewData', res.bodyBytes);
+      return null;
+    }
+
+    return Review.fromBuffer(res.bodyBytes);
+  } catch (e) {
+    printAPIError('fetchReviewData', e);
+    return null;
+  }
+}
+
 // fetch reviews data from api
 Future<Reviews> fetchReviewsData(String token, {String restaurantId}) async {
   try {

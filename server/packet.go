@@ -20,6 +20,7 @@ const (
 	PTInvalid PacketType = iota
 	PTADUserAdd
 	PTADUserGet
+	PTADReviewGet
 	PTADReviewsGet
 	PTADReviewAdd
 	PTADRestaurantGet
@@ -71,6 +72,12 @@ type ADPacketUserAdd struct {
 // ADPacketUserGet request user data.
 type ADPacketUserGet struct {
 	UserID string
+}
+
+// ADPacketReviewGet containes review data.
+type ADPacketReviewGet struct {
+	UserID   string
+	ReviewID primitive.ObjectID
 }
 
 // ADPacketReviewsGet containes review data.
@@ -189,6 +196,11 @@ func (p *ADPacketUserAdd) Type() PacketType {
 // Type implements Packet interface.
 func (p *ADPacketUserGet) Type() PacketType {
 	return PTADUserGet
+}
+
+// Type implements Packet interface.
+func (p *ADPacketReviewGet) Type() PacketType {
+	return PTADReviewGet
 }
 
 // Type implements Packet interface.

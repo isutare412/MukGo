@@ -57,6 +57,83 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 	}
 }
 
+func (s *Server) handleReviewGet(p *server.ADPacketReviewGet) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	// find review
+	review, err := queryReviewGet(ctx, s.db, p.ReviewID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			// database integrity contraint broken
+			console.Error(
+				"on handleReviewGet: cannot find review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleReviewGet: failed to get review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// get liked user
+	likedUser, err := queryUserGet(ctx, s.db, review.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleReviewGet: cannot find liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleReviewGet: failed to get liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// count likes of review
+	var likeCount int32
+	likes, err := queryLikesGetByReview(ctx, s.db, review.ID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewGet: failed to get likes of review; rid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	likeCount = int32(len(likes))
+
+	var likedByRequester bool
+	for _, l := range likes {
+		if l.LikingUserID == p.UserID {
+			likedByRequester = true
+		}
+	}
+
+	// send review data
+	console.Info("send review; rid(%v)", p.ReviewID.Hex())
+	return &server.DAPacketReview{
+		Review: &common.Review{
+			ID:        review.ID,
+			UserID:    review.UserID,
+			UserName:  likedUser.Name,
+			UserExp:   likedUser.Exp,
+			Score:     review.Score,
+			Comment:   review.Comment,
+			Menus:     review.Menus,
+			Wait:      review.Wait,
+			NumPeople: review.NumPeople,
+			Timestamp: review.Timestamp,
+			LikeCount: likeCount,
+			LikedByMe: likedByRequester,
+		},
+	}
+}
+
 func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
 	defer cancel()
