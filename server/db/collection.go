@@ -24,6 +24,13 @@ type Review struct {
 	Timestamp int64              `bson:"timestamp"`
 }
 
+// Like contains like feature data on each review.
+type Like struct {
+	ReviewID     primitive.ObjectID `bson:"review_id"`
+	LikingUserID string             `bson:"liking_user_id"`
+	LikedUserID  string             `bson:"liked_user_id"`
+}
+
 // Restaurant contains restaurant information.
 type Restaurant struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
@@ -37,4 +44,5 @@ const (
 	CNUser       string = "users"
 	CNReview     string = "reviews"
 	CNRestaurant string = "restaurants"
+	CNLike       string = "likes"
 )

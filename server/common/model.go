@@ -21,6 +21,8 @@ type Review struct {
 	Wait      bool
 	NumPeople int32
 	Timestamp int64
+	LikeCount int32
+	LikedByMe bool
 }
 
 // User model.

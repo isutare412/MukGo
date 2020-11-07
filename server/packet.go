@@ -27,6 +27,7 @@ const (
 	PTADRestaurantsGet
 	PTADRestaurantsAdd
 	PTADRankingGet
+	PTADLikeAdd
 
 	// database server to api server
 	PTDAAck
@@ -36,6 +37,7 @@ const (
 	PTDARestaurant
 	PTDARestaurants
 	PTDAReviews
+	PTDAReview
 
 	// log packet type
 	PTLog
@@ -48,6 +50,7 @@ const (
 	ETUserExists
 	ETNoSuchUser
 	ETNoSuchRestaurant
+	ETLikeExists
 )
 
 // Packet interface can generate unique PacketType.
@@ -72,6 +75,7 @@ type ADPacketUserGet struct {
 
 // ADPacketReviewsGet containes review data.
 type ADPacketReviewsGet struct {
+	UserID string
 	RestID primitive.ObjectID
 }
 
@@ -113,6 +117,12 @@ type ADPacketRestaurantsAdd struct {
 type ADPacketRankingGet struct {
 }
 
+// ADPacketLikeAdd requests like on specific review.
+type ADPacketLikeAdd struct {
+	UserID   string
+	ReviewID primitive.ObjectID
+}
+
 /******************************************************************************
 * Database to API packets
 ******************************************************************************/
@@ -149,6 +159,11 @@ type DAPacketRestaurants struct {
 // DAPacketReviews contains multiple Review models.
 type DAPacketReviews struct {
 	Reviews []*common.Review
+}
+
+// DAPacketReview contains review model.
+type DAPacketReview struct {
+	*common.Review
 }
 
 /******************************************************************************
@@ -212,6 +227,11 @@ func (p *ADPacketRankingGet) Type() PacketType {
 }
 
 // Type implements Packet interface.
+func (p *ADPacketLikeAdd) Type() PacketType {
+	return PTADLikeAdd
+}
+
+// Type implements Packet interface.
 func (p *DAPacketAck) Type() PacketType {
 	return PTDAAck
 }
@@ -244,6 +264,11 @@ func (p *DAPacketRestaurants) Type() PacketType {
 // Type implements Packet interface.
 func (p *DAPacketReviews) Type() PacketType {
 	return PTDAReviews
+}
+
+// Type implements Packet interface.
+func (p *DAPacketReview) Type() PacketType {
+	return PTDAReview
 }
 
 // Type implements Packet interface.

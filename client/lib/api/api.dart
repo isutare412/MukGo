@@ -205,6 +205,26 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
   }
 }
 
+// post review data to api
+Future<Review> postLikeData(String token, {String reviewId}) async {
+  try {
+    var headers = getAuthHeader(token);
+    var query = LikePost()..reviewId = reviewId;
+    var res = await http.post('http://$apiUrl/like',
+        body: query.writeToBuffer(), headers: headers);
+
+    if (res.statusCode != HttpStatus.ok) {
+      printResponseError('postLikeData', res.bodyBytes);
+      return null;
+    }
+
+    return Review.fromBuffer(res.bodyBytes);
+  } catch (e) {
+    printAPIError('postLikeData', e);
+    return null;
+  }
+}
+
 Map<String, String> getAuthHeader(String token) => <String, String>{
       HttpHeaders.authorizationHeader: 'Bearer $token',
       HttpHeaders.contentTypeHeader: 'application/protobuf'

@@ -17,6 +17,7 @@ const Code$json = const {
     const {'1': 'USER_EXISTS', '2': 6},
     const {'1': 'USER_NOT_EXISTS', '2': 7},
     const {'1': 'RESTAURANT_NOT_EXISTS', '2': 8},
+    const {'1': 'LIKE_EXISTS', '2': 9},
   ],
 };
 
@@ -66,6 +67,8 @@ const Review$json = const {
     const {'1': 'num_people', '3': 8, '4': 1, '5': 5, '10': 'numPeople'},
     const {'1': 'timestamp', '3': 9, '4': 1, '5': 3, '10': 'timestamp'},
     const {'1': 'user_level', '3': 10, '4': 1, '5': 5, '10': 'userLevel'},
+    const {'1': 'like_count', '3': 11, '4': 1, '5': 5, '10': 'likeCount'},
+    const {'1': 'liked_by_me', '3': 12, '4': 1, '5': 8, '10': 'likedByMe'},
   ],
 };
 

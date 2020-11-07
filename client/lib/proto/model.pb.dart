@@ -241,6 +241,8 @@ class Review extends $pb.GeneratedMessage {
     ..a<$core.int>(8, 'numPeople', $pb.PbFieldType.O3)
     ..aInt64(9, 'timestamp')
     ..a<$core.int>(10, 'userLevel', $pb.PbFieldType.O3)
+    ..a<$core.int>(11, 'likeCount', $pb.PbFieldType.O3)
+    ..aOB(12, 'likedByMe')
     ..hasRequiredFields = false
   ;
 
@@ -342,6 +344,24 @@ class Review extends $pb.GeneratedMessage {
   $core.bool hasUserLevel() => $_has(9);
   @$pb.TagNumber(10)
   void clearUserLevel() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.int get likeCount => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set likeCount($core.int v) { $_setSignedInt32(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasLikeCount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearLikeCount() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.bool get likedByMe => $_getBF(11);
+  @$pb.TagNumber(12)
+  set likedByMe($core.bool v) { $_setBool(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasLikedByMe() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearLikedByMe() => clearField(12);
 }
 
 class Users extends $pb.GeneratedMessage {

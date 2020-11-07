@@ -178,7 +178,7 @@ func queryRestaurantsGet(
 	return restaurants, nil
 }
 
-func queryReviewsGet(
+func queryReviewsGetByRestaurant(
 	ctx context.Context,
 	db *mongo.Database,
 	restID primitive.ObjectID,
@@ -191,16 +191,69 @@ func queryReviewsGet(
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("on queryReviewsGet: %v", err)
+		return nil, fmt.Errorf("on queryReviewsGetByRestaurant: %v", err)
 	}
 
 	reviews := make([]*Review, 0)
 	err = cursor.All(ctx, &reviews)
 	if err != nil {
-		return nil, fmt.Errorf("on queryReviewsGet: %v", err)
+		return nil, fmt.Errorf("on queryReviewsGetByRestaurant: %v", err)
 	}
 
 	return reviews, nil
+}
+
+func queryReviewsGetByUser(
+	ctx context.Context,
+	db *mongo.Database,
+	userID string,
+) ([]*Review, error) {
+	coll := db.Collection(CNReview)
+	cursor, err := coll.Find(
+		ctx,
+		bson.M{
+			"user_id": userID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryReviewsGetByUser: %v", err)
+	}
+
+	reviews := make([]*Review, 0)
+	err = cursor.All(ctx, &reviews)
+	if err != nil {
+		return nil, fmt.Errorf("on queryReviewsGetByUser: %v", err)
+	}
+
+	return reviews, nil
+}
+
+func queryReviewGet(
+	ctx context.Context,
+	db *mongo.Database,
+	reviewID primitive.ObjectID,
+) (*Review, error) {
+	coll := db.Collection(CNReview)
+	cursor := coll.FindOne(
+		ctx,
+		bson.M{
+			"_id": reviewID,
+		})
+
+	if err := cursor.Err(); err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			return nil, err
+		default:
+			return nil, fmt.Errorf("on queryReviewGet: %v", err)
+		}
+	}
+
+	var review Review
+	if err := cursor.Decode(&review); err != nil {
+		return nil, fmt.Errorf("on queryReviewGet: %v", err)
+	}
+	return &review, nil
 }
 
 func queryReviewAdd(
@@ -261,4 +314,98 @@ func queryUserRankingGet(
 	}
 
 	return users, nil
+}
+
+func queryLikeAdd(
+	ctx context.Context,
+	db *mongo.Database,
+	likingUserID string,
+	likedUserID string,
+	reviewID primitive.ObjectID,
+) error {
+	coll := db.Collection(CNLike)
+	_, err := coll.InsertOne(
+		ctx,
+		Like{
+			LikingUserID: likingUserID,
+			LikedUserID:  likedUserID,
+			ReviewID:     reviewID,
+		})
+
+	if err != nil {
+		return fmt.Errorf("on queryLikeAdd: %v", err)
+	}
+	return nil
+}
+
+func queryLikesGetByLikingUser(
+	ctx context.Context,
+	db *mongo.Database,
+	userID string,
+) ([]*Like, error) {
+	coll := db.Collection(CNLike)
+	cursor, err := coll.Find(
+		ctx,
+		bson.M{
+			"liking_user_id": userID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByLikingUser: %v", err)
+	}
+
+	likes := make([]*Like, 0)
+	err = cursor.All(ctx, &likes)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByLikingUser: %v", err)
+	}
+	return likes, nil
+}
+
+func queryLikesGetByLikedUser(
+	ctx context.Context,
+	db *mongo.Database,
+	userID string,
+) ([]*Like, error) {
+	coll := db.Collection(CNLike)
+	cursor, err := coll.Find(
+		ctx,
+		bson.M{
+			"liked_user_id": userID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByLikedUser: %v", err)
+	}
+
+	likes := make([]*Like, 0)
+	err = cursor.All(ctx, &likes)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByLikedUser: %v", err)
+	}
+	return likes, nil
+}
+
+func queryLikesGetByReview(
+	ctx context.Context,
+	db *mongo.Database,
+	reviewID primitive.ObjectID,
+) ([]*Like, error) {
+	coll := db.Collection(CNLike)
+	cursor, err := coll.Find(
+		ctx,
+		bson.M{
+			"review_id": reviewID,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByReview: %v", err)
+	}
+
+	likes := make([]*Like, 0)
+	err = cursor.All(ctx, &likes)
+	if err != nil {
+		return nil, fmt.Errorf("on queryLikesGetByReview: %v", err)
+	}
+	return likes, nil
 }

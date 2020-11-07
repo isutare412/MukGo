@@ -27,3 +27,10 @@ const RestaurantsPost$json = const {
   ],
 };
 
+const LikePost$json = const {
+  '1': 'LikePost',
+  '2': const [
+    const {'1': 'review_id', '3': 1, '4': 1, '5': 9, '10': 'reviewId'},
+  ],
+};
+

@@ -16,6 +16,7 @@ enum Code {
     USER_EXISTS = 6;
     USER_NOT_EXISTS = 7;
     RESTAURANT_NOT_EXISTS = 8;
+    LIKE_EXISTS = 9;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -57,6 +58,8 @@ message Review {
     int32 num_people = 8;
     int64 timestamp = 9;
     int32 user_level = 10;
+    int32 like_count = 11;
+    bool liked_by_me = 12;
 }
 
 message Users {

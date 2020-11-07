@@ -112,3 +112,34 @@ class RestaurantsPost extends $pb.GeneratedMessage {
   $core.List<$0.Restaurant> get restaurants => $_getList(0);
 }
 
+class LikePost extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('LikePost', package: const $pb.PackageName('proto'), createEmptyInstance: create)
+    ..aOS(1, 'reviewId')
+    ..hasRequiredFields = false
+  ;
+
+  LikePost._() : super();
+  factory LikePost() => create();
+  factory LikePost.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LikePost.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  LikePost clone() => LikePost()..mergeFromMessage(this);
+  LikePost copyWith(void Function(LikePost) updates) => super.copyWith((message) => updates(message as LikePost));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LikePost create() => LikePost._();
+  LikePost createEmptyInstance() => create();
+  static $pb.PbList<LikePost> createRepeated() => $pb.PbList<LikePost>();
+  @$core.pragma('dart2js:noInline')
+  static LikePost getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LikePost>(create);
+  static LikePost _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reviewId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reviewId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasReviewId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReviewId() => clearField(1);
+}
+

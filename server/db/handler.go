@@ -78,7 +78,7 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 		}
 	}
 
-	reviews, err := queryReviewsGet(ctx, s.db, p.RestID)
+	reviews, err := queryReviewsGetByRestaurant(ctx, s.db, p.RestID)
 	if err != nil {
 		console.Warning(
 			"on handleReviewsGet: failed to get reviews; packet(%v): %v",
@@ -86,9 +86,29 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
-	// find user name from user id.
+	// collect review related data
 	var userMap = make(map[string]*User)
+	var likeCounts = make(map[*Review]int32)
+	var likeByUser = make(map[*Review]bool)
 	for _, r := range reviews {
+		// count likes of each review
+		likes, err := queryLikesGetByReview(ctx, s.db, r.ID)
+		if err != nil {
+			console.Warning(
+				"on handleReviewsGet: failed to get likes of liked user; "+
+					"uid(%v): %v",
+				r.ID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+		likeCounts[r] += int32(len(likes))
+
+		// check review is liked by requester
+		for _, l := range likes {
+			if l.LikingUserID == p.UserID {
+				likeByUser[r] = true
+			}
+		}
+
 		// check if name already cached
 		if _, ok := userMap[r.UserID]; ok {
 			continue
@@ -110,7 +130,6 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 				return &server.DAPacketError{ErrorType: server.ETInternal}
 			}
 		}
-
 		userMap[r.UserID] = user
 	}
 
@@ -131,6 +150,8 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 				Wait:      r.Wait,
 				NumPeople: r.NumPeople,
 				Timestamp: r.Timestamp,
+				LikeCount: likeCounts[r],
+				LikedByMe: likeByUser[r],
 			},
 		)
 	}
@@ -177,6 +198,16 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 		}
 	}
 
+	// count review by user
+	reviews, err := queryReviewsGetByUser(ctx, s.db, p.UserID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewAdd: failed to get reviews; packet(%v): %v",
+			*p, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	reviewCount := int32(len(reviews))
+
 	// add review data
 	err = queryReviewAdd(ctx, s.db, p.UserID, p.RestID, p.Score, p.Comment,
 		p.Menus, p.Wait, p.NumPeople, p.Timestamp)
@@ -186,9 +217,9 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
-	// add exp to user
+	// update user user data
 	user.Exp += common.ReviewExp()
-	user.ReviewCount++
+	user.ReviewCount = reviewCount + 1
 	err = queryUserUpdate(ctx, s.db, user)
 	if err != nil {
 		console.Warning(
@@ -366,4 +397,119 @@ func (s *Server) handleRankingGet(
 
 	console.Info("send rankings; count(%v)", len(pusers))
 	return &server.DAPacketUsers{Users: pusers}
+}
+
+func (s *Server) handleLikeAdd(
+	p *server.ADPacketLikeAdd,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	// check request user exists
+	_, err := queryUserGet(ctx, s.db, p.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleLikeAdd: cannot find user; packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
+		default:
+			console.Warning(
+				"on handleLikeAdd: failed to get user; packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// check like requested review exists
+	review, err := queryReviewGet(ctx, s.db, p.ReviewID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			// database integrity contraint broken
+			console.Error(
+				"on handleLikeAdd: cannot find review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleLikeAdd: failed to get review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// get liked user
+	likedUser, err := queryUserGet(ctx, s.db, review.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleLikeAdd: cannot find liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleLikeAdd: failed to get liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// count likes of liked user
+	likes, err := queryLikesGetByLikedUser(ctx, s.db, likedUser.UserID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeAdd: failed to get likes of liked user; uid(%v): %v",
+			likedUser.UserID, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	likeCount := int32(len(likes))
+
+	// add like data
+	err = queryLikeAdd(ctx, s.db, p.UserID, likedUser.UserID, p.ReviewID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeAdd: failed to insert like(%v): %v", *p, err)
+		return &server.DAPacketError{ErrorType: server.ETLikeExists}
+	}
+
+	// update user user data
+	likedUser.Exp += common.LikeExp()
+	likedUser.LikeCount = likeCount + 1
+	err = queryUserUpdate(ctx, s.db, likedUser)
+	if err != nil {
+		console.Warning(
+			"on handleLikeAdd: failed update liked user; User(%v): %v",
+			*likedUser, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	// count likes of review
+	likeCount = 0
+	likes, err = queryLikesGetByReview(ctx, s.db, review.ID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeAdd: failed to get likes of review; "+
+				"rid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	likeCount = int32(len(likes))
+
+	return &server.DAPacketReview{
+		Review: &common.Review{
+			ID:        review.ID,
+			UserID:    review.UserID,
+			UserName:  likedUser.Name,
+			UserExp:   likedUser.Exp,
+			Score:     review.Score,
+			Comment:   review.Comment,
+			Menus:     review.Menus,
+			Wait:      review.Wait,
+			NumPeople: review.NumPeople,
+			Timestamp: review.Timestamp,
+			LikeCount: likeCount,
+			LikedByMe: true,
+		},
+	}
 }

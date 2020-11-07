@@ -16,3 +16,7 @@ message RestaurantPost {
 message RestaurantsPost {
     repeated Restaurant restaurants = 1;
 }
+
+message LikePost {
+    string review_id = 1;
+}

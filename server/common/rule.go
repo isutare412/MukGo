@@ -47,3 +47,8 @@ func Exp2Sight(exp int64) float64 {
 func ReviewExp() int64 {
 	return 50
 }
+
+// LikeExp calculates exp given for each like on review.
+func LikeExp() int64 {
+	return 10
+}
