@@ -316,6 +316,26 @@ func queryUserRankingGet(
 	return users, nil
 }
 
+func queryLikeDel(
+	ctx context.Context,
+	db *mongo.Database,
+	likingUserID string,
+	reviewID primitive.ObjectID,
+) error {
+	coll := db.Collection(CNLike)
+	_, err := coll.DeleteOne(
+		ctx,
+		bson.M{
+			"liking_user_id": likingUserID,
+			"review_id":      reviewID,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("on queryLikeDel: %v", err)
+	}
+	return nil
+}
+
 func queryLikeAdd(
 	ctx context.Context,
 	db *mongo.Database,

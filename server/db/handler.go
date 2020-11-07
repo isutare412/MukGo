@@ -591,3 +591,122 @@ func (s *Server) handleLikeAdd(
 		},
 	}
 }
+
+func (s *Server) handleLikeDel(
+	p *server.ADPacketLikeDel,
+) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	// check request user exists
+	_, err := queryUserGet(ctx, s.db, p.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleLikeDel: cannot find user; packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
+		default:
+			console.Warning(
+				"on handleLikeDel: failed to get user; packet(%v): %v", *p, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// check like requested review exists
+	review, err := queryReviewGet(ctx, s.db, p.ReviewID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			// database integrity contraint broken
+			console.Error(
+				"on handleLikeDel: cannot find review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleLikeDel: failed to get review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// get liked user
+	likedUser, err := queryUserGet(ctx, s.db, review.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleLikeDel: cannot find liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleLikeDel: failed to get liked user; uid(%v): %v",
+				review.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// count likes of liked user
+	likes, err := queryLikesGetByLikedUser(ctx, s.db, likedUser.UserID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeDel: failed to get likes of liked user; uid(%v): %v",
+			likedUser.UserID, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	likeCount := int32(len(likes))
+
+	// delete like data
+	err = queryLikeDel(ctx, s.db, p.UserID, p.ReviewID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeDel: failed to delete like(%v): %v", *p, err)
+		return &server.DAPacketError{ErrorType: server.ETLikeExists}
+	}
+
+	// update user user data
+	likedUser.Exp -= common.LikeExp()
+	if likedUser.Exp < 0 {
+		likedUser.Exp = 0
+	}
+	likedUser.LikeCount = likeCount - 1
+	err = queryUserUpdate(ctx, s.db, likedUser)
+	if err != nil {
+		console.Warning(
+			"on handleLikeDel: failed update liked user; User(%v): %v",
+			*likedUser, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	// count likes of review
+	likeCount = 0
+	likes, err = queryLikesGetByReview(ctx, s.db, review.ID)
+	if err != nil {
+		console.Warning(
+			"on handleLikeDel: failed to get likes of review; "+
+				"rid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	likeCount = int32(len(likes))
+
+	console.Info("saved like; uid(%v) rid(%v)", p.UserID, p.ReviewID.Hex())
+	return &server.DAPacketReview{
+		Review: &common.Review{
+			ID:        review.ID,
+			UserID:    review.UserID,
+			UserName:  likedUser.Name,
+			UserExp:   likedUser.Exp,
+			Score:     review.Score,
+			Comment:   review.Comment,
+			Menus:     review.Menus,
+			Wait:      review.Wait,
+			NumPeople: review.NumPeople,
+			Timestamp: review.Timestamp,
+			LikeCount: likeCount,
+			LikedByMe: false,
+		},
+	}
+}

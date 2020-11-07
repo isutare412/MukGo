@@ -918,6 +918,8 @@ func (s *Server) handleLike(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		s.handleLikePost(w, r)
+	case "DELETE":
+		s.handleLikeDelete(w, r)
 	default:
 		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
@@ -1029,4 +1031,112 @@ func (s *Server) handleLikePost(w http.ResponseWriter, r *http.Request) {
 	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("like accepted; user(%v) review(%v)", uid, userReq.ReviewId)
+}
+
+func (s *Server) handleLikeDelete(w http.ResponseWriter, r *http.Request) {
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleLikeDelete: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
+		return
+	}
+
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	rid := params["review_id"]
+	if rid == "" {
+		console.Warning("on handleLikeDelete: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+		return
+	}
+
+	reviewID, err := primitive.ObjectIDFromHex(rid)
+	if err != nil {
+		console.Warning("on handleLikeDelete: invalid review id; "+
+			"rid(%v): %v", rid, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketLikeDel{
+		UserID:   uid,
+		ReviewID: reviewID,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleLikeDelete: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// failed to receive packet from database server
+	if p == nil {
+		console.Warning("on handleLikeDelete: no packet received")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETNoSuchUser:
+		console.Warning("on handleLikeDelete: user not found")
+		httpError(w, http.StatusInternalServerError, pb.Code_USER_NOT_EXISTS)
+		return
+	case server.ETLikeExists:
+		console.Warning("on handleLikeDelete: like exists")
+		httpError(w, http.StatusInternalServerError, pb.Code_LIKE_EXISTS)
+		return
+	case server.ETInternal:
+		console.Warning("on handleLikeDelete: database internal error")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// check packet by type casting from interface
+	packet, ok := p.(*server.DAPacketReview)
+	if !ok {
+		console.Warning("on handleLikeDelete: unexpected packet")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// calculate level
+	level, _, _, _ := common.Exp2Level(packet.UserExp)
+
+	// copy review into response packet
+	review := pb.Review{
+		ReviewId:  packet.ID.Hex(),
+		UserId:    packet.UserID,
+		UserName:  packet.UserName,
+		Score:     packet.Score,
+		Comment:   packet.Comment,
+		Menus:     packet.Menus,
+		Wait:      packet.Wait,
+		NumPeople: packet.NumPeople,
+		Timestamp: packet.Timestamp,
+		UserLevel: level,
+		LikeCount: packet.LikeCount,
+		LikedByMe: packet.LikedByMe,
+	}
+
+	// serialize user data
+	ser, err := marshalResponse(r.Header, &review)
+	if err != nil {
+		console.Warning("on handleLikeDelete: failed to marshal review data")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// send updated review data
+	baseHeader(w.Header())
+	w.Write(ser)
+	console.Info("like canceled; user(%v) review(%v)", uid, rid)
 }

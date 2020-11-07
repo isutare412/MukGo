@@ -300,6 +300,15 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleLikeAdd(&p)
 
+	case server.PTADLikeDel:
+		var p server.ADPacketLikeDel
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleLikeDel(&p)
+
 	default:
 		err = fmt.Errorf("on handlePacket: no parser for %v", pt)
 	}

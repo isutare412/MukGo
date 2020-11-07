@@ -29,6 +29,7 @@ const (
 	PTADRestaurantsAdd
 	PTADRankingGet
 	PTADLikeAdd
+	PTADLikeDel
 
 	// database server to api server
 	PTDAAck
@@ -126,6 +127,12 @@ type ADPacketRankingGet struct {
 
 // ADPacketLikeAdd requests like on specific review.
 type ADPacketLikeAdd struct {
+	UserID   string
+	ReviewID primitive.ObjectID
+}
+
+// ADPacketLikeDel requests cancel of like on specific review.
+type ADPacketLikeDel struct {
 	UserID   string
 	ReviewID primitive.ObjectID
 }
@@ -241,6 +248,11 @@ func (p *ADPacketRankingGet) Type() PacketType {
 // Type implements Packet interface.
 func (p *ADPacketLikeAdd) Type() PacketType {
 	return PTADLikeAdd
+}
+
+// Type implements Packet interface.
+func (p *ADPacketLikeDel) Type() PacketType {
+	return PTADLikeDel
 }
 
 // Type implements Packet interface.
