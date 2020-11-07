@@ -56,6 +56,7 @@ message Review {
     bool wait = 7;
     int32 num_people = 8;
     int64 timestamp = 9;
+    int32 user_level = 10;
 }
 
 message Users {

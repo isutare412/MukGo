@@ -357,6 +357,9 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 		Reviews: make([]*pb.Review, 0, len(packet.Reviews)),
 	}
 	for _, r := range packet.Reviews {
+		// calculate level
+		level, _, _, _ := common.Exp2Level(r.UserExp)
+
 		reviews.Reviews = append(reviews.Reviews,
 			&pb.Review{
 				ReviewId:  r.ID.Hex(),
@@ -368,6 +371,7 @@ func (s *Server) handleReviewsGet(w http.ResponseWriter, r *http.Request) {
 				Wait:      r.Wait,
 				NumPeople: r.NumPeople,
 				Timestamp: r.Timestamp,
+				UserLevel: level,
 			},
 		)
 	}

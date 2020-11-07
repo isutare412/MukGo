@@ -14,6 +14,7 @@ type Review struct {
 	ID        primitive.ObjectID
 	UserID    string
 	UserName  string
+	UserExp   int64
 	Score     int32
 	Comment   string
 	Menus     []string

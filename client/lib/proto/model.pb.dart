@@ -240,6 +240,7 @@ class Review extends $pb.GeneratedMessage {
     ..aOB(7, 'wait')
     ..a<$core.int>(8, 'numPeople', $pb.PbFieldType.O3)
     ..aInt64(9, 'timestamp')
+    ..a<$core.int>(10, 'userLevel', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -332,6 +333,15 @@ class Review extends $pb.GeneratedMessage {
   $core.bool hasTimestamp() => $_has(8);
   @$pb.TagNumber(9)
   void clearTimestamp() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get userLevel => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set userLevel($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasUserLevel() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearUserLevel() => clearField(10);
 }
 
 class Users extends $pb.GeneratedMessage {

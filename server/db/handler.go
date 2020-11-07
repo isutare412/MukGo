@@ -87,10 +87,10 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 	}
 
 	// find user name from user id.
-	var idMap = make(map[string]string)
+	var userMap = make(map[string]*User)
 	for _, r := range reviews {
 		// check if name already cached
-		if _, ok := idMap[r.UserID]; ok {
+		if _, ok := userMap[r.UserID]; ok {
 			continue
 		}
 
@@ -111,7 +111,7 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 			}
 		}
 
-		idMap[r.UserID] = user.Name
+		userMap[r.UserID] = user
 	}
 
 	// copy review data into response packet
@@ -123,7 +123,8 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 			&common.Review{
 				ID:        r.ID,
 				UserID:    r.UserID,
-				UserName:  idMap[r.UserID],
+				UserName:  userMap[r.UserID].Name,
+				UserExp:   userMap[r.UserID].Exp,
 				Score:     r.Score,
 				Comment:   r.Comment,
 				Menus:     r.Menus,
