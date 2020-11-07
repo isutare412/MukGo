@@ -14,6 +14,47 @@ import 'model.pbenum.dart';
 
 export 'model.pbenum.dart';
 
+class RestaurantTypeCount extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('RestaurantTypeCount', package: const $pb.PackageName('proto'), createEmptyInstance: create)
+    ..e<RestaurantType>(1, 'type', $pb.PbFieldType.OE, defaultOrMaker: RestaurantType.INVALID, valueOf: RestaurantType.valueOf, enumValues: RestaurantType.values)
+    ..a<$core.int>(2, 'count', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  RestaurantTypeCount._() : super();
+  factory RestaurantTypeCount() => create();
+  factory RestaurantTypeCount.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RestaurantTypeCount.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  RestaurantTypeCount clone() => RestaurantTypeCount()..mergeFromMessage(this);
+  RestaurantTypeCount copyWith(void Function(RestaurantTypeCount) updates) => super.copyWith((message) => updates(message as RestaurantTypeCount));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RestaurantTypeCount create() => RestaurantTypeCount._();
+  RestaurantTypeCount createEmptyInstance() => create();
+  static $pb.PbList<RestaurantTypeCount> createRepeated() => $pb.PbList<RestaurantTypeCount>();
+  @$core.pragma('dart2js:noInline')
+  static RestaurantTypeCount getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RestaurantTypeCount>(create);
+  static RestaurantTypeCount _defaultInstance;
+
+  @$pb.TagNumber(1)
+  RestaurantType get type => $_getN(0);
+  @$pb.TagNumber(1)
+  set type(RestaurantType v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get count => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set count($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCount() => clearField(2);
+}
+
 class User extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('User', package: const $pb.PackageName('proto'), createEmptyInstance: create)
     ..aOS(1, 'id')
@@ -26,6 +67,7 @@ class User extends $pb.GeneratedMessage {
     ..a<$core.double>(8, 'sightRadius', $pb.PbFieldType.OD)
     ..a<$core.int>(9, 'reviewCount', $pb.PbFieldType.O3)
     ..a<$core.int>(10, 'likeCount', $pb.PbFieldType.O3)
+    ..pc<RestaurantTypeCount>(11, 'restaurantTypeCount', $pb.PbFieldType.PM, subBuilder: RestaurantTypeCount.create)
     ..hasRequiredFields = false
   ;
 
@@ -133,6 +175,9 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasLikeCount() => $_has(9);
   @$pb.TagNumber(10)
   void clearLikeCount() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.List<RestaurantTypeCount> get restaurantTypeCount => $_getList(10);
 }
 
 class Coordinate extends $pb.GeneratedMessage {
@@ -181,6 +226,7 @@ class Restaurant extends $pb.GeneratedMessage {
     ..aOS(1, 'id')
     ..aOS(2, 'name')
     ..aOM<Coordinate>(3, 'coord', subBuilder: Coordinate.create)
+    ..e<RestaurantType>(4, 'type', $pb.PbFieldType.OE, defaultOrMaker: RestaurantType.INVALID, valueOf: RestaurantType.valueOf, enumValues: RestaurantType.values)
     ..hasRequiredFields = false
   ;
 
@@ -227,6 +273,15 @@ class Restaurant extends $pb.GeneratedMessage {
   void clearCoord() => clearField(3);
   @$pb.TagNumber(3)
   Coordinate ensureCoord() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  RestaurantType get type => $_getN(3);
+  @$pb.TagNumber(4)
+  set type(RestaurantType v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearType() => clearField(4);
 }
 
 class Review extends $pb.GeneratedMessage {

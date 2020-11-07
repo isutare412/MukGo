@@ -106,8 +106,7 @@ type ADPacketRestaurantGet struct {
 
 // ADPacketRestaurantAdd contains data for new restaurant.
 type ADPacketRestaurantAdd struct {
-	Name  string
-	Coord common.Coordinate
+	*common.Restaurant
 }
 
 // ADPacketRestaurantsGet request restaurants within user's sight.

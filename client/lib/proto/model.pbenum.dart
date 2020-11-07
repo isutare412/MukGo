@@ -40,3 +40,32 @@ class Code extends $pb.ProtobufEnum {
   const Code._($core.int v, $core.String n) : super(v, n);
 }
 
+class RestaurantType extends $pb.ProtobufEnum {
+  static const RestaurantType INVALID = RestaurantType._(0, 'INVALID');
+  static const RestaurantType CHICKEN = RestaurantType._(1, 'CHICKEN');
+  static const RestaurantType CAFE = RestaurantType._(2, 'CAFE');
+  static const RestaurantType FASTFOOD = RestaurantType._(3, 'FASTFOOD');
+  static const RestaurantType MEAT = RestaurantType._(4, 'MEAT');
+  static const RestaurantType DESSERT = RestaurantType._(5, 'DESSERT');
+  static const RestaurantType JAPANESE = RestaurantType._(6, 'JAPANESE');
+  static const RestaurantType KOREAN = RestaurantType._(7, 'KOREAN');
+  static const RestaurantType CHINESE = RestaurantType._(8, 'CHINESE');
+
+  static const $core.List<RestaurantType> values = <RestaurantType> [
+    INVALID,
+    CHICKEN,
+    CAFE,
+    FASTFOOD,
+    MEAT,
+    DESSERT,
+    JAPANESE,
+    KOREAN,
+    CHINESE,
+  ];
+
+  static final $core.Map<$core.int, RestaurantType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static RestaurantType valueOf($core.int value) => _byValue[value];
+
+  const RestaurantType._($core.int v, $core.String n) : super(v, n);
+}
+

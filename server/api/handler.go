@@ -102,7 +102,7 @@ func (s *Server) handleUserGet(w http.ResponseWriter, r *http.Request) {
 
 	baseHeader(w.Header())
 	w.Write(ser)
-	console.Info("sent user data; User(%v)", *packet)
+	// console.Info("sent user data; User(%v)", *packet)
 }
 
 func (s *Server) handleUserPost(w http.ResponseWriter, r *http.Request) {
@@ -580,6 +580,7 @@ func (s *Server) handleRestaurantGet(w http.ResponseWriter, r *http.Request) {
 			Latitude:  packet.Restaurant.Coord.Latitude,
 			Longitude: packet.Restaurant.Coord.Longitude,
 		},
+		Type: pb.RestaurantType(packet.Restaurant.RestaurantType),
 	}
 
 	// serialize user data
@@ -600,7 +601,8 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 	// parse request from client
 	var userReq pb.RestaurantPost
 	err := unmarshalBody(r.Header, r.Body, &userReq)
-	if err != nil || userReq.Restaurant == nil {
+	if err != nil || userReq.Restaurant == nil ||
+		userReq.Restaurant.Coord == nil {
 		console.Warning("on handleRestaurantPost: failed to decode request")
 		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
 		return
@@ -608,10 +610,13 @@ func (s *Server) handleRestaurantPost(w http.ResponseWriter, r *http.Request) {
 
 	// create packet for database server
 	var dbReq = server.ADPacketRestaurantAdd{
-		Name: userReq.Restaurant.Name,
-		Coord: common.Coordinate{
-			Latitude:  userReq.Restaurant.Coord.Latitude,
-			Longitude: userReq.Restaurant.Coord.Longitude,
+		Restaurant: &common.Restaurant{
+			Name: userReq.Restaurant.Name,
+			Coord: common.Coordinate{
+				Latitude:  userReq.Restaurant.Coord.Latitude,
+				Longitude: userReq.Restaurant.Coord.Longitude,
+			},
+			RestaurantType: int32(userReq.Restaurant.Type),
 		},
 	}
 
@@ -753,6 +758,7 @@ func (s *Server) handleRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 				Latitude:  r.Coord.Latitude,
 				Longitude: r.Coord.Longitude,
 			},
+			Type: pb.RestaurantType(r.RestaurantType),
 		})
 	}
 
@@ -797,6 +803,7 @@ func (s *Server) handleRestaurantsPost(w http.ResponseWriter, r *http.Request) {
 				Latitude:  r.Coord.Latitude,
 				Longitude: r.Coord.Longitude,
 			},
+			RestaurantType: int32(r.Type),
 		})
 	}
 

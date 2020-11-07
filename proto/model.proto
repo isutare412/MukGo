@@ -19,9 +19,26 @@ enum Code {
     LIKE_EXISTS = 9;
 }
 
+enum RestaurantType {
+    INVALID = 0;
+    CHICKEN = 1;
+    CAFE = 2;
+    FASTFOOD = 3;
+    MEAT = 4;
+    DESSERT = 5;
+    JAPANESE = 6;
+    KOREAN = 7;
+    CHINESE = 8;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Models
 /////////////////////////////////////////////////////////////////////////////
+
+message RestaurantTypeCount {
+    RestaurantType type = 1;
+    int32 count = 2;
+}
 
 message User {
     string id = 1;
@@ -34,6 +51,7 @@ message User {
     double sight_radius = 8;
     int32 review_count = 9;
     int32 like_count = 10;
+    repeated RestaurantTypeCount restaurant_type_count = 11;
 }
 
 message Coordinate {
@@ -45,6 +63,7 @@ message Restaurant {
     string id = 1;
     string name = 2;
     Coordinate coord = 3;
+    RestaurantType type = 4;
 }
 
 message Review {

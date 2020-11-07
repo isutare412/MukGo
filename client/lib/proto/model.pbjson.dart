@@ -21,6 +21,29 @@ const Code$json = const {
   ],
 };
 
+const RestaurantType$json = const {
+  '1': 'RestaurantType',
+  '2': const [
+    const {'1': 'INVALID', '2': 0},
+    const {'1': 'CHICKEN', '2': 1},
+    const {'1': 'CAFE', '2': 2},
+    const {'1': 'FASTFOOD', '2': 3},
+    const {'1': 'MEAT', '2': 4},
+    const {'1': 'DESSERT', '2': 5},
+    const {'1': 'JAPANESE', '2': 6},
+    const {'1': 'KOREAN', '2': 7},
+    const {'1': 'CHINESE', '2': 8},
+  ],
+};
+
+const RestaurantTypeCount$json = const {
+  '1': 'RestaurantTypeCount',
+  '2': const [
+    const {'1': 'type', '3': 1, '4': 1, '5': 14, '6': '.proto.RestaurantType', '10': 'type'},
+    const {'1': 'count', '3': 2, '4': 1, '5': 5, '10': 'count'},
+  ],
+};
+
 const User$json = const {
   '1': 'User',
   '2': const [
@@ -34,6 +57,7 @@ const User$json = const {
     const {'1': 'sight_radius', '3': 8, '4': 1, '5': 1, '10': 'sightRadius'},
     const {'1': 'review_count', '3': 9, '4': 1, '5': 5, '10': 'reviewCount'},
     const {'1': 'like_count', '3': 10, '4': 1, '5': 5, '10': 'likeCount'},
+    const {'1': 'restaurant_type_count', '3': 11, '4': 3, '5': 11, '6': '.proto.RestaurantTypeCount', '10': 'restaurantTypeCount'},
   ],
 };
 
@@ -51,6 +75,7 @@ const Restaurant$json = const {
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     const {'1': 'coord', '3': 3, '4': 1, '5': 11, '6': '.proto.Coordinate', '10': 'coord'},
+    const {'1': 'type', '3': 4, '4': 1, '5': 14, '6': '.proto.RestaurantType', '10': 'type'},
   ],
 };
 

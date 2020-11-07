@@ -101,6 +101,7 @@ func queryRestaurantAdd(
 	db *mongo.Database,
 	name string,
 	latitude, longitude float64,
+	restaurantType int32,
 ) error {
 	coll := db.Collection(CNRestaurant)
 	_, err := coll.InsertOne(
@@ -109,6 +110,7 @@ func queryRestaurantAdd(
 			Name:      name,
 			Latitude:  latitude,
 			Longitude: longitude,
+			Type:      restaurantType,
 		})
 
 	if err != nil {

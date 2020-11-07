@@ -45,7 +45,7 @@ func (s *Server) handleUserGet(p *server.ADPacketUserGet) server.Packet {
 		}
 	}
 
-	console.Info("send user data; User(%v)", *user)
+	// console.Info("send user data; User(%v)", *user)
 	return &server.DAPacketUser{
 		User: &common.User{
 			UserID:      user.UserID,
@@ -347,6 +347,7 @@ func (s *Server) handleRestaurantGet(
 				Latitude:  restaurant.Latitude,
 				Longitude: restaurant.Longitude,
 			},
+			RestaurantType: restaurant.Type,
 		},
 	}
 }
@@ -358,7 +359,8 @@ func (s *Server) handleRestaurantAdd(
 	defer cancel()
 
 	err := queryRestaurantAdd(
-		ctx, s.db, p.Name, p.Coord.Latitude, p.Coord.Longitude)
+		ctx, s.db, p.Name, p.Coord.Latitude, p.Coord.Longitude,
+		p.RestaurantType)
 	if err != nil {
 		console.Warning(
 			"on handleRestaurantAdd: failed to insert restaurant(%v): %v",
@@ -418,6 +420,7 @@ func (s *Server) handleRestaurantsGet(
 					Latitude:  r.Latitude,
 					Longitude: r.Longitude,
 				},
+				RestaurantType: r.Type,
 			})
 	}
 
@@ -433,7 +436,8 @@ func (s *Server) handleRestaurantsAdd(
 
 	for _, r := range p.Restaurants {
 		err := queryRestaurantAdd(
-			ctx, s.db, r.Name, r.Coord.Latitude, r.Coord.Longitude)
+			ctx, s.db, r.Name, r.Coord.Latitude, r.Coord.Longitude,
+			r.RestaurantType)
 
 		if err != nil {
 			console.Warning(
