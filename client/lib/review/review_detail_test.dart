@@ -30,177 +30,169 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
   @override
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).padding.top;
-    return Stack(children: <Widget>[
-      SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return SingleChildScrollView(
+      // padding: EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Consumer<UserModel>(builder: (context, user, child) {
-                    return SvgPicture.asset(
-                      user.profileAsset(),
-                      height: 48,
-                      width: 48,
-                    );
-                  }),
-                  Expanded(
-                      child: Padding(
-                          padding: EdgeInsets.only(left: 10.0),
-                          child: ContraText(
-                            size: 16,
-                            text: widget.review_data.user,
-                            alignment: Alignment.centerLeft,
-                          ))),
-                  ContraText(
-                    size: 16,
-                    text: widget.review_data.time,
-                    alignment: Alignment.centerRight,
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                'Menus',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                    fontWeight: FontWeight.normal, fontSize: 24, color: trout),
-              ),
-              Wrap(
-                spacing: 8.0, // gap between adjacent chips
-                runSpacing: 4.0,
-                children: widget.review_data.menus
-                    .map((menu) => Padding(
-                        padding: EdgeInsets.only(right: 6),
-                        child: Text(
-                          '#$menu',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: trout),
-                        )))
-                    .toList(),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(
-                'Comment',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                    fontWeight: FontWeight.normal, fontSize: 24, color: trout),
-              ),
-              Text(
-                widget.review_data.comment,
-                style: TextStyle(
-                    fontWeight: FontWeight.normal, fontSize: 17, color: trout),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Waiting',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 24,
-                          color: trout),
-                    ),
-                    Checkbox(
-                      value: widget.review_data.waiting,
-                    ),
-                  ]),
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                height: 40,
-                decoration: ShapeDecoration(
-                  color: Colors.grey[300],
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16))),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          Icons.star,
-                          color: wood_smoke,
-                        ),
-                        ContraText(
-                          text: widget.review_data.score.toString(),
-                          size: 13,
-                          alignment: Alignment.center,
-                        )
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          Icons.person,
-                          color: wood_smoke,
-                        ),
-                        ContraText(
-                          text: widget.review_data.numPeople.toString(),
-                          size: 13,
-                          alignment: Alignment.center,
-                        )
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        IconButton(
-                          icon: like
-                              ? Icon(Icons.favorite)
-                              : Icon(Icons.favorite_border),
-                          tooltip: 'Like this review',
-                          onPressed: () {
-                            setState(() {
-                              like = !like;
-                              //chane the number of likes in the server
-                            });
-                          },
-                        ),
-                        ContraText(
-                          text: "no data yet",
-                          size: 13,
-                          alignment: Alignment.center,
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              Consumer<UserModel>(builder: (context, user, child) {
+                return SvgPicture.asset(
+                  user.profileAsset(),
+                  height: 48,
+                  width: 48,
+                );
+              }),
+              Expanded(
+                  child: Padding(
+                      padding: EdgeInsets.only(left: 10.0),
+                      child: ContraText(
+                        size: 16,
+                        text: widget.review_data.user,
+                        alignment: Alignment.centerLeft,
+                      ))),
+              ContraText(
+                size: 16,
+                text: widget.review_data.time,
+                alignment: Alignment.centerRight,
+              )
             ],
           ),
-        ),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            'Menus',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+                fontWeight: FontWeight.normal, fontSize: 24, color: trout),
+          ),
+          Wrap(
+            spacing: 8.0, // gap between adjacent chips
+            runSpacing: 4.0,
+            children: widget.review_data.menus
+                .map((menu) => Padding(
+                    padding: EdgeInsets.only(right: 6),
+                    child: Text(
+                      '#$menu',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: trout),
+                    )))
+                .toList(),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Text(
+            'Comment',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+                fontWeight: FontWeight.normal, fontSize: 24, color: trout),
+          ),
+          Text(
+            widget.review_data.comment,
+            style: TextStyle(
+                fontWeight: FontWeight.normal, fontSize: 17, color: trout),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+            Text(
+              'Waiting',
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                  fontWeight: FontWeight.normal, fontSize: 24, color: trout),
+            ),
+            Checkbox(
+              value: widget.review_data.waiting,
+            ),
+          ]),
+          SizedBox(
+            height: 20,
+          ),
+          Container(
+            height: 40,
+            decoration: ShapeDecoration(
+              color: Colors.grey[300],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.star,
+                      color: wood_smoke,
+                    ),
+                    ContraText(
+                      text: widget.review_data.score.toString(),
+                      size: 13,
+                      alignment: Alignment.center,
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.person,
+                      color: wood_smoke,
+                    ),
+                    ContraText(
+                      text: widget.review_data.numPeople.toString(),
+                      size: 13,
+                      alignment: Alignment.center,
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    IconButton(
+                      icon: like
+                          ? Icon(Icons.favorite)
+                          : Icon(Icons.favorite_border),
+                      tooltip: 'Like this review',
+                      onPressed: () {
+                        setState(() {
+                          like = !like;
+                          //chane the number of likes in the server
+                        });
+                      },
+                    ),
+                    ContraText(
+                      text: "no data yet",
+                      size: 13,
+                      alignment: Alignment.center,
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: ButtonRoundWithShadow(
+              size: 48,
+              iconPath: "assets/icons/close.svg",
+              borderColor: black,
+              shadowColor: black,
+              color: white,
+              callback: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          )
+        ],
       ),
-      Align(
-        alignment: Alignment.bottomCenter,
-        child: ButtonRoundWithShadow(
-          iconPath: "assets/icons/close.svg",
-          borderColor: black,
-          shadowColor: black,
-          color: white,
-          size: 48,
-          callback: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-    ]);
+    );
   }
 }
