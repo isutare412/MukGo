@@ -108,7 +108,9 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                   time: time,
                   menus: menus,
                   waiting: review.wait,
-                  userLevel: review.userLevel);
+                  userLevel: review.userLevel,
+                  likeCount: review.likeCount,
+                  likeByMe: review.likedByMe);
             }).toList();
 
             return Stack(children: <Widget>[

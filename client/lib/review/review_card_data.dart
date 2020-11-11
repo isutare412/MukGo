@@ -10,6 +10,8 @@ class ReviewCardData {
   final List<String> menus;
   final bool waiting;
   final int userLevel;
+  final int likeCount;
+  final bool likeByMe;
 
   const ReviewCardData(
       {this.reviewId,
@@ -20,5 +22,7 @@ class ReviewCardData {
       this.time,
       this.menus,
       this.waiting,
-      this.userLevel});
+      this.userLevel,
+      this.likeCount,
+      this.likeByMe});
 }

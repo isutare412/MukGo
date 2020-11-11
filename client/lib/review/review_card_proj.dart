@@ -105,10 +105,12 @@ class ReviewCard extends StatelessWidget {
                         flex: 1,
                         child: Row(
                           children: <Widget>[
-                            Icon(
-                              Icons.stars,
-                              color: wood_smoke,
-                            ),
+                            Padding(
+                                padding: const EdgeInsets.only(right: 10.0),
+                                child: Icon(
+                                  Icons.stars,
+                                  color: wood_smoke,
+                                )),
                             ContraText(
                               text: reviewData.score.toString(),
                               size: 13,
@@ -121,12 +123,34 @@ class ReviewCard extends StatelessWidget {
                         flex: 1,
                         child: Row(
                           children: <Widget>[
-                            Icon(
-                              Icons.person,
-                              color: wood_smoke,
-                            ),
+                            Padding(
+                                padding: const EdgeInsets.only(right: 10.0),
+                                child: Icon(
+                                  Icons.person,
+                                  color: wood_smoke,
+                                )),
                             ContraText(
                               text: reviewData.numPeople.toString(),
+                              size: 13,
+                              alignment: Alignment.center,
+                            )
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                                padding: const EdgeInsets.only(right: 10.0),
+                                child: Icon(
+                                  reviewData.likeByMe
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: wood_smoke,
+                                )),
+                            ContraText(
+                              text: reviewData.likeCount.toString(),
                               size: 13,
                               alignment: Alignment.center,
                             )
