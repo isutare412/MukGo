@@ -6,6 +6,14 @@ import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/svg.dart';
 
+List<String> profileAsset = [
+  'assets/images/onboarding_image_five.svg',
+  'assets/images/onboarding_image_one.svg',
+  'assets/images/onboarding_image_two.svg',
+  'assets/images/onboarding_image_three.svg',
+  'assets/images/onboarding_image_four.svg'
+];
+
 class ReviewCard extends StatelessWidget {
   final ReviewCardData reviewData;
   final VoidCallback onTap;
@@ -22,8 +30,14 @@ class ReviewCard extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Consumer<UserModel>(builder: (context, user, child) {
+              int profileIndex;
+              if (reviewData.userLevel <= 0 || reviewData.userLevel > 4) {
+                profileIndex = 0;
+              } else {
+                profileIndex = reviewData.userLevel;
+              }
               return SvgPicture.asset(
-                user.profileAsset(),
+                profileAsset[profileIndex],
                 height: 50,
                 width: 50,
               );

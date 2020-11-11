@@ -16,15 +16,6 @@ import 'package:mukgo/review/review_card_proj.dart';
 import 'package:mukgo/restaurant/review_filter.dart';
 import 'restaurant.dart';
 
-/*
-class ReviewPageArguments {
-  final String id;
-  final String name;
-  ReviewPageArguments({this.id, this.name});
-}
-*/
-List<Color> colors = [dandelion, foam, mona_lisa, fair_pink, white];
-
 class RestaurantDetailTestPage extends StatefulWidget {
   RestaurantDetailTestPage({this.restaurant_id});
   final String restaurant_id;
@@ -105,19 +96,19 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
             var data = reviews.asMap().entries.map((entry) {
               var i = entry.key;
               var review = entry.value;
-              var color = colors[i % colors.length];
               var time = formatter.format(DateTime.fromMillisecondsSinceEpoch(
                   review.timestamp.toInt()));
               var menus = review.menus;
               return ReviewCardData(
+                  reviewId: review.reviewId,
                   user: review.userName,
                   comment: review.comment,
                   score: review.score,
                   numPeople: review.numPeople,
                   time: time,
-                  bgColor: color,
                   menus: menus,
-                  waiting: review.wait);
+                  waiting: review.wait,
+                  userLevel: review.userLevel);
             }).toList();
 
             return Stack(children: <Widget>[
