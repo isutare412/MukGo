@@ -135,7 +135,7 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => ReviewDetailPage(
-                                      review_data: data[index])));
+                                      review_id: data[index].reviewId)));
                         });
                   },
                 ),
