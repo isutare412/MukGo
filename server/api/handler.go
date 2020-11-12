@@ -188,6 +188,8 @@ func (s *Server) handleReview(w http.ResponseWriter, r *http.Request) {
 		s.handleReviewGet(w, r)
 	case "POST":
 		s.handleReviewPost(w, r)
+	case "DELETE":
+		s.handleReviewDelete(w, r)
 	default:
 		httpError(w, http.StatusMethodNotAllowed, pb.Code_METHOD_NOT_ALLOWED)
 	}
@@ -397,6 +399,72 @@ func (s *Server) handleReviewPost(w http.ResponseWriter, r *http.Request) {
 	baseHeader(w.Header())
 	w.Write(ser)
 	console.Info("new review from user; User(%v)", *packet)
+}
+
+func (s *Server) handleReviewDelete(w http.ResponseWriter, r *http.Request) {
+	uid, _, err := s.authenticate(r.Header)
+	if err != nil {
+		console.Warning("on handleReviewDelete: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_AUTH_FAILED)
+		return
+	}
+
+	// parse query parameters
+	params := marshalQuery(r.URL.Query())
+	rid := params["review_id"]
+	if rid == "" {
+		console.Warning("on handleReviewDelete: %v", err)
+		httpError(w, http.StatusBadRequest, pb.Code_PROTOCOL_MISMATCH)
+		return
+	}
+
+	reviewID, err := primitive.ObjectIDFromHex(rid)
+	if err != nil {
+		console.Warning("on handleReviewDelete: invalid review id; "+
+			"rid(%v): %v", rid, err)
+		httpError(w, http.StatusBadRequest, pb.Code_INVALID_DATA)
+		return
+	}
+
+	// create packet for database server
+	var dbReq = server.ADPacketReviewDel{
+		UserID:   uid,
+		ReviewID: reviewID,
+	}
+
+	// send packet to database server and register response handler
+	response, err := s.send2DB(&dbReq)
+	if err != nil {
+		console.Warning("on handleReviewDelete: send2DB failed: %v", err)
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	// wait for response packet
+	p := <-response
+
+	// handle error packet
+	switch getError(p) {
+	case server.ETInvalid:
+		break // not error
+	case server.ETNoSuchUser:
+		console.Warning("on handleReviewDelete: user not exists; UserID(%v)",
+			uid)
+		httpError(w, http.StatusInternalServerError, pb.Code_USER_NOT_EXISTS)
+		return
+	case server.ETNoPermission:
+		console.Warning(
+			"on handleReviewDelete: no permission to delete review;"+
+				" uid(%v) rid(%v)", uid, rid)
+		httpError(w, http.StatusInternalServerError, pb.Code_NO_PERMISSION)
+		return
+	case server.ETInternal:
+		console.Warning("on handleReviewDelete: database internal error")
+		httpError(w, http.StatusInternalServerError, pb.Code_INTERNAL_ERROR)
+		return
+	}
+
+	console.Info("review deleted; user(%v) review(%v)", uid, rid)
 }
 
 func (s *Server) handleReviews(w http.ResponseWriter, r *http.Request) {
@@ -1123,10 +1191,6 @@ func (s *Server) handleLikeDelete(w http.ResponseWriter, r *http.Request) {
 	case server.ETNoSuchUser:
 		console.Warning("on handleLikeDelete: user not found")
 		httpError(w, http.StatusInternalServerError, pb.Code_USER_NOT_EXISTS)
-		return
-	case server.ETLikeExists:
-		console.Warning("on handleLikeDelete: like exists")
-		httpError(w, http.StatusInternalServerError, pb.Code_LIKE_EXISTS)
 		return
 	case server.ETInternal:
 		console.Warning("on handleLikeDelete: database internal error")

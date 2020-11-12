@@ -18,6 +18,7 @@ const Code$json = const {
     const {'1': 'USER_NOT_EXISTS', '2': 7},
     const {'1': 'RESTAURANT_NOT_EXISTS', '2': 8},
     const {'1': 'LIKE_EXISTS', '2': 9},
+    const {'1': 'NO_PERMISSION', '2': 10},
   ],
 };
 

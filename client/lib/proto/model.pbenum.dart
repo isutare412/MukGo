@@ -20,6 +20,7 @@ class Code extends $pb.ProtobufEnum {
   static const Code USER_NOT_EXISTS = Code._(7, 'USER_NOT_EXISTS');
   static const Code RESTAURANT_NOT_EXISTS = Code._(8, 'RESTAURANT_NOT_EXISTS');
   static const Code LIKE_EXISTS = Code._(9, 'LIKE_EXISTS');
+  static const Code NO_PERMISSION = Code._(10, 'NO_PERMISSION');
 
   static const $core.List<Code> values = <Code> [
     SUCCESS,
@@ -32,6 +33,7 @@ class Code extends $pb.ProtobufEnum {
     USER_NOT_EXISTS,
     RESTAURANT_NOT_EXISTS,
     LIKE_EXISTS,
+    NO_PERMISSION,
   ];
 
   static final $core.Map<$core.int, Code> _byValue = $pb.ProtobufEnum.initByValue(values);

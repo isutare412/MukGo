@@ -17,6 +17,7 @@ enum Code {
     USER_NOT_EXISTS = 7;
     RESTAURANT_NOT_EXISTS = 8;
     LIKE_EXISTS = 9;
+    NO_PERMISSION = 10;
 }
 
 enum RestaurantType {

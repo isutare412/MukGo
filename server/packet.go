@@ -23,6 +23,7 @@ const (
 	PTADReviewGet
 	PTADReviewsGet
 	PTADReviewAdd
+	PTADReviewDel
 	PTADRestaurantGet
 	PTADRestaurantAdd
 	PTADRestaurantsGet
@@ -53,6 +54,7 @@ const (
 	ETNoSuchUser
 	ETNoSuchRestaurant
 	ETLikeExists
+	ETNoPermission
 )
 
 // Packet interface can generate unique PacketType.
@@ -98,6 +100,12 @@ type ADPacketReviewAdd struct {
 	Wait      bool
 	NumPeople int32
 	Timestamp int64
+}
+
+// ADPacketReviewDel containes review data.
+type ADPacketReviewDel struct {
+	UserID   string
+	ReviewID primitive.ObjectID
 }
 
 // ADPacketRestaurantGet request restaurant data.
@@ -218,6 +226,11 @@ func (p *ADPacketReviewsGet) Type() PacketType {
 // Type implements Packet interface.
 func (p *ADPacketReviewAdd) Type() PacketType {
 	return PTADReviewAdd
+}
+
+// Type implements Packet interface.
+func (p *ADPacketReviewDel) Type() PacketType {
+	return PTADReviewDel
 }
 
 // Type implements Packet interface.

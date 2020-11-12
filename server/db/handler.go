@@ -216,8 +216,8 @@ func (s *Server) handleReviewsGet(p *server.ADPacketReviewsGet) server.Packet {
 		likes, err := queryLikesGetByReview(ctx, s.db, r.ID)
 		if err != nil {
 			console.Warning(
-				"on handleReviewsGet: failed to get likes of liked user; "+
-					"uid(%v): %v",
+				"on handleReviewsGet: failed to get likes of review; "+
+					"rid(%v): %v",
 				r.ID.Hex(), err)
 			return &server.DAPacketError{ErrorType: server.ETInternal}
 		}
@@ -358,6 +358,106 @@ func (s *Server) handleReviewAdd(p *server.ADPacketReviewAdd) server.Packet {
 			LikeCount:   user.LikeCount,
 		},
 	}
+}
+
+func (s *Server) handleReviewDel(p *server.ADPacketReviewDel) server.Packet {
+	ctx, cancel := context.WithTimeout(s.dbctx, queryTimeout)
+	defer cancel()
+
+	// check user data
+	user, err := queryUserGet(ctx, s.db, p.UserID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			console.Warning(
+				"on handleReviewDel: cannot find user; id(%v): %v",
+				p.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETNoSuchUser}
+		default:
+			console.Warning(
+				"on handleReviewDel: failed to get user; id(%v): %v",
+				p.UserID, err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// find review
+	review, err := queryReviewGet(ctx, s.db, p.ReviewID)
+	if err != nil {
+		switch err {
+		case mongo.ErrNoDocuments:
+			// database integrity contraint broken
+			console.Error(
+				"on handleReviewDel: cannot find review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		default:
+			console.Warning(
+				"on handleReviewDel: failed to get review; rid(%v): %v",
+				p.ReviewID.Hex(), err)
+			return &server.DAPacketError{ErrorType: server.ETInternal}
+		}
+	}
+
+	// check permission
+	if user.UserID != review.UserID {
+		console.Warning(
+			"on handleReviewDel: no permission; uid(%v) rid(%v): %v",
+			p.UserID, p.ReviewID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETNoPermission}
+	}
+
+	// count likes of each review
+	likes, err := queryLikesGetByReview(ctx, s.db, review.ID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewDel: failed to get likes of review; "+
+				"uid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	var likeCount = int32(len(likes))
+
+	// calculate user user data
+	user.Exp -= common.LikeExp() * int64(likeCount)
+	if user.Exp < 0 {
+		user.Exp = 0
+	}
+	user.LikeCount -= likeCount
+	if user.LikeCount < 0 {
+		user.LikeCount = 0
+	}
+
+	// delete like data
+	err = queryLikesDel(ctx, s.db, p.ReviewID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewDel: failed to delete likes; rid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	// delete review data
+	err = queryReviewDel(ctx, s.db, review.ID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewDel: failed to delete review; rid(%v): %v",
+			review.ID.Hex(), err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	// save user data into database
+	err = queryUserUpdate(ctx, s.db, user)
+	if err != nil {
+		console.Warning(
+			"on handleReviewDel: failed update user; user(%v): %v",
+			user.Name, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+
+	console.Info("deleted review; user(%v), review(%v)",
+		p.UserID, p.ReviewID.Hex())
+	return &server.DAPacketAck{}
 }
 
 func (s *Server) handleRestaurantGet(
@@ -711,7 +811,7 @@ func (s *Server) handleLikeDel(
 	if err != nil {
 		console.Warning(
 			"on handleLikeDel: failed to delete like(%v): %v", *p, err)
-		return &server.DAPacketError{ErrorType: server.ETLikeExists}
+		return &server.DAPacketError{ErrorType: server.ETInternal}
 	}
 
 	// update user user data

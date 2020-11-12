@@ -258,6 +258,24 @@ func queryReviewGet(
 	return &review, nil
 }
 
+func queryReviewDel(
+	ctx context.Context,
+	db *mongo.Database,
+	reviewID primitive.ObjectID,
+) error {
+	coll := db.Collection(CNReview)
+	_, err := coll.DeleteOne(
+		ctx,
+		bson.M{
+			"_id": reviewID,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("on queryReviewDel: %v", err)
+	}
+	return nil
+}
+
 func queryReviewAdd(
 	ctx context.Context,
 	db *mongo.Database,
@@ -330,6 +348,24 @@ func queryLikeDel(
 		bson.M{
 			"liking_user_id": likingUserID,
 			"review_id":      reviewID,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("on queryLikeDel: %v", err)
+	}
+	return nil
+}
+
+func queryLikesDel(
+	ctx context.Context,
+	db *mongo.Database,
+	reviewID primitive.ObjectID,
+) error {
+	coll := db.Collection(CNLike)
+	_, err := coll.DeleteMany(
+		ctx,
+		bson.M{
+			"review_id": reviewID,
 		},
 	)
 	if err != nil {

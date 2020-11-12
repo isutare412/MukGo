@@ -227,6 +227,24 @@ Future<bool> postReviewData(String token, {Review data, String id}) async {
   }
 }
 
+// delete review data to api
+Future<bool> deleteReviewData(String token, {String reviewId}) async {
+  try {
+    var headers = getAuthHeader(token);
+    var uri = Uri.http(apiUrl, '/review', {'review_id': reviewId});
+    var res = await http.delete(uri, headers: headers);
+    if (res.statusCode != HttpStatus.ok) {
+      printResponseError('deleteReviewData', res.bodyBytes);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    printAPIError('deleteReviewData', e);
+    return false;
+  }
+}
+
 // post like data to api
 Future<Review> postLikeData(String token, {String reviewId}) async {
   try {
