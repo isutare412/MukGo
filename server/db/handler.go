@@ -407,6 +407,16 @@ func (s *Server) handleReviewDel(p *server.ADPacketReviewDel) server.Packet {
 		return &server.DAPacketError{ErrorType: server.ETNoPermission}
 	}
 
+	// count review by user
+	reviews, err := queryReviewsGetByUser(ctx, s.db, p.UserID)
+	if err != nil {
+		console.Warning(
+			"on handleReviewDel: failed to get reviews; uid(%v): %v",
+			p.UserID, err)
+		return &server.DAPacketError{ErrorType: server.ETInternal}
+	}
+	var reviewCount = int32(len(reviews))
+
 	// count likes of each review
 	likes, err := queryLikesGetByReview(ctx, s.db, review.ID)
 	if err != nil {
@@ -427,7 +437,7 @@ func (s *Server) handleReviewDel(p *server.ADPacketReviewDel) server.Packet {
 	if user.LikeCount < 0 {
 		user.LikeCount = 0
 	}
-	user.ReviewCount--
+	user.ReviewCount = reviewCount - 1
 	if user.ReviewCount < 0 {
 		user.ReviewCount = 0
 	}
