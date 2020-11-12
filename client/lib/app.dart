@@ -9,12 +9,14 @@ import 'package:mukgo/navigator/tab_navigator.dart';
 import 'package:mukgo/map/map_detail.dart';
 import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/user/user_detail_test.dart';
+import 'package:mukgo/ranking/ranking_list_page.dart';
 import 'package:mukgo/review/review_detail_test.dart';
 
 Map<String, WidgetBuilder> routes = {
   '/map': (context) => MapDetailPage(),
   '/user': (context) => UserDetailTestPage(),
   '/restaurant': (context) => RestaurantDetailTestPage(),
+  '/ranking': (context) => RankingListPage(),
 };
 
 class App extends StatefulWidget {
@@ -98,23 +100,9 @@ class AppState extends State<App> {
                 )),
           ],
         ),
-        // floatingActionButton: Align(
-        //   alignment: Alignment.bottomRight,
-        //   child: Padding(
-        //     padding: const EdgeInsets.all(24.0),
-        //     child: ButtonRoundWithShadow(
-        //         size: 60,
-        //         borderColor: wood_smoke,
-        //         color: white,
-        //         callback: () {
-        //           googleSignOut(context);
-        //         },
-        //         shadowColor: wood_smoke,
-        //         iconPath: 'assets/icons/ic_add.svg'),
-        //   ),
-        // ),
         body: Stack(children: <Widget>[
           _buildOffstageNavigator(TabItem.map, '/map'),
+          _buildOffstageNavigator(TabItem.ranking, '/ranking'),
           _buildOffstageNavigator(TabItem.user, '/user'),
         ]),
         bottomNavigationBar: BottomNavigation(

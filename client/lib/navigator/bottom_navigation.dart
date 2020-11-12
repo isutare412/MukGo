@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:contra/utils/colors.dart';
 
-enum TabItem { map, user }
+enum TabItem { map, ranking, user }
 
 Map<TabItem, String> tabName = {
   TabItem.map: 'map',
+  TabItem.ranking: 'ranking',
   TabItem.user: 'my page',
 };
 
 Map<TabItem, int> tabIndex = {
   TabItem.map: 0,
-  TabItem.user: 1,
+  TabItem.ranking: 1,
+  TabItem.user: 2,
 };
 
 class BottomNavigation extends StatelessWidget {
@@ -24,6 +26,9 @@ class BottomNavigation extends StatelessWidget {
       items: [
         BottomNavigationBarItem(
             icon: Icon(Icons.map), title: Text(tabName[TabItem.map])),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.insert_chart),
+            title: Text(tabName[TabItem.ranking])),
         BottomNavigationBarItem(
             icon: Icon(Icons.person), title: Text(tabName[TabItem.user])),
       ],

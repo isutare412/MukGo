@@ -92,28 +92,7 @@ class UserModel extends ChangeNotifier {
   }
 
   String profileAsset() {
-    switch (level) {
-      case 1:
-        {
-          return 'assets/images/onboarding_image_one.svg';
-        }
-      case 2:
-        {
-          return 'assets/images/onboarding_image_two.svg';
-        }
-      case 3:
-        {
-          return 'assets/images/onboarding_image_three.svg';
-        }
-      case 4:
-        {
-          return 'assets/images/onboarding_image_four.svg';
-        }
-      default:
-        {
-          return 'assets/images/onboarding_image_five.svg';
-        }
-    }
+    return levelToProfileAsset(level);
   }
 
   void clear() {
@@ -128,5 +107,30 @@ class UserModel extends ChangeNotifier {
         sightRadius: null,
         reviewCount: null,
         likeCount: null);
+  }
+}
+
+String levelToProfileAsset(int level) {
+  switch (level) {
+    case 1:
+      {
+        return 'assets/images/onboarding_image_one.svg';
+      }
+    case 2:
+      {
+        return 'assets/images/onboarding_image_two.svg';
+      }
+    case 3:
+      {
+        return 'assets/images/onboarding_image_three.svg';
+      }
+    case 4:
+      {
+        return 'assets/images/onboarding_image_four.svg';
+      }
+    default:
+      {
+        return 'assets/images/onboarding_image_five.svg';
+      }
   }
 }
