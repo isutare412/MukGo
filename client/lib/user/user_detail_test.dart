@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/user/user_badge.dart';
 import 'package:mukgo/review/review_detail_test.dart';
 import 'package:mukgo/auth/auth_api.dart';
 
@@ -152,8 +153,30 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
                     ],
                   ),
                 ),
+                Divider(
+                  color: santas_gray_10,
+                  thickness: 1,
+                  indent: 24,
+                  endIndent: 24,
+                ),
+                Consumer<UserModel>(builder: (context, user, child) {
+                  var badges = user.restaurantTypeCounts != null
+                      ? user.restaurantTypeCounts.map((e) {
+                          return UserBadge(type: e.type, count: e.count);
+                        })
+                      : <UserBadge>[];
+                  return BadgeGrid(
+                    badges: badges,
+                  );
+                }),
+                Divider(
+                  color: santas_gray_10,
+                  thickness: 1,
+                  indent: 24,
+                  endIndent: 24,
+                ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.only(bottom: 12, top: 24),
                   child: RaisedButton(
                     padding: EdgeInsets.all(16),
                     color: lightening_yellow,
