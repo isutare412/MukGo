@@ -10,13 +10,15 @@ import 'package:intl/intl.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/review/review_card_data.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
 
 class ReviewDetailPage extends StatefulWidget {
-  ReviewDetailPage({this.review_id});
+  ReviewDetailPage({this.review_id, this.restaurant_id});
   final String review_id;
+  final String restaurant_id;
 
   @override
   _ReviewDetailPageState createState() => _ReviewDetailPageState();
@@ -24,20 +26,38 @@ class ReviewDetailPage extends StatefulWidget {
 
 class _ReviewDetailPageState extends State<ReviewDetailPage> {
   Future<Review> futureReview;
+  bool like;
   final DateFormat formatter = DateFormat('MMMd');
 
   @override
   void initState() {
     super.initState();
+    like = true;
     futureReview = Future.microtask(() {
       return fetchReviewData(readAuth(context).token,
           reviewId: widget.review_id);
     });
   }
 
+  void onClickHandler(likedByMe) {
+    if (likedByMe) {
+      futureReview = Future.microtask(() {
+        return deleteLikeData(readAuth(context).token,
+            reviewId: widget.review_id);
+      });
+    } else {
+      futureReview = Future.microtask(() {
+        return postLikeData(readAuth(context).token,
+            reviewId: widget.review_id);
+      });
+    }
+    setState(() {
+      like = !like;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
     return FutureBuilder<Review>(
         future: futureReview,
         builder: (context, snapshot) {
@@ -199,6 +219,7 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                                       child: Icon(Icons.favorite_border)),
                               tooltip: 'Like this review',
                               onPressed: () {
+                                onClickHandler(review.likedByMe);
                                 //chane the number of likes in the server
                               },
                             ),
@@ -225,7 +246,13 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                         shadowColor: black,
                         color: white,
                         callback: () {
-                          Navigator.of(context).pop();
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      RestaurantDetailTestPage(
+                                        restaurant_id: widget.restaurant_id,
+                                      )));
                         },
                       ),
                     ),

@@ -248,10 +248,10 @@ class _ReviewForm extends State<ReviewForm> {
                     ButtonPlainWithIcon(
                       color: wood_smoke,
                       textColor: white,
-                      iconPath: "assets/icons/arrow_next.svg",
+                      iconPath: 'assets/icons/arrow_next.svg',
                       isPrefix: false,
                       isSuffix: true,
-                      text: "Post Review",
+                      text: 'Post Review',
                       callback: () async {
                         var auth = getAuth(context);
                         var review = Review()..comment = commentController.text;
