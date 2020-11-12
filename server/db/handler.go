@@ -427,6 +427,10 @@ func (s *Server) handleReviewDel(p *server.ADPacketReviewDel) server.Packet {
 	if user.LikeCount < 0 {
 		user.LikeCount = 0
 	}
+	user.ReviewCount--
+	if user.ReviewCount < 0 {
+		user.ReviewCount = 0
+	}
 
 	// delete like data
 	err = queryLikesDel(ctx, s.db, p.ReviewID)
