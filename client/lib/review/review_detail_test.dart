@@ -246,13 +246,7 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                         shadowColor: black,
                         color: white,
                         callback: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      RestaurantDetailTestPage(
-                                        restaurant_id: widget.restaurant_id,
-                                      )));
+                          Navigator.pop(context);
                         },
                       ),
                     ),
