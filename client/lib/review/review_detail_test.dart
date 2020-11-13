@@ -246,7 +246,17 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                         shadowColor: black,
                         color: white,
                         callback: () {
-                          Navigator.pop(context);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      RestaurantDetailTestPage(
+                                        restaurant_id: widget.restaurant_id,
+                                      ))).then((value) {
+                            setState(() {
+                              like = true;
+                            });
+                          });
                         },
                       ),
                     ),
