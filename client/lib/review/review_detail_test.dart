@@ -37,6 +37,10 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
       return fetchReviewData(readAuth(context).token,
           reviewId: widget.review_id);
     });
+    Future.microtask(() {
+      // fetch user info after randering
+      return context.read<UserModel>().fetch();
+    });
   }
 
   void onClickHandler(likedByMe) {
@@ -236,31 +240,71 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Center(
-                      child: ButtonRoundWithShadow(
-                        size: 48,
-                        iconPath: "assets/icons/close.svg",
-                        borderColor: black,
-                        shadowColor: black,
-                        color: white,
-                        callback: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      RestaurantDetailTestPage(
-                                        restaurant_id: widget.restaurant_id,
-                                      ))).then((value) {
-                            setState(() {
-                              like = true;
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                  )
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: Center(
+                            child: ButtonRoundWithShadow(
+                              size: 48,
+                              iconPath: "assets/icons/arrow_back.svg",
+                              borderColor: black,
+                              shadowColor: black,
+                              color: white,
+                              callback: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            RestaurantDetailTestPage(
+                                              restaurant_id:
+                                                  widget.restaurant_id,
+                                            ))).then((value) {
+                                  setState(() {
+                                    like = true;
+                                  });
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: Consumer<UserModel>(
+                              builder: (context, user, child) {
+                            if (user.id == review.userId) {
+                              return IconButton(
+                                  icon: Icon(Icons.delete),
+                                  iconSize: 48,
+                                  onPressed: () async {
+                                    var result = await deleteReviewData(
+                                        getAuth(context).token,
+                                        reviewId: widget.review_id);
+                                    if (result) {
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  RestaurantDetailTestPage(
+                                                    restaurant_id:
+                                                        widget.restaurant_id,
+                                                  ))).then((value) {
+                                        setState(() {
+                                          like = true;
+                                        });
+                                      });
+                                    }
+                                  });
+                            } else {
+                              return Icon(
+                                Icons.delete,
+                                color: white,
+                              );
+                            }
+                          }),
+                        )
+                      ]),
                 ],
               ),
             ));
