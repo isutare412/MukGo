@@ -188,18 +188,19 @@ class _MapDetailPageState extends State<MapDetailPage> {
           circles: _circles,
         ),
         floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              floating = !floating;
-              if (floating) {
-                _getPositionSubscription?.cancel();
-                locationChanged(settedLocation);
-              } else {
-                _getPositionSubscription = getPositionStream()
-                    .listen((position) => positionStream(position, controller));
-              }
-            },
-            child: Icon(Icons.place)),
-        backgroundColor: Colors.blue,
+          onPressed: () {
+            floating = !floating;
+            if (floating) {
+              _getPositionSubscription?.cancel();
+              locationChanged(settedLocation);
+            } else {
+              _getPositionSubscription = getPositionStream()
+                  .listen((position) => positionStream(position, controller));
+            }
+          },
+          child: Icon(Icons.place),
+          backgroundColor: floating ? Colors.red : Colors.blue,
+        ),
       ),
     );
   }
