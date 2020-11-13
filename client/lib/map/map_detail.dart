@@ -39,45 +39,53 @@ class _MapDetailPageState extends State<MapDetailPage> {
 
   final Set<Marker> _markers = Set<Marker>();
   final Set<Circle> _circles = Set<Circle>();
+  final settedLocation = LatLng(37.478206, 126.956936);
 
   var _getPositionSubscription;
   var userIcon;
-  var initLocation;
+  var floating = false;
+  var controller;
+
   UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
-    _getPositionSubscription = getPositionStream().listen((position) {
-      var markerShown = false;
-      for (var m in _markers) {
-        if (markerShown) break;
-        controller.isMarkerInfoWindowShown(m.markerId).then((value) {
-          if (value) {
-            markerShown = true;
-          }
-        });
-      }
-      context.read<UserModel>().fetch().then((value) {
-        userData = context.read<UserModel>();
-        var radius = 100.0;
-        if (userData != null) {
-          radius = userData.sightRadius;
-          var zoom = 19 - ((radius + radius) / 100) / 2;
+    this.controller = controller;
+    _getPositionSubscription = getPositionStream()
+        .listen((position) => positionStream(position, controller));
+  }
 
-          if (!markerShown) {
-            controller.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    target: LatLng(position.latitude, position.longitude),
-                    zoom: zoom)));
-          }
-
-          updatePinOnMap(position, radius);
-          updateRestaurants(position, radius);
+  void positionStream(position, controller) {
+    var markerShown = false;
+    for (var m in _markers) {
+      if (markerShown) break;
+      controller.isMarkerInfoWindowShown(m.markerId).then((value) {
+        if (value) {
+          markerShown = true;
         }
       });
+    }
+    locationChanged(position);
+  }
+
+  void locationChanged(position) {
+    context.read<UserModel>().fetch().then((value) {
+      userData = context.read<UserModel>();
+      var radius = 100.0;
+      if (userData != null) {
+        radius = userData.sightRadius;
+        var zoom = 19 - ((radius + radius) / 100) / 2;
+
+        controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: zoom)));
+
+        updatePinOnMap(position, radius);
+        updateRestaurants(position, radius);
+      }
     });
   }
 
-  void updatePinOnMap(Position position, double radius) async {
+  void updatePinOnMap(position, double radius) async {
     var svgDir = userData.profileAsset();
     var bitmapDescriptorFromSvgAsset =
         _bitmapDescriptorFromSvgAsset(context, svgDir);
@@ -90,6 +98,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
       _markers.add(Marker(
         markerId: MarkerId('currLoc'),
         position: LatLng(position.latitude, position.longitude),
+        draggable: floating,
+        onDragEnd: locationChanged,
         icon: userIcon,
         anchor: Offset(0.5, 0.5),
       ));
@@ -107,7 +117,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   }
 
   // position of restaurants
-  void updateRestaurants(Position position, double radius) async {
+  void updateRestaurants(position, double radius) async {
     var coord = Coordinate();
     coord.latitude = position.latitude;
     coord.longitude = position.longitude;
@@ -177,6 +187,19 @@ class _MapDetailPageState extends State<MapDetailPage> {
           markers: _markers,
           circles: _circles,
         ),
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              floating = !floating;
+              if (floating) {
+                _getPositionSubscription?.cancel();
+                locationChanged(settedLocation);
+              } else {
+                _getPositionSubscription = getPositionStream()
+                    .listen((position) => positionStream(position, controller));
+              }
+            },
+            child: Icon(Icons.place)),
+        backgroundColor: Colors.blue,
       ),
     );
   }
