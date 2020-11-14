@@ -15,6 +15,14 @@ import 'package:mukgo/review/review_card_data.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
 
+List<String> profileAsset = [
+  'assets/images/onboarding_image_five.svg',
+  'assets/images/onboarding_image_one.svg',
+  'assets/images/onboarding_image_two.svg',
+  'assets/images/onboarding_image_three.svg',
+  'assets/images/onboarding_image_four.svg'
+];
+
 class ReviewDetailPage extends StatefulWidget {
   ReviewDetailPage({this.review_id, this.restaurant_id});
   final String review_id;
@@ -77,10 +85,16 @@ class _ReviewDetailPageState extends State<ReviewDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Consumer<UserModel>(builder: (context, user, child) {
+                        int profileIndex;
+                        if (review.userLevel <= 0 || review.userLevel > 4) {
+                          profileIndex = 0;
+                        } else {
+                          profileIndex = review.userLevel;
+                        }
                         return SvgPicture.asset(
-                          user.profileAsset(),
-                          height: 48,
-                          width: 48,
+                          profileAsset[profileIndex],
+                          height: 50,
+                          width: 50,
                         );
                       }),
                       Expanded(
