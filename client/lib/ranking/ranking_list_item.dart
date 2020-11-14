@@ -36,6 +36,14 @@ class RankingListItem extends StatelessWidget {
               side: BorderSide(color: wood_smoke, width: 2))),
       child: Stack(
         children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: SvgPicture.asset(
+              user.asset,
+              width: 210,
+              height: 230,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
             child: Column(
@@ -100,14 +108,6 @@ class RankingListItem extends StatelessWidget {
                   ],
                 )
               ],
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: SvgPicture.asset(
-              user.asset,
-              width: 210,
-              height: 230,
             ),
           ),
         ],
