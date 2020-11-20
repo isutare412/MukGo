@@ -9,11 +9,8 @@ import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/restaurant/restaurant_detail_test.dart';
-import 'package:mukgo/user/user_model.dart';
-import 'package:provider/provider.dart';
 
 import 'input_text_box_bigger.dart';
-import 'login_input_email_text.dart';
 import 'dart:developer' as developer;
 
 class ReviewForm extends StatefulWidget {

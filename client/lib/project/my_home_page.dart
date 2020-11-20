@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:contra/custom_widgets/button_round_with_shadow.dart';
 import 'package:contra/utils/colors.dart';
 
-import 'package:mukgo/project/sample_page.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/map/map_detail.dart';
-import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/user/user_detail_test.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -53,23 +51,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )),
           //-------For Contra Sample Pages (END) ------//
-          Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RestaurantDetailTestPage(
-                        restaurant_id: '5f91b1b3f0bf6a22042589fa',
-                    ))
-                  );
-                },
-                child: Icon(
-                  Icons.restaurant_menu,
-                  size: 26.0,
-                ),
-              )),    
         ],
       ),
       body: Center(

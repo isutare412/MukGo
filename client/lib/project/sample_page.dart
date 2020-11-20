@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:contra/onboarding/onboard_main.dart';
-import 'package:mukgo/review/review_detail.dart';
 
 import 'package:mukgo/review/review_detail_test.dart';
 
@@ -36,16 +35,6 @@ class _SamplePageState extends State<SamplePage> {
                       MaterialPageRoute(builder: (context) => OnboardPageMain()),
                   );
                   */
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.all(20),
-                trailing: Icon(Icons.navigate_next),
-                title: Text("Review"),
-                onTap: () {
-                  Navigator.pushNamed(context, "/project_review",
-                      arguments: ReviewPageArguments(
-                          id: '5f915970fc1495705932c25a', name: 'my home'));
                 },
               ),
               ListTile(

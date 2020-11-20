@@ -1,17 +1,14 @@
-import 'package:contra/custom_widgets/button_plain.dart';
-import 'package:contra/shopping/category_item.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/restaurant/restaurant_badge.dart';
 
-class ShoppingCardPagerItem extends StatelessWidget {
+class RestaurantCard extends StatelessWidget {
   final String restaurantName;
   final RestaurantType restaurantType;
 
-  const ShoppingCardPagerItem({this.restaurantName, this.restaurantType});
+  const RestaurantCard({this.restaurantName, this.restaurantType});
 
   @override
   Widget build(BuildContext context) {

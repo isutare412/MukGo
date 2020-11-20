@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:contra/custom_widgets/button_solid_with_icon.dart';
-import 'package:mukgo/restaurant/shopping_card_pager_item.dart';
+import 'package:mukgo/restaurant/restaurant_card.dart';
 import 'package:mukgo/review/review_card_data.dart';
 
 import 'package:mukgo/review/review_detail_test.dart';
@@ -95,7 +95,7 @@ class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 var restaurantData = snapshot.data;
-                return ShoppingCardPagerItem(
+                return RestaurantCard(
                     restaurantName: restaurantData.name,
                     restaurantType: restaurantData.type);
               }

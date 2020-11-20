@@ -79,7 +79,6 @@ import 'package:mukgo/auth/login_page.dart';
 import 'package:mukgo/project/my_home_page.dart';
 import 'package:mukgo/map/map_detail.dart';
 import 'package:mukgo/review/review_detail_test.dart';
-import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:mukgo/loading.dart';
 import 'package:mukgo/app.dart';
@@ -103,7 +102,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/project': (context) => App(title: 'Mukgo Project'),
         '/project_map': (context) => MapDetailPage(),
-        '/project_restaurant': (context) => RestaurantDetailPage(),
         '/project_user': (context) => ChartsPage(
               isBarChart: false,
             ),
