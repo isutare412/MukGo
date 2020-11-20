@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/restaurant/restaurant_badge.dart';
 
 class UserBadge {
   final RestaurantType type;
@@ -37,30 +38,9 @@ class BadgeGrid extends StatelessWidget {
           var count = badges[index].count;
 
           return Container(
-              color: dandelion,
-              child: Padding(
-                  padding: EdgeInsets.all(6),
-                  child: Center(
-                      child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                        Text(
-                          '$type',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: wood_smoke,
-                          ),
-                        ),
-                        Text(
-                          '$count',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: wood_smoke,
-                          ),
-                        )
-                      ]))));
+              child: RestaurantBadge(
+            restaurantType: type,
+          ));
         });
   }
 }
