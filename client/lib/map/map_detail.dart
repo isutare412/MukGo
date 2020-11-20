@@ -27,6 +27,8 @@ import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/restaurant/restaurant_badge.dart';
 import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
@@ -35,7 +37,7 @@ class MapDetailPage extends StatefulWidget {
 }
 
 class _MapDetailPageState extends State<MapDetailPage> {
-  GoogleMapController mapController;
+  GoogleMapController _controller;
 
   final Set<Marker> _markers = Set<Marker>();
   final Set<Circle> _circles = Set<Circle>();
@@ -44,27 +46,36 @@ class _MapDetailPageState extends State<MapDetailPage> {
   var _getPositionSubscription;
   var userIcon;
   var floating = false;
-  var controller;
+  var restaurantIcons;
 
   UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
-    this.controller = controller;
-    _getPositionSubscription = getPositionStream()
-        .listen((position) => positionStream(position, controller));
+    _controller = controller;
+
+    _getPositionSubscription =
+        getPositionStream().listen((position) => positionStream(position));
+
+    restaurantIcons = <RestaurantType, BitmapDescriptor>{};
+    badgePathMap.forEach((key, svgDir) async {
+      var bitmapDescriptorFromSvgAsset =
+          _bitmapDescriptorFromSvgAsset(context, svgDir);
+      restaurantIcons[key] = await bitmapDescriptorFromSvgAsset;
+    });
   }
 
-  void positionStream(position, controller) {
+  void positionStream(position) async {
     var markerShown = false;
     for (var m in _markers) {
       if (markerShown) break;
-      controller.isMarkerInfoWindowShown(m.markerId).then((value) {
-        if (value) {
-          markerShown = true;
-        }
-      });
+      var value = await _controller.isMarkerInfoWindowShown(m.markerId);
+      if (value) {
+        markerShown = true;
+      }
     }
-    locationChanged(position);
+    if (!markerShown) {
+      locationChanged(position);
+    }
   }
 
   void locationChanged(position) {
@@ -75,7 +86,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
         radius = userData.sightRadius;
         var zoom = 19 - ((radius + radius) / 100) / 2;
 
-        controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        _controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
             target: LatLng(position.latitude, position.longitude),
             zoom: zoom)));
 
@@ -132,13 +143,16 @@ class _MapDetailPageState extends State<MapDetailPage> {
         restaurantData.restaurants.forEach((r) {
           if (isInMyCircle(position.latitude, position.longitude,
               r.coord.latitude, r.coord.longitude, radius)) {
+            var restaurantIcon = restaurantIcons[r.type];
             _markers.add(Marker(
               markerId: MarkerId(r.id),
               position: LatLng(r.coord.latitude, r.coord.longitude),
+              icon: restaurantIcon,
+              anchor: Offset(0.5, 0.5),
               zIndex: 1.0,
               infoWindow: InfoWindow(
                   title: r.name,
-                  snippet: 'This is ' + r.name,
+                  //snippet: 'This is ' + r.name,
                   onTap: () {
                     //Navigator.pushNamed(context, '/project_restaurant',
                     //    arguments: r.id);
@@ -195,7 +209,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
               locationChanged(settedLocation);
             } else {
               _getPositionSubscription = getPositionStream()
-                  .listen((position) => positionStream(position, controller));
+                  .listen((position) => positionStream(position));
             }
           },
           child: Icon(Icons.place),
