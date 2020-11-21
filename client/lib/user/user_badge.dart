@@ -17,10 +17,6 @@ class BadgeGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (badges.isEmpty) {
-      badges = testBadges();
-    }
-
     return GridView.builder(
         padding: EdgeInsets.all(24),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -43,12 +39,4 @@ class BadgeGrid extends StatelessWidget {
           ));
         });
   }
-}
-
-List<UserBadge> testBadges() {
-  return List.generate(12, (index) {
-    return UserBadge(
-        type: RestaurantType.values[index % RestaurantType.values.length],
-        count: index);
-  });
 }

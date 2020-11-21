@@ -29,14 +29,11 @@ class _UserDetailTestPageState extends State<UserDetailTestPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      // fetch user info after randering
-      await context.read<UserModel>().fetch(heavy: true);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<UserModel>(context, listen: false).fetch(heavy: true);
     return Material(
       child: SmartRefresher(
           enablePullDown: true,
