@@ -1,35 +1,20 @@
-//import 'package:contra/custom_widgets/button_round_with_shadow.dart';
-//import 'package:contra/custom_widgets/button_solid_with_icon.dart';
-//import 'package:contra/custom_widgets/custom_app_bar.dart';
-//import 'package:contra/login/contra_text.dart';
-//import 'package:contra/utils/colors.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:math';
-//import 'dart:convert';
-//import 'dart:io';
 
-//import 'package:fixnum/fixnum.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-//import '../src/locations.dart' as locations;
-//import '../api/api.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:mukgo/auth/auth_api.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:mukgo/api/api.dart';
-import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/proto/model.pbserver.dart';
-import 'package:mukgo/proto/request.pbserver.dart';
 import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/restaurant/restaurant_badge.dart';
-import 'map_widget.dart';
 
 class MapDetailPage extends StatefulWidget {
   @override
@@ -43,6 +28,9 @@ class _MapDetailPageState extends State<MapDetailPage> {
   final Set<Circle> _circles = Set<Circle>();
   final settedLocation = LatLng(37.478206, 126.956936);
 
+  var isRestaurantLoading = true;
+  var isUserLoading = true;
+  var isLoading = true;
   var _getPositionSubscription;
   var userIcon;
   var floating = false;
@@ -51,6 +39,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
   UserModel userData;
 
   Future<void> _onMapCreated(controller) async {
+    isRestaurantLoading = isUserLoading = isLoading = true;
     _controller = controller;
 
     _getPositionSubscription =
@@ -124,6 +113,9 @@ class _MapDetailPageState extends State<MapDetailPage> {
           fillColor: Colors.lightBlueAccent.withOpacity(0.5),
           strokeWidth: 3,
           strokeColor: Colors.lightBlueAccent));
+
+      isUserLoading = false;
+      isLoading = isUserLoading || isRestaurantLoading;
     });
   }
 
@@ -152,10 +144,7 @@ class _MapDetailPageState extends State<MapDetailPage> {
               zIndex: 1.0,
               infoWindow: InfoWindow(
                   title: r.name,
-                  //snippet: 'This is ' + r.name,
                   onTap: () {
-                    //Navigator.pushNamed(context, '/project_restaurant',
-                    //    arguments: r.id);
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -165,6 +154,8 @@ class _MapDetailPageState extends State<MapDetailPage> {
             ));
           }
         });
+        isRestaurantLoading = false;
+        isLoading = isUserLoading || isRestaurantLoading;
       });
     });
 
@@ -197,13 +188,14 @@ class _MapDetailPageState extends State<MapDetailPage> {
           //zoomGesturesEnabled: false,
           onMapCreated: _onMapCreated,
           initialCameraPosition:
-              CameraPosition(target: const LatLng(37, 126), zoom: 11.0),
+              CameraPosition(target: settedLocation, zoom: 11.0),
           markers: _markers,
           circles: _circles,
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             floating = !floating;
+            isRestaurantLoading = isUserLoading = isLoading = true;
             if (floating) {
               _getPositionSubscription?.cancel();
               locationChanged(settedLocation);
@@ -212,27 +204,21 @@ class _MapDetailPageState extends State<MapDetailPage> {
                   .listen((position) => positionStream(position));
             }
           },
-          child: Icon(Icons.place),
+          child: Stack(children: [
+            Align(alignment: Alignment.center, child: Icon(Icons.place)),
+            Align(
+                alignment: Alignment.center,
+                child: Visibility(
+                    visible: isLoading,
+                    child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white)))),
+          ]),
           backgroundColor: floating ? Colors.red : Colors.blue,
         ),
       ),
     );
   }
-}
-
-Future<Restaurants> getDummyRestaurants() async {
-  await Future.delayed(Duration(microseconds: 100));
-  var dummyRestaurants = Restaurants();
-  for (var i = 0; i < 40; i++) {
-    var dummyRestaurant = Restaurant();
-    dummyRestaurant.id = "5f8e9eafcc0ad2855f7c158" + i.toString();
-    dummyRestaurant.name = "restaurant" + i.toString();
-    dummyRestaurant.coord = Coordinate();
-    dummyRestaurant.coord.latitude = 37.4654628 + (i - 20) / 5000;
-    dummyRestaurant.coord.longitude = 126.9572302 + (i - 20) / 5000;
-    dummyRestaurants.restaurants.add(dummyRestaurant);
-  }
-  return dummyRestaurants;
 }
 
 Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
@@ -251,116 +237,3 @@ Future<BitmapDescriptor> _bitmapDescriptorFromSvgAsset(
   var bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   return BitmapDescriptor.fromBytes(bytes.buffer.asUint8List());
 }
-
-/**
-class _MapDetailPageState extends State<MapDetailPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: persian_blue,
-      appBar: CustomAppBar(
-        height: 120,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 24.0),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: ButtonRoundWithShadow(
-                      size: 48,
-                      borderColor: lightening_yellow,
-                      color: lightening_yellow,
-                      callback: () {
-                        Navigator.pop(context);
-                      },
-                      shadowColor: wood_smoke,
-                      iconPath: "assets/icons/arrow_back_white.svg"),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: ContraText(
-                size: 27,
-                color: white,
-                alignment: Alignment.bottomCenter,
-                text: "Directions",
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                width: 20,
-              ),
-            )
-          ],
-        ),
-      ),
-      body: Column(
-        children: <Widget>[
-          SizedBox(
-            height: 24,
-          ),
-          Expanded(
-            flex: 4,
-            child: Container(
-              padding: EdgeInsets.all(24),
-              child: MapWidget(
-                distance: "2.5",
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: ContraText(
-                      color: white,
-                      size: 44,
-                      weight: FontWeight.w800,
-                      alignment: Alignment.centerLeft,
-                      text: "Space 8",
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: ContraText(
-                      color: white,
-                      size: 21,
-                      weight: FontWeight.w500,
-                      alignment: Alignment.centerLeft,
-                      text: "Wolf Crater, 897, \n New Milkyway Mars",
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: ButtonPlainWithIcon(
-                      text: "Get Direction",
-                      color: wood_smoke,
-                      callback: () {},
-                      size: 48,
-                      isPrefix: false,
-                      isSuffix: true,
-                      textColor: white,
-                      iconPath: "assets/icons/ic_navigation_white.svg",
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
- */
