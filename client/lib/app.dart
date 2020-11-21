@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:contra/utils/colors.dart';
-import 'package:contra/custom_widgets/button_round_with_shadow.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/navigator/bottom_navigation.dart';
 import 'package:mukgo/navigator/tab_navigator.dart';
@@ -10,7 +8,6 @@ import 'package:mukgo/map/map_detail.dart';
 import 'package:mukgo/restaurant/restaurant_detail_test.dart';
 import 'package:mukgo/user/user_detail_test.dart';
 import 'package:mukgo/ranking/ranking_list_page.dart';
-import 'package:mukgo/review/review_detail_test.dart';
 
 Map<String, WidgetBuilder> routes = {
   '/map': (context) => MapDetailPage(),
@@ -67,38 +64,6 @@ class AppState extends State<App> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
-
-          //-------For Contra Sample Pages (START) ------//
-          actions: <Widget>[
-            Padding(
-                padding: EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/sample_page');
-                  },
-                  child: Icon(
-                    Icons.category,
-                    size: 26.0,
-                  ),
-                )),
-            //-------For Contra Sample Pages (END) ------//
-            Padding(
-                padding: EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => RestaurantDetailTestPage(
-                                  restaurant_id: '5f91b1b3f0bf6a22042589fa',
-                                )));
-                  },
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    size: 26.0,
-                  ),
-                )),
-          ],
         ),
         body: Stack(children: <Widget>[
           _buildOffstageNavigator(TabItem.map, '/map'),

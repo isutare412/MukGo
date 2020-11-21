@@ -22,7 +22,7 @@ class UserModel extends ChangeNotifier {
   double sightRadius;
   int reviewCount;
   int likeCount;
-  List<RestaurantTypeCount> restaurantTypeCounts;
+  List<RestaurantTypeCount> restaurantTypeCounts = [];
 
   // simple auth model accesors for debug usage
   AuthModel get auth => _auth;
@@ -88,7 +88,8 @@ class UserModel extends ChangeNotifier {
         expRatio: userData.expRatio,
         sightRadius: userData.sightRadius,
         reviewCount: userData.reviewCount,
-        likeCount: userData.likeCount);
+        likeCount: userData.likeCount,
+        rtCounts: userData.restaurantTypeCount);
   }
 
   String profileAsset() {
