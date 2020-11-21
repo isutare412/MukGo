@@ -194,14 +194,16 @@ class _MapDetailPageState extends State<MapDetailPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            floating = !floating;
-            isRestaurantLoading = isUserLoading = isLoading = true;
-            if (floating) {
-              _getPositionSubscription?.cancel();
-              locationChanged(settedLocation);
-            } else {
-              _getPositionSubscription = getPositionStream()
-                  .listen((position) => positionStream(position));
+            if (!isLoading) {
+              isRestaurantLoading = isUserLoading = isLoading = true;
+              floating = !floating;
+              if (floating) {
+                _getPositionSubscription?.cancel();
+                locationChanged(settedLocation);
+              } else {
+                _getPositionSubscription = getPositionStream()
+                    .listen((position) => positionStream(position));
+              }
             }
           },
           child: Stack(children: [
