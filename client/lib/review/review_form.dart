@@ -8,7 +8,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
-import 'package:mukgo/restaurant/restaurant_detail_test.dart';
+import 'package:mukgo/restaurant/restaurant_detail.dart';
 
 import 'input_text_box_bigger.dart';
 import 'dart:developer' as developer;

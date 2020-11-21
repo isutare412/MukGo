@@ -5,8 +5,8 @@ import 'package:mukgo/navigator/tab_navigator.dart';
 
 // pages
 import 'package:mukgo/map/map_detail.dart';
-import 'package:mukgo/restaurant/restaurant_detail_test.dart';
-import 'package:mukgo/user/user_detail_test.dart';
+import 'package:mukgo/restaurant/restaurant_detail.dart';
+import 'package:mukgo/user/user_detail.dart';
 import 'package:mukgo/ranking/ranking_list_page.dart';
 
 Map<String, WidgetBuilder> routes = {

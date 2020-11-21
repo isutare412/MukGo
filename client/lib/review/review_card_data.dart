@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 class ReviewCardData {
   final String reviewId;
   final String user;

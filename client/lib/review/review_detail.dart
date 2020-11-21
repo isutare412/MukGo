@@ -1,6 +1,4 @@
-import 'package:contra/custom_widgets/button_plain_with_shadow.dart';
 import 'package:contra/custom_widgets/button_round_with_shadow.dart';
-import 'package:contra/custom_widgets/custom_app_bar.dart';
 import 'package:contra/login/contra_text.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,8 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_api.dart';
 import 'package:mukgo/proto/model.pb.dart';
-import 'package:mukgo/restaurant/restaurant_detail_test.dart';
-import 'package:mukgo/review/review_card_data.dart';
+import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:mukgo/user/user_model.dart';
 import 'package:provider/provider.dart';
 

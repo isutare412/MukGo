@@ -23,7 +23,7 @@ import 'package:mukgo/api/api.dart';
 import 'package:mukgo/auth/auth_model.dart';
 import 'package:mukgo/proto/model.pbserver.dart';
 import 'package:mukgo/proto/request.pbserver.dart';
-import 'package:mukgo/restaurant/restaurant_detail_test.dart';
+import 'package:mukgo/restaurant/restaurant_detail.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mukgo/user/user_model.dart';

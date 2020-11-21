@@ -1,155 +1,222 @@
-import 'package:contra/custom_widgets/button_round_with_shadow.dart';
-import 'package:contra/custom_widgets/custom_app_bar.dart';
-import 'package:contra/custom_widgets/button_solid_with_icon.dart';
-import 'package:contra/login/contra_text.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:contra/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:mukgo/user/user_model.dart';
+import 'package:mukgo/user/user_badge.dart';
+import 'package:mukgo/auth/auth_api.dart';
 
-import 'bar_chart.dart';
-import 'line_chart.dart';
-import 'expense.dart';
-import 'expenses_list_item.dart';
-
-class UserDetail extends StatefulWidget {
-  bool isBarChart;
-
-  UserDetail({this.isBarChart});
+class UserDetailTestPage extends StatefulWidget {
+  const UserDetailTestPage({Key key}) : super(key: key);
 
   @override
-  _UserDetailState createState() => _UserDetailState();
+  _UserDetailTestPageState createState() => _UserDetailTestPageState();
 }
 
-class _UserDetailState extends State<UserDetail> {
-  List<Expense> expenses = List<Expense>();
+class _UserDetailTestPageState extends State<UserDetailTestPage> {
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: true);
+
+  void _onRefresh() async {
+    // monitor network fetch
+    await context.read<UserModel>().fetch(heavy: true);
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
 
   @override
   void initState() {
     super.initState();
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Travel",
-        time: "3:40AM",
-        description: "Ooty, Kodaikanal, Theni"));
-    expenses.add(Expense(
-        title: "Food", time: "9:30PM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "10:30PM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Travel",
-        time: "3:40AM",
-        description: "Ooty, Kodaikanal, Theni"));
-    expenses.add(Expense(
-        title: "Food", time: "9:30PM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "10:30PM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
-    expenses.add(Expense(
-        title: "Food", time: "2:30AM", description: "Pizza, Burger, Coke"));
+    Future.microtask(() async {
+      // fetch user info after randering
+      await context.read<UserModel>().fetch(heavy: true);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: white,
-      appBar: CustomAppBar(
-        height: 120,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 24.0),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: ButtonRoundWithShadow(
-                      size: 48,
-                      borderColor: wood_smoke,
-                      color: white,
-                      callback: () {
-                        Navigator.pop(context);
-                      },
-                      shadowColor: wood_smoke,
-                      iconPath: "assets/icons/arrow_back.svg"),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: ContraText(
-                size: 27,
-                alignment: Alignment.bottomCenter,
-                text: "Status",
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: SizedBox(
-                width: 20,
-              ),
-            )
-          ],
-        ),
-      ),
-      body: Stack(
-        alignment: Alignment.bottomCenter,
-        children: <Widget>[
-          SingleChildScrollView(
+    return Material(
+      child: SmartRefresher(
+          enablePullDown: true,
+          controller: _refreshController,
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+              child: Container(
+            color: white,
             child: Column(
               children: <Widget>[
-                widget.isBarChart ? BarChartSample3() : LineChartSample2(),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24.0, vertical: 0),
-                  child: ContraText(
-                    text: "Expenses",
-                    color: santas_gray,
-                    alignment: Alignment.centerLeft,
-                    weight: FontWeight.bold,
-                    size: 15,
+                Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Center(
+                        child: Consumer<UserModel>(
+                            builder: (context, user, child) {
+                          return SvgPicture.asset(
+                            user.profileAsset(),
+                            height: 320,
+                            width: 320,
+                          );
+                        }),
+                      ),
+                    ],
                   ),
                 ),
-                ListView.builder(
-                  itemBuilder: (BuildContext context, int index) {
-                    return ExpenseListItem(
-                      expense: expenses[index],
-                    );
-                  },
-                  itemCount: expenses.length,
-                  shrinkWrap: true,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 24.0, right: 24.0, top: 12.0, bottom: 12.0),
+                      child:
+                          Consumer<UserModel>(builder: (context, user, child) {
+                        return Text(
+                          user.name ?? '로딩중..',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 36,
+                              color: wood_smoke,
+                              fontWeight: FontWeight.w800),
+                        );
+                      }),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 24.0, right: 24.0, top: 12.0, bottom: 12.0),
+                      child: Column(children: <Widget>[
+                        Consumer<UserModel>(builder: (context, user, child) {
+                          return Text(
+                            user.level != null ? 'Lv.${user.level}' : '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 30,
+                                color: trout,
+                                fontWeight: FontWeight.w500),
+                          );
+                        }),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 12.0, left: 40.0, right: 40.0),
+                          child: Consumer<UserModel>(
+                              builder: (context, user, child) {
+                            return LinearProgressIndicator(
+                              value: user.expRatio,
+                              minHeight: 6.0,
+                            );
+                          }),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Consumer<UserModel>(
+                              builder: (context, user, child) {
+                            return Text(
+                              user.level != null
+                                  ? '${(user.expRatio * 100).toStringAsFixed(1)}%'
+                                  : '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: trout,
+                                  fontWeight: FontWeight.w500),
+                            );
+                          }),
+                        )
+                      ]),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Consumer<UserModel>(builder: (context, user, child) {
+                            return Text(
+                              user.level != null
+                                  ? '${user.likeCount} Likes '
+                                  : '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 20),
+                            );
+                          }),
+                          Icon(
+                            Icons.favorite_border,
+                            color: wood_smoke,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Consumer<UserModel>(builder: (context, user, child) {
+                            return Text(
+                              user.level != null
+                                  ? '${user.reviewCount} Reviews '
+                                  : '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 20),
+                            );
+                          }),
+                          Icon(
+                            Icons.rate_review,
+                            color: wood_smoke,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(
+                      color: santas_gray_10,
+                      thickness: 1,
+                      indent: 24,
+                      endIndent: 24,
+                    ),
+                    Consumer<UserModel>(builder: (context, user, child) {
+                      var badges = user.restaurantTypeCounts != null
+                          ? user.restaurantTypeCounts.map((e) {
+                              return UserBadge(type: e.type, count: e.count);
+                            }).toList()
+                          : <UserBadge>[];
+                      return BadgeGrid(
+                        badges: badges,
+                      );
+                    }),
+                    Divider(
+                      color: santas_gray_10,
+                      thickness: 1,
+                      indent: 24,
+                      endIndent: 24,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12, top: 24),
+                      child: RaisedButton(
+                        padding: EdgeInsets.all(16),
+                        color: lightening_yellow,
+                        textColor: white,
+                        onPressed: () {
+                          googleSignOut(context);
+                        },
+                        child: Text(
+                          'Logout',
+                          style: TextStyle(
+                              fontSize: 21.0, fontWeight: FontWeight.bold),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          // side: BorderSide(color: black, width: 2.0)
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: ButtonPlainWithIcon(
-              text: "Email Report",
-              size: 48,
-              color: black,
-              iconPath: "assets/icons/arrow_next.svg",
-              textColor: white,
-              callback: () {},
-              isPrefix: false,
-              isSuffix: true,
-            ),
-          )
-        ],
-      ),
+          ))),
     );
   }
 }

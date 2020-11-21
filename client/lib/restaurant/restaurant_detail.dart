@@ -8,7 +8,7 @@ import 'package:contra/custom_widgets/button_solid_with_icon.dart';
 import 'package:mukgo/restaurant/restaurant_card.dart';
 import 'package:mukgo/review/review_card_data.dart';
 
-import 'package:mukgo/review/review_detail_test.dart';
+import 'package:mukgo/review/review_detail.dart';
 import 'package:mukgo/review/review_form.dart';
 import 'package:mukgo/api/api.dart';
 import 'package:mukgo/proto/model.pb.dart';

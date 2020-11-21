@@ -86,24 +86,6 @@ class _FilterModalState extends State<FilterModal> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            // Expanded(
-            //   flex: 1,
-            //   child: Padding(
-            //     padding: const EdgeInsets.only(left: 24.0),
-            //     child: Align(
-            //       alignment: Alignment.bottomLeft,
-            //       child: ButtonRoundWithShadow(
-            //           size: 48,
-            //           borderColor: wood_smoke,
-            //           color: white,
-            //           callback: () {
-            //             Navigator.pop(context);
-            //           },
-            //           shadowColor: wood_smoke,
-            //           iconPath: "assets/icons/arrow_back.svg"),
-            //     ),
-            //   ),
-            // ),
             Expanded(
               flex: 2,
               child: ContraText(
@@ -113,12 +95,6 @@ class _FilterModalState extends State<FilterModal> {
                 text: "Filter",
               ),
             ),
-            // Expanded(
-            //   flex: 1,
-            //   child: SizedBox(
-            //     width: 20,
-            //   ),
-            // )
           ],
         ),
       ),
