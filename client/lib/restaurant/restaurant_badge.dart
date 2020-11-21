@@ -12,6 +12,9 @@ Map<RestaurantType, String> badgePathMap = {
   RestaurantType.JAPANESE: 'assets/icons/r_japanese.svg',
   RestaurantType.KOREAN: 'assets/icons/r_korean.svg',
   RestaurantType.CHINESE: 'assets/icons/r_chinese.svg',
+  RestaurantType.WESTERN: 'assets/icons/r_western.svg',
+  RestaurantType.DRINK: 'assets/icons/r_drink.svg',
+  RestaurantType.MISC: 'assets/icons/r_invalid.svg',
 };
 
 class RestaurantBadge extends StatelessWidget {
