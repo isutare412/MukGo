@@ -30,6 +30,9 @@ enum RestaurantType {
     JAPANESE = 6;
     KOREAN = 7;
     CHINESE = 8;
+    WESTERN = 9;
+    DRINK = 10;
+    MISC = 11;
 }
 
 /////////////////////////////////////////////////////////////////////////////

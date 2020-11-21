@@ -34,6 +34,9 @@ const RestaurantType$json = const {
     const {'1': 'JAPANESE', '2': 6},
     const {'1': 'KOREAN', '2': 7},
     const {'1': 'CHINESE', '2': 8},
+    const {'1': 'WESTERN', '2': 9},
+    const {'1': 'DRINK', '2': 10},
+    const {'1': 'MISC', '2': 11},
   ],
 };
 

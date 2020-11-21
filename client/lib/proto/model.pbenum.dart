@@ -52,6 +52,9 @@ class RestaurantType extends $pb.ProtobufEnum {
   static const RestaurantType JAPANESE = RestaurantType._(6, 'JAPANESE');
   static const RestaurantType KOREAN = RestaurantType._(7, 'KOREAN');
   static const RestaurantType CHINESE = RestaurantType._(8, 'CHINESE');
+  static const RestaurantType WESTERN = RestaurantType._(9, 'WESTERN');
+  static const RestaurantType DRINK = RestaurantType._(10, 'DRINK');
+  static const RestaurantType MISC = RestaurantType._(11, 'MISC');
 
   static const $core.List<RestaurantType> values = <RestaurantType> [
     INVALID,
@@ -63,6 +66,9 @@ class RestaurantType extends $pb.ProtobufEnum {
     JAPANESE,
     KOREAN,
     CHINESE,
+    WESTERN,
+    DRINK,
+    MISC,
   ];
 
   static final $core.Map<$core.int, RestaurantType> _byValue = $pb.ProtobufEnum.initByValue(values);
