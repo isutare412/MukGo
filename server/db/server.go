@@ -123,12 +123,26 @@ func NewServer(cfg *ServerConfig) (*Server, error) {
 
 // InitDB creates database, collections, indexex.
 func (s *Server) InitDB() error {
-	coll := s.db.Collection(CNUser)
-	_, err := coll.Indexes().CreateOne(
+	collUser := s.db.Collection(CNUser)
+	_, err := collUser.Indexes().CreateOne(
 		s.dbctx,
 		mongo.IndexModel{
-			Keys: bson.M{
-				"userid": 1, // index in ascending order
+			Keys: bson.D{
+				{Key: "user_id", Value: 1}, // index in ascending order
+			},
+			Options: options.Index().SetUnique(true),
+		})
+	if err != nil {
+		return fmt.Errorf("on InitDB: %v", err)
+	}
+
+	collLike := s.db.Collection(CNLike)
+	_, err = collLike.Indexes().CreateOne(
+		s.dbctx,
+		mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "review_id", Value: 1},      // index in ascending order
+				{Key: "liking_user_id", Value: 1}, // index in ascending order
 			},
 			Options: options.Index().SetUnique(true),
 		})
@@ -205,6 +219,24 @@ func (s *Server) handlePacket(
 		}
 		response = s.handleUserGet(&p)
 
+	case server.PTADReviewGet:
+		var p server.ADPacketReviewGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleReviewGet(&p)
+
+	case server.PTADReviewsGet:
+		var p server.ADPacketReviewsGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleReviewsGet(&p)
+
 	case server.PTADReviewAdd:
 		var p server.ADPacketReviewAdd
 		err = json.Unmarshal(ser, &p)
@@ -213,6 +245,24 @@ func (s *Server) handlePacket(
 			break
 		}
 		response = s.handleReviewAdd(&p)
+
+	case server.PTADReviewDel:
+		var p server.ADPacketReviewDel
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleReviewDel(&p)
+
+	case server.PTADRestaurantGet:
+		var p server.ADPacketRestaurantGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRestaurantGet(&p)
 
 	case server.PTADRestaurantAdd:
 		var p server.ADPacketRestaurantAdd
@@ -240,6 +290,33 @@ func (s *Server) handlePacket(
 			break
 		}
 		response = s.handleRestaurantsAdd(&p)
+
+	case server.PTADRankingGet:
+		var p server.ADPacketRankingGet
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleRankingGet(&p)
+
+	case server.PTADLikeAdd:
+		var p server.ADPacketLikeAdd
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleLikeAdd(&p)
+
+	case server.PTADLikeDel:
+		var p server.ADPacketLikeDel
+		err = json.Unmarshal(ser, &p)
+		if err != nil {
+			err = fmt.Errorf("on handlePacket: %v", err)
+			break
+		}
+		response = s.handleLikeDel(&p)
 
 	default:
 		err = fmt.Errorf("on handlePacket: no parser for %v", pt)

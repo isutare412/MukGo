@@ -6,19 +6,19 @@ import (
 	"sync"
 )
 
-// HandleMap is a multiplexer for response handlers from RabbitMQ RPC.
-type HandleMap struct {
+// ChannelMap is a multiplexer for response handlers from RabbitMQ RPC.
+type ChannelMap struct {
 	// IDGet generates unique correlation id with [32]byte.
 	IDGet <-chan string
 
-	handlers map[string]func(bool, Packet)
+	handlers map[string]chan Packet
 	mu       sync.Mutex
 }
 
-// NewHandleMap creates ResponseMux safely.
-func NewHandleMap() *HandleMap {
-	mux := &HandleMap{
-		handlers: make(map[string]func(bool, Packet)),
+// NewChannelMap creates ResponseMux safely.
+func NewChannelMap() *ChannelMap {
+	mux := &ChannelMap{
+		handlers: make(map[string]chan Packet),
 	}
 
 	// run id generator
@@ -38,8 +38,8 @@ func NewHandleMap() *HandleMap {
 }
 
 // Register handler with given id.
-func (m *HandleMap) Register(
-	id string, handler func(bool, Packet),
+func (m *ChannelMap) Register(
+	id string, ch chan Packet,
 ) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -47,14 +47,13 @@ func (m *HandleMap) Register(
 	if _, ok := m.handlers[id]; ok {
 		return fmt.Errorf("handler with id(%s) already exists", id)
 	}
-
-	m.handlers[id] = handler
+	m.handlers[id] = ch
 
 	return nil
 }
 
 // Pop get and remove handlers with given id.
-func (m *HandleMap) Pop(id string) func(bool, Packet) {
+func (m *ChannelMap) Pop(id string) chan Packet {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -67,7 +66,7 @@ func (m *HandleMap) Pop(id string) func(bool, Packet) {
 }
 
 // Get retrieves handler with given id.
-func (m *HandleMap) Get(id string) func(bool, Packet) {
+func (m *ChannelMap) Get(id string) chan Packet {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

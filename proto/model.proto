@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package proto;
+
+/////////////////////////////////////////////////////////////////////////////
+// Enumerates
+/////////////////////////////////////////////////////////////////////////////
+
+enum Code {
+    SUCCESS = 0;
+    INTERNAL_ERROR = 1;
+    METHOD_NOT_ALLOWED = 2;
+    AUTH_FAILED = 3;
+    PROTOCOL_MISMATCH = 4;
+    INVALID_DATA = 5;
+    USER_EXISTS = 6;
+    USER_NOT_EXISTS = 7;
+    RESTAURANT_NOT_EXISTS = 8;
+    LIKE_EXISTS = 9;
+    NO_PERMISSION = 10;
+}
+
+enum RestaurantType {
+    INVALID = 0;
+    CHICKEN = 1;
+    CAFE = 2;
+    FASTFOOD = 3;
+    MEAT = 4;
+    DESSERT = 5;
+    JAPANESE = 6;
+    KOREAN = 7;
+    CHINESE = 8;
+    WESTERN = 9;
+    DRINK = 10;
+    MISC = 11;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Models
+/////////////////////////////////////////////////////////////////////////////
+
+message RestaurantTypeCount {
+    RestaurantType type = 1;
+    int32 count = 2;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    int32 level = 3;
+    int64 total_exp = 4;
+    int64 level_exp = 5;
+    int64 cur_exp = 6;
+    double exp_ratio = 7;
+    double sight_radius = 8;
+    int32 review_count = 9;
+    int32 like_count = 10;
+    repeated RestaurantTypeCount restaurant_type_count = 11;
+}
+
+message Coordinate {
+    double latitude = 1;
+    double longitude = 2;
+}
+
+message Restaurant {
+    string id = 1;
+    string name = 2;
+    Coordinate coord = 3;
+    RestaurantType type = 4;
+}
+
+message Review {
+    string review_id = 1;
+    string user_id = 2;
+    string user_name = 3;
+    int32 score = 4;
+    string comment = 5;
+    repeated string menus = 6;
+    bool wait = 7;
+    int32 num_people = 8;
+    int64 timestamp = 9;
+    int32 user_level = 10;
+    int32 like_count = 11;
+    bool liked_by_me = 12;
+}
+
+message Users {
+    repeated User users = 1;
+}
+
+message Restaurants {
+    repeated Restaurant restaurants = 1;
+}
+
+message Reviews {
+    repeated Review reviews = 1;
+}
+
+message ErrorReason {
+    Code code = 1;
+}

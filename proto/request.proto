@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "proto/model.proto";
+
+package proto;
+
+message ReviewPost {
+    string restaurant_id = 1;
+    Review review = 2;
+}
+
+message RestaurantPost {
+    Restaurant restaurant = 1;
+}
+
+message RestaurantsPost {
+    repeated Restaurant restaurants = 1;
+}
+
+message LikePost {
+    string review_id = 1;
+}

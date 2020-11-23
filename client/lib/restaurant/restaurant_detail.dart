@@ -1,101 +1,187 @@
-import 'package:contra/custom_widgets/custom_app_bar.dart';
-import 'package:contra/custom_widgets/custom_header.dart';
-import 'package:contra/custom_widgets/custom_search_text.dart';
-import 'package:contra/utils/colors.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import 'restaurant_review_list_item.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:contra/utils/colors.dart';
+import 'package:contra/custom_widgets/button_solid_with_icon.dart';
+import 'package:mukgo/restaurant/restaurant_card.dart';
+import 'package:mukgo/review/review_card_data.dart';
+
+import 'package:mukgo/review/review_detail.dart';
+import 'package:mukgo/review/review_form.dart';
+import 'package:mukgo/api/api.dart';
+import 'package:mukgo/proto/model.pb.dart';
+import 'package:mukgo/auth/auth_api.dart';
+import 'package:mukgo/review/review_card_proj.dart';
+import 'package:mukgo/restaurant/review_filter.dart';
 import 'restaurant.dart';
 
-class RestaurantDetailPage extends StatefulWidget {
+class RestaurantDetailTestPage extends StatefulWidget {
+  RestaurantDetailTestPage({this.restaurant_id});
+  final String restaurant_id;
+
   @override
-  _RestaurantDetailPageState createState() => _RestaurantDetailPageState();
+  _RestaurantDetailTestPageState createState() =>
+      _RestaurantDetailTestPageState();
 }
 
-class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
-  TextEditingController _textEditingController = TextEditingController();
+class _RestaurantDetailTestPageState extends State<RestaurantDetailTestPage> {
   List<RestaurantReview> reviews = List<RestaurantReview>();
+
+  Future<Reviews> futureReviews;
+  Future<Restaurant> futureRestaurant;
+  final DateFormat formatter = DateFormat('MMMd');
+  Filter filter;
+
+  void setFilter(Filter newFilter) {
+    setState(() {
+      filter = newFilter;
+    });
+  }
+
+  void orderReviews(List<Review> reviews) {
+    var multiplyer = filter.order.ascending ? 1 : -1;
+    if (filter.order.key == 'score') {
+      reviews.sort((a, b) => multiplyer * a.score.compareTo(b.score));
+    } else {
+      reviews.sort((a, b) => multiplyer * a.timestamp.compareTo(b.timestamp));
+    }
+  }
+
+  List<Review> filterReviews(List<Review> reviews) {
+    return reviews.where((review) {
+      var checkPeople = review.numPeople <= filter.numPeople;
+      bool checkLine;
+      if (filter.wait == 'true') {
+        checkLine = review.wait;
+      } else if (filter.wait == 'false') {
+        checkLine = !review.wait;
+      } else {
+        checkLine = true;
+      }
+
+      return checkPeople && checkLine;
+    }).toList();
+  }
 
   @override
   void initState() {
     super.initState();
-    reviews.add(RestaurantReview(
-        name: "Angela Mehra",
-        designation: "Designer",
-        profile: "assets/images/peep_man_three.svg",
-        textColor: white,
-        bgColor: carribean_green));
-    reviews.add(RestaurantReview(
-        name: "Konami Ravi",
-        designation: "Muscian",
-        textColor: white,
-        profile: "assets/images/peep_lady_one.svg",
-        bgColor: flamingo));
-    reviews.add(RestaurantReview(
-        name: "Hard Cops",
-        textColor: white,
-        designation: "Bill Rizer",
-        profile: "assets/images/peep_man_right.svg",
-        bgColor: Colors.yellow));
-    reviews.add(RestaurantReview(
-      textColor: black,
-      name: "Kalia Youknow",
-      designation: "Muscian",
-      profile: "assets/images/peep_lady_right.svg",
-    ));
-    reviews.add(RestaurantReview(
-      textColor: white,
-      name: " Genbei Yagy ",
-      designation: "Planet Designer",
-      bgColor: caribbean_color,
-      profile: "assets/images/peep_lady_right.svg",
-    ));
+    filter = Filter(
+        numPeople: 10,
+        wait: 'disable',
+        order: Order(key: 'time', ascending: false));
+    //GET restaurant info
+    futureRestaurant = Future.microtask(() {
+      return fetchRestaurantData(readAuth(context).token,
+          restaurantId: widget.restaurant_id);
+    });
+    //GET review data
+    futureReviews = Future.microtask(() {
+      return fetchReviewsData(readAuth(context).token,
+          restaurantId: widget.restaurant_id);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: white,
-      appBar: CustomAppBar(
-        height: 200,
-        child: CustomHeader(
-          fg_color: wood_smoke,
-          bg_color: white,
-          color: wood_smoke,
-          lineOneText: "Popular",
-          lineTwotext: "Artists",
+    print(filter.order.key);
+    return Stack(children: <Widget>[
+      SingleChildScrollView(
+          child: Column(children: <Widget>[
+        FutureBuilder<Restaurant>(
+            future: futureRestaurant,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                var restaurantData = snapshot.data;
+                return RestaurantCard(
+                    restaurantName: restaurantData.name,
+                    restaurantType: restaurantData.type);
+              }
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }),
+        FilterOpenWidget(
+          onTap: () {
+            showMaterialModalBottomSheet(
+              context: context,
+              builder: (context, scrollController) =>
+                  FilterModal(preFilter: filter, callback: setFilter),
+            );
+          },
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 24.0,
-                right: 24,
-              ),
-              child: CustomSearchText(
-                iconPath: "assets/icons/ic_search.svg",
-                text: "Search with love ...",
-                enable: true,
-                callback: () {},
-                controller: _textEditingController,
-              ),
-            ),
-            ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.all(24),
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: reviews.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return RestaurantReviewListItem(
-                    review: reviews[index],
-                  );
-                })
-          ],
-        ),
-      ),
-    );
+        FutureBuilder<Reviews>(
+            future: futureReviews,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                var reviews = snapshot.data.reviews;
+                reviews = filterReviews(reviews);
+                orderReviews(reviews);
+                var data = reviews.asMap().entries.map((entry) {
+                  var i = entry.key;
+                  var review = entry.value;
+                  var time = formatter.format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          review.timestamp.toInt()));
+                  var menus = review.menus;
+                  return ReviewCardData(
+                      reviewId: review.reviewId,
+                      user: review.userName,
+                      comment: review.comment,
+                      score: review.score,
+                      numPeople: review.numPeople,
+                      time: time,
+                      menus: menus,
+                      waiting: review.wait,
+                      userLevel: review.userLevel,
+                      likeCount: review.likeCount,
+                      likeByMe: review.likedByMe);
+                }).toList();
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ReviewCard(
+                        reviewData: data[index],
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReviewDetailPage(
+                                      review_id: data[index].reviewId,
+                                      restaurant_id: widget.restaurant_id)));
+                        });
+                  },
+                );
+              }
+              return Center(child: CircularProgressIndicator());
+            }),
+        SizedBox(height: 60),
+      ])),
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12),
+            child: ButtonPlainWithIcon(
+              color: wood_smoke,
+              textColor: white,
+              iconPath: 'assets/icons/arrow_next.svg',
+              isPrefix: false,
+              isSuffix: true,
+              text: 'Write Review',
+              callback: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ReviewForm(restaurant_id: widget.restaurant_id)));
+              },
+            )),
+      )
+    ]);
   }
 }

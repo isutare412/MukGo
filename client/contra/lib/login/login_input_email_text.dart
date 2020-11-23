@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class LoginEmailText extends StatelessWidget {
+  const LoginEmailText({this.text, this.iconPath});
+  
   final String text;
   final String iconPath;
-
-  const LoginEmailText({this.text, this.iconPath});
-
   @override
   Widget build(BuildContext context) {
     return Container(
