@@ -28,16 +28,19 @@ class RestaurantCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24.0, top: 16),
-                    child: Text(
-                      restaurantName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: wood_smoke,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800),
+                  Container(
+                    width: MediaQuery.of(context).size.width * 0.65,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 24.0, top: 16),
+                      child: Text(
+                        restaurantName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: wood_smoke,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ),
                 ],
