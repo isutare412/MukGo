@@ -430,6 +430,7 @@ func (s *Server) handleReviewDel(p *server.ADPacketReviewDel) server.Packet {
 
 	// calculate user user data
 	user.Exp -= common.LikeExp() * int64(likeCount)
+	user.Exp -= common.ReviewExp()
 	if user.Exp < 0 {
 		user.Exp = 0
 	}
