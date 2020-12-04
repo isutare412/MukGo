@@ -9,7 +9,8 @@ import 'package:mukgo/proto/model.pb.dart';
 import 'package:mukgo/proto/request.pb.dart';
 
 //String apiUrl = '10.0.2.2:7777';
-String apiUrl = 'redshore.asuscomm.com:7777';
+String apiUrl = 'ec2-13-209-9-180.ap-northeast-2.compute.amazonaws.com:7777';
+//String apiUrl = 'redshore.asuscomm.com:7777';
 
 // log api error reason code
 void printResponseError(String api, Uint8List bytes) {
