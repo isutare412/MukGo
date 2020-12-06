@@ -1,10 +1,13 @@
 # MukGo
 
-![Build Status](http://redshore.asuscomm.com:8081/buildStatus/icon?job=MukGo%2Frelease)
-
 ![Mukgo service diagram](./data/Mukgo%20service%20diagram.png)
 
-Game-like restaurant review service.
+Game-like restaurant review service. You can get a last client release
+in [here](https://github.com/isutare412/MukGo/releases).
+
+# Video
+
+[Introduction video](https://www.youtube.com/watch?v=aOq2Z4ENtO8)
 
 # Screenshots
 
